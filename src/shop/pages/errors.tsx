@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
-import { paths } from "../../lib/paths";
+import { paths } from "../lib/paths";
 
 export function ShopServerErrorPage() {
   return (
     <div className="center-state">
       <img
-        className="state-mark"
         src="/brand/logo6_dark.svg"
         alt="Dnols"
+        className="state-mark"
       />
       <p>Something broke on our side.</p>
       <Link className="btn" to={paths.shop}>
@@ -16,4 +16,3 @@ export function ShopServerErrorPage() {
     </div>
   );
 }
-
