@@ -108,7 +108,7 @@ export function ProductPhotoUpload({
         {preview.after.provider === "fallback" && isCover && (
           <p className="hint notice-inline">
             Background removal API not configured — used center crop with white
-            fill. Set REMOVEBG_API_KEY or CLIPDROP_API_KEY for full removal.
+            fill. Set FAPIAPI_API_KEY on Render for FAPIhub background removal.
           </p>
         )}
         <div className="btn-row">

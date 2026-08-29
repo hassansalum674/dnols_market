@@ -88,7 +88,11 @@ export async function processCoverPhoto(
   input: Buffer,
   mimeType: string,
 ): Promise<ProcessResult> {
-  const { buffer: cutout, provider } = await removeBackground(input, mimeType);
+  const { buffer: cutout, provider, whiteBackground } = await removeBackground(
+    input,
+    mimeType,
+    { whiteBackground: true },
+  );
 
   let subject: Buffer;
   if (provider === "fallback") {
@@ -98,6 +102,22 @@ export async function processCoverPhoto(
         position: "centre",
       })
       .flatten({ background: WHITE })
+      .png()
+      .toBuffer();
+  } else if (whiteBackground && provider === "fapihub") {
+    const bounds = await subjectBounds(cutout);
+    const cropped = await sharp(cutout)
+      .extract(bounds)
+      .png()
+      .toBuffer();
+
+    const side = Math.max(bounds.width, bounds.height, MIN_COVER_PX);
+    subject = await sharp(cropped)
+      .resize(side, side, {
+        fit: "contain",
+        background: WHITE,
+        position: "centre",
+      })
       .png()
       .toBuffer();
   } else {
