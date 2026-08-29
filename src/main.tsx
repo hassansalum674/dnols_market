@@ -5,7 +5,12 @@ import App from "./App";
 import { registerPushStub } from "./api/client";
 import "./styles.css";
 
-registerSW({ immediate: true });
+const updateSW = registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    void updateSW(true);
+  },
+});
 void registerPushStub();
 
 createRoot(document.getElementById("root")!).render(
