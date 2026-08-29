@@ -4,22 +4,37 @@ Tanzania shop marketplace PWA (Vite + React + TypeScript). Quiet black UI, Karia
 
 Production: **https://dnols.com** (Firebase Hosting site `dnols-2a394`).
 
-Do **not** use `firebase login` on the laptop (OAuth token exchange is failing). Deploy with a **service account JSON** downloaded in the browser:
+## Laptop: pull then deploy
 
-1. Open [Firebase service accounts](https://console.firebase.google.com/project/dnols-2a394/settings/serviceaccounts/adminsdk) while signed in as the project owner.
-2. **Generate new private key** — saves a `.json` file (keep it off git).
-3. Then:
+Do **not** run `firebase login` or `firebase deploy` on the ProBook. Login OAuth fails there, and `firebase deploy` then dies with `Failed to make request to https://firebasehosting.googleapis.com/...`.
+
+If git says **commit or stash before you merge**, a generated icon is dirty. Throw it away, then take the branch:
 
 ```bash
 cd ~/Desktop/Dnols
+git restore -- public/icons public/favicon.png public/apple-touch-icon.png public/brand
+git fetch origin
 git checkout cursor/deploy-dnols-com-a806
+git pull origin cursor/deploy-dnols-com-a806
+```
+
+Deploy with a **service account JSON** (browser download, keep it off git):
+
+1. Open [Firebase service accounts](https://console.firebase.google.com/project/dnols-2a394/settings/serviceaccounts/adminsdk) signed in as the project owner.
+2. **Generate new private key**.
+3. Then (use the real Downloads filename):
+
+```bash
+cd ~/Desktop/Dnols
+export NVM_DIR="$HOME/.nvm"
+. "$NVM_DIR/nvm.sh"
 nvm use 22.22.0
 npm ci
 export GOOGLE_APPLICATION_CREDENTIALS="$HOME/Downloads/dnols-2a394-firebase-adminsdk.json"
 npm run deploy
 ```
 
-Use the real filename from Downloads. Hosting only — does not deploy Firestore or Functions.
+Hosting only — does not deploy Firestore or Functions.
 
 CI: repo secret `FIREBASE_SERVICE_ACCOUNT` (paste the JSON) or `FIREBASE_TOKEN`.
 

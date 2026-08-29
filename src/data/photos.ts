@@ -16,7 +16,7 @@ const BY_SEED: Record<string, string> = {
   "dnols-belt-tan": crop("photo-1624222247344-550fb60583c2"),
   "dnols-cap-dsm": crop("photo-1588850561407-73954769d4d4"),
   "dnols-phone-a15": crop("photo-1511707171634-5f897ff02aa9"),
-  "dnols-feature-phone": crop("photo-1601784551446-20c9e07cdbdb"),
+  "dnols-feature-phone": crop("photo-1585060544812-6b45742d762f"),
   "dnols-tws-black": crop("photo-1590658268037-6bf12165a8df"),
   "dnols-powerbank-20k": crop("photo-1601972602237-8c79280b3da6"),
   "dnols-charger-33w": crop("photo-1583863788434-e58a36330cf0"),
