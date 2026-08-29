@@ -54,7 +54,7 @@ export function AppLayout() {
         {shop && (
           <header className="header">
             <div className="header-row">
-              <img className="header-mark" src="/brand/logo4_submark.svg" alt="Dnols" />
+              <img className="header-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
               <span style={{ fontWeight: 700 }}>Shop</span>
             </div>
           </header>

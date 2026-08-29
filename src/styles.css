@@ -153,9 +153,31 @@ img {
 }
 
 .route-pulse img {
-  width: 56px;
-  height: 56px;
+  width: 148px;
+  height: auto;
   animation: splashPulse 1.8s ease-in-out infinite;
+}
+
+.state-mark {
+  width: 168px;
+  height: auto;
+}
+
+.history-glyph {
+  width: 40px;
+  height: 40px;
+  border-radius: 2px;
+  background: #1a1a1a;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.history-glyph svg {
+  width: 20px;
+  height: 20px;
 }
 
 /* Shell */
@@ -185,8 +207,8 @@ img {
 }
 
 .header-mark {
-  width: 32px;
-  height: 32px;
+  height: 26px;
+  width: auto;
   flex-shrink: 0;
 }
 

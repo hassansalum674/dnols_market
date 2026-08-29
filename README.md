@@ -27,10 +27,12 @@ Marks in [`brand/`](brand/) — do not redraw SVG text.
 
 | File | Use |
 | --- | --- |
-| `logo6_dark.svg` | Splash |
-| `logo4_submark.svg` | Pulse loader, header |
-| `logo5_favicon.svg` | Favicon / PWA icons |
-| `logo1_primary.svg` / `logo3_wordmark.svg` | Light leftovers |
+| `logo6_dark.svg` | **Everywhere in-app**: splash, pulse loaders, headers, empty/error states |
+| `logo5_favicon.svg` | Favicon + PWA icons **only** (the single place the "d" appears) |
+| `logo4_submark.svg` | Reserved; not shown in the UI |
+| `logo1_primary.svg` / `logo3_wordmark.svg` | Light/print leftovers |
+
+UI rules: [`docs/ui-spec.md`](docs/ui-spec.md).
 
 Blue `#1A6FD4`, black `#0D0D0D`. **Playfair Display** 400/700 self-hosted in `public/fonts` (`font-display: swap`). Prices: lining + tabular numerals.
 

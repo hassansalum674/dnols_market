@@ -35,7 +35,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
 export function RoutePulse() {
   return (
     <div className="route-pulse" aria-hidden>
-      <img src="/brand/logo4_submark.svg" alt="" />
+      <img src="/brand/logo6_dark.svg" alt="" />
     </div>
   );
 }

@@ -110,7 +110,12 @@ export function HeaderSearch({
                   {h.photoUrl ? (
                     <img src={h.photoUrl} alt="" />
                   ) : (
-                    <img src="/brand/logo4_submark.svg" alt="" />
+                    <span className="history-glyph" aria-hidden>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                        <circle cx="11" cy="11" r="6" />
+                        <path d="m20 20-4.2-4.2" />
+                      </svg>
+                    </span>
                   )}
                   <span>{h.q}</span>
                 </button>

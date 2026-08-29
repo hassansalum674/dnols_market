@@ -147,8 +147,8 @@ img {
 }
 
 .route-pulse img {
-  width: 56px;
-  height: 56px;
+  width: 148px;
+  height: auto;
   animation: splashPulse 1.8s ease-in-out infinite;
 }
 
@@ -174,8 +174,8 @@ img {
 }
 
 .header-mark {
-  width: 32px;
-  height: 32px;
+  height: 26px;
+  width: auto;
   flex-shrink: 0;
 }
 

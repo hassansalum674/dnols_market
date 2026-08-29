@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 export function ServerErrorPage() {
   return (
     <div className="center-state">
-      <img src="/brand/logo4_submark.svg" alt="Dnols" width={64} height={64} />
+      <img src="/brand/logo6_dark.svg" alt="Dnols" style={{ width: 168, height: "auto" }} />
       <p>Something broke on our side.</p>
       <Link className="btn" to="/">
         Back to Today

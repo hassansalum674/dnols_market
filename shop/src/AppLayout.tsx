@@ -48,7 +48,7 @@ export function AppLayout() {
           <div className="header-row">
             <img
               className="header-mark"
-              src="/brand/logo4_submark.svg"
+              src="/brand/logo6_dark.svg"
               alt="Dnols"
             />
             <span className="header-title">{title}</span>

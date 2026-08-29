@@ -83,7 +83,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
   return (
     <header className="header">
       <div className="header-row">
-        <img className="header-mark" src="/brand/logo4_submark.svg" alt="" />
+        <img className="header-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
         {children}
       </div>
     </header>
