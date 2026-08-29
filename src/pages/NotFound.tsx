@@ -19,7 +19,7 @@ export function NotFoundPage({ soldOut = false }: { soldOut?: boolean }) {
       <h1 className="product-title">
         {soldOut
           ? "This item sold out, but these are trending right now."
-          : "Page missing."}
+          : "This page is not on Dnols — here is what is trending."}
       </h1>
       <Link className="btn" to="/" style={{ width: "auto", padding: "0 24px", margin: "12px 0 20px" }}>
         Start shopping

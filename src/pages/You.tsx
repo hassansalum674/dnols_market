@@ -45,8 +45,37 @@ export function YouPage() {
           }}
         />
         <p className="hint">
-          <Link to="/shop">Sell from a stall · shop mode</Link>
+          <Link to="/shop">Sell on Dnols</Link>
         </p>
+        <label className="muted" htmlFor="phone">
+          Phone
+        </label>
+        <input
+          id="phone"
+          className="search-input"
+          inputMode="tel"
+          defaultValue={localStorage.getItem("dnols.phone") || ""}
+          placeholder="2557…"
+          onChange={(e) => localStorage.setItem("dnols.phone", e.target.value)}
+        />
+        <p className="muted">Language</p>
+        <div className="chips">
+          {(["en", "sw"] as const).map((lang) => (
+            <button
+              key={lang}
+              type="button"
+              className={`chip ${
+                (localStorage.getItem("dnols.lang") || "en") === lang ? "on" : ""
+              }`}
+              onClick={() => {
+                localStorage.setItem("dnols.lang", lang);
+                window.location.reload();
+              }}
+            >
+              {lang === "en" ? "English" : "Kiswahili"}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="you-block">
         <h2>Saved</h2>

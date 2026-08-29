@@ -9,7 +9,9 @@ const SPLASH_KEY = "dnols.splash.session";
 export function AppLayout() {
   const loc = useLocation();
   const nav = useNavigation();
-  const hideTabs = loc.pathname.startsWith("/checkout");
+  const hideTabs =
+    loc.pathname.startsWith("/checkout") ||
+    loc.pathname.startsWith("/pickup");
   const shop = loc.pathname.startsWith("/shop");
   const [splash, setSplash] = useState(() => {
     try {

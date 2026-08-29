@@ -119,7 +119,10 @@ export function HomePage() {
 
   return (
     <div className="page">
-      <p className="place-line">Near {PLACE_LABEL()}</p>
+      <p className="place-line">
+        Near {PLACE_LABEL()}
+        {sp.get("place") ? ` · ${sp.get("place")}` : ""}
+      </p>
       <div className="filters-bar">
         <div className="chips">
           {(["fashion", "electronics"] as const).map((c) => (
@@ -162,6 +165,7 @@ export function HomePage() {
         </div>
         <button type="button" className="chip on" onClick={() => setOpen(true)}>
           Filters
+          {chips.length > 0 ? ` (${chips.length})` : ""}
         </button>
       </div>
       {chips.length > 0 && (
@@ -184,7 +188,25 @@ export function HomePage() {
       {listings === null ? (
         <SkeletonGrid />
       ) : listings.length === 0 ? (
-        <p className="muted">Nothing in this range. Widen the walk.</p>
+        <div className="center-state">
+          <p>Nothing in this range. Clear filters or walk a little further.</p>
+          <button
+            type="button"
+            className="btn"
+            onClick={() =>
+              setFilters({
+                category: "",
+                maxDistance: "",
+                sort: "nearest",
+                inStock: false,
+                minPrice: "",
+                maxPrice: "",
+              })
+            }
+          >
+            Clear filters
+          </button>
+        </div>
       ) : (
         <ProductGrid listings={listings} />
       )}

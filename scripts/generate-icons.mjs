@@ -3,7 +3,7 @@
  * Does not restyle SVG text — renders the brand file as-is.
  */
 import { Resvg } from "@resvg/resvg-js";
-import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -40,3 +40,15 @@ for (const name of [
 }
 
 console.log("Wrote PWA icons from brand/logo5_favicon.svg");
+
+const fontDest = join(root, "public", "fonts");
+mkdirSync(fontDest, { recursive: true });
+const fontSrc = join(root, "node_modules", "@fontsource", "playfair-display", "files");
+for (const f of [
+  "playfair-display-latin-400-normal.woff2",
+  "playfair-display-latin-700-normal.woff2",
+]) {
+  const from = join(fontSrc, f);
+  if (existsSync(from)) copyFileSync(from, join(fontDest, f));
+}
+console.log("Copied Playfair Display latin 400/700 into public/fonts");

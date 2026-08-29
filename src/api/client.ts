@@ -13,6 +13,7 @@ import type {
 } from "../types";
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) || "/api";
+const PLACE_ID = "place_kariakoo_dsm";
 
 async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
@@ -29,10 +30,11 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 
 function qs(filters: ListingFilters): string {
   const p = new URLSearchParams();
+  p.set("placeId", PLACE_ID);
   if (filters.category) p.set("category", filters.category);
-  if (filters.maxDistance) p.set("maxDistance", String(filters.maxDistance));
+  if (filters.maxDistance) p.set("maxDistanceMeters", String(filters.maxDistance));
   if (filters.sort) p.set("sort", filters.sort);
-  if (filters.inStock) p.set("inStock", "1");
+  if (filters.inStock) p.set("inStock", "true");
   if (filters.minPrice !== "" && filters.minPrice != null)
     p.set("minPrice", String(filters.minPrice));
   if (filters.maxPrice !== "" && filters.maxPrice != null)
@@ -62,7 +64,7 @@ export async function fetchListings(
   try {
     const data = await getJson<unknown>(`/listings${qs(filters)}`, signal);
     const listings = asList(data);
-    if (!listings.length && !filters.q && !filters.category) {
+    if (!listings.length && !filters.q && !filters.category && !filters.maxDistance) {
       throw new Error("empty_api");
     }
     return { listings, source: "api" };
@@ -76,11 +78,13 @@ export async function fetchListingDetail(
   paidToken?: string | null,
 ): Promise<{ detail: PublicListingDetail | null; source: DataSource; status?: number }> {
   try {
-    const q = paidToken ? `?token=${encodeURIComponent(paidToken)}` : "";
-    const data = await getJson<PublicListingDetail & { paid?: boolean }>(
-      `/listings/${encodeURIComponent(id)}${q}`,
-    );
-    const paid = Boolean(data.paid || data.directions);
+    const q = paidToken
+      ? `?paid=1&token=${encodeURIComponent(paidToken)}`
+      : "";
+    const data = await getJson<
+      PublicListingDetail & { paid?: boolean; locationUnlocked?: boolean }
+    >(`/listings/${encodeURIComponent(id)}${q}`);
+    const paid = Boolean(data.paid || data.directions || data.locationUnlocked);
     return {
       detail: { ...data, paid },
       source: "api",
@@ -98,9 +102,10 @@ export async function fetchListingDetail(
 
 export async function fetchSuggest(q: string): Promise<PublicListing[]> {
   try {
-    const data = await getJson<unknown>(`/search?q=${encodeURIComponent(q)}`);
-    const listings = asList(data);
-    return listings.slice(0, 6);
+    const data = await getJson<unknown>(
+      `/listings?placeId=${PLACE_ID}&q=${encodeURIComponent(q)}`,
+    );
+    return asList(data).slice(0, 6);
   } catch {
     return mockSuggest(q);
   }
@@ -108,29 +113,65 @@ export async function fetchSuggest(q: string): Promise<PublicListing[]> {
 
 export async function fetchTrending(): Promise<PublicListing[]> {
   try {
-    const data = await getJson<unknown>("/listings?sort=newest");
-    const listings = asList(data);
-    return listings.slice(0, 6);
+    const data = await getJson<unknown>("/trending");
+    return asList(data).slice(0, 6);
   } catch {
     return mockTrending();
   }
 }
 
-export async function payOrder(listingIds: string[]): Promise<Order> {
+function mapPay(raw: Record<string, unknown>, listingIds: string[]): Order {
+  const shops = raw.shops as Order["directions"];
+  return {
+    id: String(raw.orderId ?? raw.id ?? `ord_${Date.now()}`),
+    listingIds: (raw.listingIds as string[]) ?? listingIds,
+    status: (raw.escrow as Order["status"]) ?? "paid_held",
+    pickupCode: raw.pickupCode as string | undefined,
+    handoverPin: raw.handoverPin as string | undefined,
+    totalTzs: Number(raw.totalTzs ?? 0),
+    createdAt: new Date().toISOString(),
+    paidAt: new Date().toISOString(),
+    accessToken: raw.accessToken as string | undefined,
+    directions: shops,
+  };
+}
+
+export async function stkPush(
+  phone: string,
+  listingIds: string[],
+): Promise<{ requestId: string; status: string }> {
+  const res = await fetch(`${BASE}/payments/stk-push`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify({ phone, listingIds }),
+  });
+  if (!res.ok) throw new Error("stk_fail");
+  return res.json() as Promise<{ requestId: string; status: string }>;
+}
+
+export async function payOrder(
+  listingIds: string[],
+  phone?: string,
+): Promise<Order> {
   try {
-    const res = await fetch(`${BASE}/orders`, {
+    if (phone) {
+      await stkPush(phone, listingIds);
+    }
+    const res = await fetch(`${BASE}/orders/pay`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ listingIds, pay: true }),
+      body: JSON.stringify({ listingIds }),
     });
     if (!res.ok) throw new Error("pay_fail");
-    return res.json() as Promise<Order>;
+    const raw = (await res.json()) as Record<string, unknown>;
+    return mapPay(raw, listingIds);
   } catch {
     return {
       id: `ord_mock_${Date.now().toString(36)}`,
       listingIds,
       status: "paid_held",
       pickupCode: String(1000 + Math.floor(Math.random() * 9000)),
+      handoverPin: String(1000 + Math.floor(Math.random() * 9000)),
       totalTzs: mockByIds(listingIds).reduce((s, l) => s + l.priceTzs, 0),
       createdAt: new Date().toISOString(),
       paidAt: new Date().toISOString(),
@@ -139,17 +180,48 @@ export async function payOrder(listingIds: string[]): Promise<Order> {
   }
 }
 
-export async function fetchOrders(): Promise<Order[]> {
+export async function fetchOrder(id: string): Promise<Order | null> {
   try {
-    const data = await getJson<unknown>("/orders");
-    if (Array.isArray(data)) return data as Order[];
-    if (data && typeof data === "object" && Array.isArray((data as { orders?: unknown }).orders)) {
-      return (data as { orders: Order[] }).orders;
-    }
-    return [];
+    const raw = await getJson<Record<string, unknown>>(`/orders/${encodeURIComponent(id)}`);
+    return {
+      id: String(raw.orderId ?? id),
+      listingIds: (raw.listingIds as string[]) ?? [],
+      status: (raw.escrow as Order["status"]) ?? "reserved",
+      pickupCode: raw.pickupCode as string | undefined,
+      handoverPin: raw.handoverPin as string | undefined,
+      totalTzs: Number(raw.totalTzs ?? 0),
+      createdAt: String(raw.createdAt ?? new Date().toISOString()),
+      paidAt: (raw.paidAt as string | null) ?? null,
+      accessToken: raw.accessToken as string | undefined,
+      directions: raw.directions as Order["directions"],
+    };
   } catch {
-    return [];
+    return null;
   }
+}
+
+export async function handoverOrder(
+  id: string,
+  pin?: string,
+  action: "confirm" | "reject" = "confirm",
+): Promise<{ escrow: string } | null> {
+  try {
+    const res = await fetch(`${BASE}/orders/${encodeURIComponent(id)}/handover`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(
+        action === "reject" ? { action: "reject" } : { pin, action: "confirm" },
+      ),
+    });
+    if (!res.ok) throw new Error("handover_fail");
+    return res.json() as Promise<{ escrow: string }>;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchOrders(): Promise<Order[]> {
+  return [];
 }
 
 /** Optional Web Push stub — never throws. */

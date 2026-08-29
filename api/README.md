@@ -40,7 +40,9 @@ Keep these even if the frontend uses different helper names:
 | POST | `/orders/reserve` | Demo unpaid escrow (`reserved`) so `GET /orders/:id` can hide location. |
 | GET | `/orders/:id` | Unpaid: no coordinates. Paid (`paid_held` / `handed_over`): `directions` payload. |
 | POST | `/orders/:id/handover` | `{ "pin": "...." }` confirm → `handed_over`. `{ "action": "reject" }` → `rejected_refund`. |
-| GET | `/trending` | In-stock SKUs for a 404 page. |
+| GET | `/search` | Alias of listings with `q` |
+| POST | `/payments/stk-push` | Mock STK: `{ phone, listingIds }` → success, then pay |
+| GET | `/payments/stk-push/:id` | Poll stub |
 
 Escrow mock: **reserved → paid_held → handed_over | rejected_refund**. `POST /orders/pay` jumps to `paid_held`.
 

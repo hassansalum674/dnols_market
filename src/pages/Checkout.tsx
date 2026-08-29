@@ -13,6 +13,9 @@ export function CheckoutPage() {
   const nav = useNavigate();
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [phone, setPhone] = useState(
+    () => localStorage.getItem("dnols.phone") || "2557",
+  );
 
   if (items.length === 0) return <EmptyCart />;
 
@@ -20,7 +23,7 @@ export function CheckoutPage() {
     setBusy(true);
     const ids = items.flatMap((i) => Array.from({ length: i.qty }, () => i.listing.id));
     const unique = [...new Set(items.map((i) => i.listing.id))];
-    const order = await payOrder(unique.length ? unique : ids);
+    const order = await payOrder(unique.length ? unique : ids, phone);
     markPaid(order.listingIds, order.accessToken || "paid");
     saveLocalOrder(order);
     clear();
@@ -51,8 +54,22 @@ export function CheckoutPage() {
           <>
             <h1 className="product-title">Payment</h1>
             <p className="muted">
-              Escrow stub — pay now, directions after. Mobile money comes later.
+              Full price is held in escrow. You may refuse at the stall if it is
+              not as listed. STK push (M-Pesa / Mixx / Airtel) is stubbed.
             </p>
+            <label className="muted" htmlFor="mm">
+              Mobile money number
+            </label>
+            <input
+              id="mm"
+              className="search-input"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                localStorage.setItem("dnols.phone", e.target.value);
+              }}
+            />
             <p className="price" style={{ fontSize: 22, fontWeight: 700 }}>
               {formatTsh(totalTzs)}
             </p>
@@ -82,7 +99,7 @@ export function CheckoutPage() {
           </button>
         ) : (
           <button type="button" className="btn" disabled={busy} onClick={() => void pay()}>
-            Pay
+            Pay to reserve
           </button>
         )}
       </div>

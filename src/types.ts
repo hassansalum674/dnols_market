@@ -49,6 +49,7 @@ export type Order = {
   listingIds: string[];
   status: EscrowStatus;
   pickupCode?: string;
+  handoverPin?: string;
   totalTzs: number;
   createdAt: string;
   paidAt: string | null;
