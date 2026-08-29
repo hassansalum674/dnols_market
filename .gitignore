@@ -1,0 +1,14 @@
+node_modules
+dist
+dist-ssr
+*.local
+.DS_Store
+.env
+.env.*.local
+api/node_modules
+api/dist
+shop/node_modules
+shop/dist
+shop/dev-dist
+*.tsbuildinfo
+dev-dist

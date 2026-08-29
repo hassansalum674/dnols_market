@@ -1,0 +1,117 @@
+openapi: 3.0.3
+info:
+  title: Dnols API
+  version: 0.1.0
+  description: |
+    Shop-only marketplace stub for Kariakoo (Dar es Salaam, Tanzania).
+    Distance is computed on the server. Exact shopName, street, lat, and lng
+    are withheld until mock mobile-money payment succeeds.
+
+    Escrow mock: reserved → paid_held → handed_over | rejected_refund
+
+    These REST paths are stable. If the Vite PWA uses different client helpers,
+    map them to this contract — do not rename these routes.
+
+servers:
+  - url: http://localhost:8787
+
+paths:
+  /health:
+    get:
+      summary: Liveness
+      responses:
+        "200":
+          description: OK
+  /places:
+    get:
+      summary: Mock Kariakoo place
+      responses:
+        "200":
+          description: placeId for listings
+  /listings:
+    get:
+      summary: Search listings (no exact location)
+      parameters:
+        - in: query
+          name: placeId
+          schema: { type: string }
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: category
+          schema: { type: string, enum: [fashion, electronics] }
+        - in: query
+          name: maxDistanceMeters
+          schema: { type: number }
+        - in: query
+          name: minPrice
+          schema: { type: number }
+        - in: query
+          name: maxPrice
+          schema: { type: number }
+        - in: query
+          name: inStock
+          schema: { type: boolean }
+        - in: query
+          name: sort
+          schema:
+            type: string
+            enum: [nearest, price_asc, price_desc, newest]
+        - in: query
+          name: buyerLat
+          schema: { type: number }
+        - in: query
+          name: buyerLng
+          schema: { type: number }
+      responses:
+        "200":
+          description: items without lat/lng/address/shopName
+  /listings/{id}:
+    get:
+      summary: Listing detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+        - in: query
+          name: paid
+          schema: { type: string, description: "1 to request unlock" }
+        - in: query
+          name: token
+          schema: { type: string, description: accessToken from POST /orders/pay }
+      responses:
+        "200":
+          description: description + sizes or brand; directions only if paid+token
+  /cart:
+    get:
+      summary: In-memory cart (header X-Session-Id optional)
+    post:
+      summary: Add listingId or items[]
+  /orders/pay:
+    post:
+      summary: Mock mobile money success; returns coords
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [listingIds]
+              properties:
+                listingIds:
+                  type: array
+                  items: { type: string }
+  /orders/reserve:
+    post:
+      summary: Optional unpaid order for demo
+  /orders/{id}:
+    get:
+      summary: Unpaid hides coordinates; paid includes directions
+  /orders/{id}/handover:
+    post:
+      summary: PIN confirm (escrow → handed_over) or action=reject
+  /trending:
+    get:
+      summary: Popular SKUs for 404 / empty states
