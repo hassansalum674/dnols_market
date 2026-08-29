@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { fetchListings } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { paths } from "../lib/paths";
 import type { PublicListing } from "../types";
 
 export function SearchPage() {
@@ -28,7 +29,7 @@ export function SearchPage() {
       ) : listings.length === 0 ? (
         <div className="center-state">
           <p>No matches. Try a shorter word.</p>
-          <Link className="btn" to="/">
+          <Link className="btn" to={paths.home}>
             Start shopping
           </Link>
         </div>

@@ -1,7 +1,15 @@
 import { lazy } from "react";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  Outlet,
+  RouterProvider,
+  useLocation,
+} from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { CartProvider } from "./store/cart";
+import { paths } from "./lib/paths";
+import { LandingPage, MarketingNotFoundPage } from "./pages/Landing";
 import { ServerErrorPage } from "./pages/errors";
 
 const HomePage = lazy(() =>
@@ -44,30 +52,53 @@ const ShopProfile = lazy(() =>
   import("./pages/shop").then((m) => ({ default: m.ShopProfile })),
 );
 
+/** Old PWA paths (`/cart`, `/product/:id`, …) → `/app…` */
+function RedirectToApp() {
+  const loc = useLocation();
+  return <Navigate to={`${paths.home}${loc.pathname}${loc.search}${loc.hash}`} replace />;
+}
+
+function Root() {
+  return <Outlet />;
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <AppLayout />,
+    element: <Root />,
     errorElement: <ServerErrorPage />,
     children: [
-      { index: true, element: <HomePage /> },
-      { path: "search", element: <SearchPage /> },
-      { path: "product/:id", element: <ProductPage /> },
-      { path: "cart", element: <CartPage /> },
-      { path: "checkout", element: <CheckoutPage /> },
-      { path: "orders", element: <OrdersPage /> },
-      { path: "you", element: <YouPage /> },
+      { index: true, element: <LandingPage /> },
       {
-        path: "shop",
-        element: <ShopLayout />,
+        element: <AppLayout />,
         children: [
-          { index: true, element: <ShopToday /> },
-          { path: "stock", element: <ShopStock /> },
-          { path: "orders", element: <ShopOrders /> },
-          { path: "profile", element: <ShopProfile /> },
+          { path: "app", element: <HomePage /> },
+          { path: "app/search", element: <SearchPage /> },
+          { path: "app/product/:id", element: <ProductPage /> },
+          { path: "app/cart", element: <CartPage /> },
+          { path: "app/checkout", element: <CheckoutPage /> },
+          { path: "app/orders", element: <OrdersPage /> },
+          { path: "app/you", element: <YouPage /> },
+          { path: "app/*", element: <NotFoundPage /> },
+          {
+            path: "shop",
+            element: <ShopLayout />,
+            children: [
+              { index: true, element: <ShopToday /> },
+              { path: "stock", element: <ShopStock /> },
+              { path: "orders", element: <ShopOrders /> },
+              { path: "profile", element: <ShopProfile /> },
+            ],
+          },
         ],
       },
-      { path: "*", element: <NotFoundPage /> },
+      { path: "search", element: <RedirectToApp /> },
+      { path: "product/:id", element: <RedirectToApp /> },
+      { path: "cart", element: <RedirectToApp /> },
+      { path: "checkout", element: <RedirectToApp /> },
+      { path: "orders", element: <RedirectToApp /> },
+      { path: "you", element: <RedirectToApp /> },
+      { path: "*", element: <MarketingNotFoundPage /> },
     ],
   },
 ]);

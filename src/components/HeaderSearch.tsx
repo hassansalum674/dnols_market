@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { paths } from "../lib/paths";
 import { fetchSuggest } from "../api/client";
 import {
   clearHistory,
@@ -52,7 +53,7 @@ export function HeaderSearch({
     setHistory(getHistory());
     setOpen(false);
     if (onSubmitQuery) onSubmitQuery(trimmed);
-    else nav(`/search?q=${encodeURIComponent(trimmed)}`);
+    else nav(paths.search(trimmed));
   };
 
   return (
@@ -88,7 +89,7 @@ export function HeaderSearch({
                       at: Date.now(),
                     });
                     setOpen(false);
-                    nav(`/product/${s.id}`);
+                    nav(paths.product(s.id));
                   }}
                 >
                   <img src={s.photoUrl} alt="" />

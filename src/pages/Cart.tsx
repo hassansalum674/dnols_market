@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { EmptyCart } from "../components/EmptyState";
 import { formatTsh } from "../lib/format";
+import { paths } from "../lib/paths";
 import { useCart } from "../store/cart";
 
 export function CartPage() {
@@ -37,7 +38,7 @@ export function CartPage() {
         {formatTsh(totalTzs)}
       </p>
       <div className="sticky-pay">
-        <Link className="btn" to="/checkout">
+        <Link className="btn" to={paths.checkout}>
           Checkout
         </Link>
       </div>

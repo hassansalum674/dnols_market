@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { paths } from "../lib/paths";
 import { useCart } from "../store/cart";
 
 const buyer = [
-  { to: "/", label: "Home", end: true },
-  { to: "/cart", label: "Cart", end: false },
-  { to: "/orders", label: "Orders", end: false },
-  { to: "/you", label: "You", end: false },
+  { to: paths.home, label: "Home", end: true },
+  { to: paths.cart, label: "Cart", end: false },
+  { to: paths.orders, label: "Orders", end: false },
+  { to: paths.you, label: "You", end: false },
 ];
 
 const shop = [
@@ -83,7 +84,9 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
   return (
     <header className="header">
       <div className="header-row">
-        <img className="header-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
+        <Link to={paths.home} aria-label="Dnols home">
+          <img className="header-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
+        </Link>
         {children}
       </div>
     </header>

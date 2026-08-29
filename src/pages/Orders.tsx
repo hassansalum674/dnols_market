@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchOrder, handoverOrder } from "../api/client";
 import { formatTsh } from "../lib/format";
+import { paths } from "../lib/paths";
 import { getLocalOrders } from "../store/persist";
 import type { Order } from "../types";
 
@@ -30,7 +31,7 @@ export function OrdersPage() {
     return (
       <div className="center-state">
         <p>No orders yet. Pay nearby, then walk.</p>
-        <Link className="btn" to="/">
+        <Link className="btn" to={paths.home}>
           Start shopping
         </Link>
       </div>

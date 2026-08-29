@@ -57,7 +57,8 @@ No spinners anywhere. Grids shimmer in the exact product card layout (`SkeletonG
 
 ### Chrome
 
-- Buyer tabs: **Home Cart Orders You**. Search in the header. Hide tabs on checkout (and pickup). Shop: **Today Stock Orders Shop**.
+- Buyer tabs: **Home Cart Orders You** on `/app` (Home goes to `/app`, not `/`). Search in the header. Hide tabs on checkout (and pickup). Shop: **Today Stock Orders Shop**.
+- Public `/` is a quiet marketing landing (wordmark, one thesis, Open app). PWA chrome never mounts on `/`.
 - Product name **Dnols** on every screen (splash, tabs, 404, PWA).
 - One primary action per screen; **sticky Pay** is that action on product/checkout (`--sticky-pay`, `.sticky-pay` / `.sticky-buy`).
 

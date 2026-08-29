@@ -4,6 +4,7 @@ import { fetchListingDetail } from "../api/client";
 import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
+import { paths } from "../lib/paths";
 import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
 import type { PublicListingDetail } from "../types";
 import { ServerErrorPage } from "./errors";
@@ -61,7 +62,7 @@ export function ProductPage() {
           {saved ? "Saved" : "Save for later"}
         </button>
         <p className="hint">
-          <Link to="/">Back to nearby</Link>
+          <Link to={paths.home}>Back to nearby</Link>
         </p>
       </div>
       <div className="sticky-pay">

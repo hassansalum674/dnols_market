@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { paths } from "../lib/paths";
 import { getSavedIds } from "../store/persist";
 import type { PublicListing } from "../types";
 
@@ -45,7 +46,7 @@ export function YouPage() {
           }}
         />
         <p className="hint">
-          <Link to="/shop">Sell on Dnols</Link>
+          <Link to={paths.shop}>Sell on Dnols</Link>
         </p>
         <label className="muted" htmlFor="phone">
           Phone

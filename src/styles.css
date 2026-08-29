@@ -698,3 +698,43 @@ img {
   width: 22px;
   height: 22px;
 }
+
+/* Marketing landing (`/`) — no PWA chrome */
+.landing {
+  min-height: 100dvh;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 48px 24px calc(48px + env(safe-area-inset-bottom, 0px));
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.landing-mark {
+  width: min(72vw, 280px);
+  height: auto;
+}
+
+.landing-thesis {
+  margin: 28px 0 36px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.87);
+  font-weight: 400;
+}
+
+.landing .btn {
+  width: auto;
+  align-self: flex-start;
+  padding: 0 28px;
+}
+
+.landing-sell {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--muted);
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}

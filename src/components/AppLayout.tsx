@@ -3,16 +3,22 @@ import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { HeaderSearch } from "./HeaderSearch";
 import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
+import { APP } from "../lib/paths";
 
 const SPLASH_KEY = "dnols.splash.session";
+
+function inBuyerApp(pathname: string) {
+  return pathname === APP || pathname.startsWith(`${APP}/`);
+}
 
 export function AppLayout() {
   const loc = useLocation();
   const nav = useNavigation();
   const hideTabs =
-    loc.pathname.startsWith("/checkout") ||
-    loc.pathname.startsWith("/pickup");
+    loc.pathname.startsWith(`${APP}/checkout`) ||
+    loc.pathname.startsWith(`${APP}/pickup`);
   const shop = loc.pathname.startsWith("/shop");
+  const showSplash = inBuyerApp(loc.pathname);
   const [splash, setSplash] = useState(() => {
     try {
       return sessionStorage.getItem(SPLASH_KEY) !== "1";
@@ -44,7 +50,7 @@ export function AppLayout() {
 
   return (
     <>
-      {splash && <Splash onDone={done} />}
+      {splash && showSplash && <Splash onDone={done} />}
       <div className={`app-shell ${hideTabs ? "no-tabs" : ""}`}>
         {!shop && (
           <BuyerHeader>

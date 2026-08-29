@@ -59,7 +59,7 @@ export function AddToCartButton({
             ref={(el) => {
               if (!el) return;
               requestAnimationFrame(() => {
-                const cart = document.querySelector(".tabbar a[href='/cart']");
+                const cart = document.querySelector(".tabbar a[href='/app/cart']");
                 const cr = cart?.getBoundingClientRect();
                 el.style.transform = cr
                   ? `translate(${cr.left + cr.width / 2}px, ${cr.top}px)`

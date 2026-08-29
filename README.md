@@ -4,22 +4,32 @@ Shop-only marketplace PWA for **Kariakoo, Dar es Salaam**: search nearby stock, 
 
 Product name is **Dnols** on every screen (splash, tabs, 404, PWA).
 
+## Site vs app
+
+| URL | What |
+| --- | --- |
+| `/` | Marketing landing (wordmark, thesis, **Open app**). No tabs, search, or grid. |
+| `/app` | Buyer PWA (Home · Cart · Orders · You). PWA `start_url` so Add to Home Screen opens the shop. |
+| `/shop` | In-app stall stub. Dedicated seller app is a separate Vite app on **localhost:5174**. |
+
+Legacy shopper paths (`/cart`, `/product/:id`, `/search`, …) redirect under `/app`. `/?place=…` redirects to `/app?place=…`.
+
 ## Run
 
 ```bash
 # API (distance-only listings, STK stub, escrow)
 cd api && npm install && npm run dev    # http://localhost:8787
 
-# Buyer PWA
-cd .. && npm install && npm run icons && npm run dev   # http://localhost:5173
+# Buyer site + PWA
+cd .. && npm install && npm run icons && npm run dev   # http://localhost:5173  →  /  landing,  /app  shopper
 
 # Optional dedicated stall app
 cd shop && npm install && npm run dev   # http://localhost:5174
 ```
 
-Vite proxies `/api` → `:8787`. Market QR: `http://localhost:5173/?place=place_kariakoo_dsm`
+Vite proxies `/api` → `:8787`. Market QR: `http://localhost:5173/app?place=place_kariakoo_dsm`
 
-Add to Home Screen from the browser. Theme `#0D0D0D`.
+Add to Home Screen from the browser (opens `/app`). Theme `#0D0D0D`.
 
 ## Brand and type
 
@@ -45,7 +55,7 @@ Blue `#1A6FD4`, black `#0D0D0D`. **Playfair Display** 400/700 self-hosted in `pu
 
 ## Buyer chrome
 
-Tabs: **Home · Cart · Orders · You**. Search in the header. Checkout hides tabs. Shop mode: **Today · Stock · Orders · Shop**.
+Tabs: **Home · Cart · Orders · You** on `/app`. Search in the header. Checkout hides tabs. Shop mode: **Today · Stock · Orders · Shop**.
 
 ## API contract
 

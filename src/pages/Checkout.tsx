@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { EmptyCart } from "../components/EmptyState";
 import { formatTsh } from "../lib/format";
+import { paths } from "../lib/paths";
 import { useCart } from "../store/cart";
 import { markPaid, saveLocalOrder } from "../store/persist";
 
@@ -28,7 +29,7 @@ export function CheckoutPage() {
     saveLocalOrder(order);
     clear();
     setBusy(false);
-    nav("/orders");
+    nav(paths.orders);
   };
 
   return (
@@ -89,7 +90,7 @@ export function CheckoutPage() {
           </>
         )}
         <p className="hint">
-          <Link to="/cart">Back to bag</Link>
+          <Link to={paths.cart}>Back to bag</Link>
         </p>
       </div>
       <div className="sticky-buy">
