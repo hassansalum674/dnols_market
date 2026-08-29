@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "22.22.0"
           cache: npm
       - name: Install and build
         run: |
@@ -24,10 +24,14 @@ jobs:
           npm run build
       - name: Deploy Firebase Hosting
         env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          if [ -z "$FIREBASE_TOKEN" ]; then
-            echo "Add repo secret FIREBASE_TOKEN (from: firebase login:ci) then re-run."
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            printf '%s\n' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+            export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          elif [ -z "$FIREBASE_TOKEN" ]; then
+            echo "Add repo secret FIREBASE_SERVICE_ACCOUNT (JSON key from Firebase Console) or FIREBASE_TOKEN."
             exit 1
           fi
-          npx --yes firebase-tools@14 deploy --only hosting --project dnols-2a394 --non-interactive
+          npx --yes firebase-tools@15 deploy --only hosting --project dnols-2a394 --non-interactive

@@ -9,7 +9,7 @@
     "build": "tsc -b && node --require ./scripts/crypto-polyfill.cjs ./node_modules/vite/bin/vite.js build",
     "preview": "node --require ./scripts/crypto-polyfill.cjs ./node_modules/vite/bin/vite.js preview",
     "icons": "node scripts/generate-icons.mjs",
-    "deploy": "npm run icons && npm run build && npx --yes firebase-tools@14 deploy --only hosting --project dnols-2a394 --non-interactive"
+    "deploy": "bash scripts/deploy-hosting.sh"
   },
   "engines": {
     "node": ">=18"

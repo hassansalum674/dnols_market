@@ -4,12 +4,24 @@ Tanzania shop marketplace PWA (Vite + React + TypeScript). Quiet black UI, Karia
 
 Production: **https://dnols.com** (Firebase Hosting site `dnols-2a394`).
 
+Do **not** use `firebase login` on the laptop (OAuth token exchange is failing). Deploy with a **service account JSON** downloaded in the browser:
+
+1. Open [Firebase service accounts](https://console.firebase.google.com/project/dnols-2a394/settings/serviceaccounts/adminsdk) while signed in as the project owner.
+2. **Generate new private key** — saves a `.json` file (keep it off git).
+3. Then:
+
 ```bash
+cd ~/Desktop/Dnols
+git checkout cursor/deploy-dnols-com-a806
+nvm use 22.22.0
 npm ci
-npm run deploy    # needs `firebase login` or FIREBASE_TOKEN
+export GOOGLE_APPLICATION_CREDENTIALS="$HOME/Downloads/dnols-2a394-firebase-adminsdk.json"
+npm run deploy
 ```
 
-CI: GitHub Action `.github/workflows/deploy-hosting.yml` on `main` and workflow_dispatch. Add repo secret `FIREBASE_TOKEN` (`firebase login:ci`). Hosting only — does not deploy Firestore or Functions.
+Use the real filename from Downloads. Hosting only — does not deploy Firestore or Functions.
+
+CI: repo secret `FIREBASE_SERVICE_ACCOUNT` (paste the JSON) or `FIREBASE_TOKEN`.
 
 ## How to run
 
