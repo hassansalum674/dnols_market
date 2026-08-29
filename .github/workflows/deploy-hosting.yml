@@ -1,0 +1,33 @@
+name: Deploy hosting
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install and build
+        run: |
+          npm ci
+          npm run icons
+          npm run build
+      - name: Deploy Firebase Hosting
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "Add repo secret FIREBASE_TOKEN (from: firebase login:ci) then re-run."
+            exit 1
+          fi
+          npx --yes firebase-tools@14 deploy --only hosting --project dnols-2a394 --non-interactive

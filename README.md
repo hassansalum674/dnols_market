@@ -2,6 +2,15 @@
 
 Tanzania shop marketplace PWA (Vite + React + TypeScript). Quiet black UI, Kariakoo-first, walk-up pickup after pay.
 
+Production: **https://dnols.com** (Firebase Hosting site `dnols-2a394`).
+
+```bash
+npm ci
+npm run deploy    # needs `firebase login` or FIREBASE_TOKEN
+```
+
+CI: GitHub Action `.github/workflows/deploy-hosting.yml` on `main` and workflow_dispatch. Add repo secret `FIREBASE_TOKEN` (`firebase login:ci`). Hosting only — does not deploy Firestore or Functions.
+
 ## How to run
 
 ```bash
