@@ -4,7 +4,7 @@ import { fetchListingDetail } from "../api/client";
 import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
-import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
+import { getPaidTokens, toggleSaved, getSavedIds, pushRecent } from "../store/persist";
 import type { PublicListingDetail } from "../types";
 import { ServerErrorPage } from "./errors";
 import { NotFoundPage } from "./NotFound";
@@ -22,6 +22,7 @@ export function ProductPage() {
     void fetchListingDetail(id, token).then(({ detail: d, status }) => {
       setFail(status ?? null);
       setDetail(d);
+      if (d) pushRecent(d);
     });
   }, [id]);
 
@@ -30,7 +31,7 @@ export function ProductPage() {
   if (detail === null) return <NotFoundPage soldOut />;
 
   return (
-    <div>
+    <div className="product-page">
       <img className="hero" src={detail.photoUrl} alt={detail.title} />
       <div className="product-body">
         <h1 className="product-title">{detail.title}</h1>
@@ -60,12 +61,12 @@ export function ProductPage() {
         >
           {saved ? "Saved" : "Save for later"}
         </button>
+        <div className="sticky-pay">
+          <AddToCartButton listing={detail} label="Pay / Reserve" />
+        </div>
         <p className="hint">
           <Link to="/">Back to nearby</Link>
         </p>
-      </div>
-      <div className="sticky-pay">
-        <AddToCartButton listing={detail} label="Pay / Reserve" />
       </div>
     </div>
   );

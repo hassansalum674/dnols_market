@@ -5,6 +5,7 @@ dist-ssr
 .DS_Store
 .env
 .env.*.local
+.firebase
 api/node_modules
 api/dist
 shop/node_modules

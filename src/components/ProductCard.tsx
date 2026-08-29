@@ -1,6 +1,35 @@
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import { formatDistance, formatTsh } from "../lib/format";
 import type { PublicListing } from "../types";
-import { Link } from "react-router-dom";
+
+function Photo({
+  src,
+  alt,
+  title,
+}: {
+  src: string;
+  alt: string;
+  title: string;
+}) {
+  const [broken, setBroken] = useState(false);
+  if (broken || !src) {
+    return (
+      <div className="card-photo card-photo-fallback" aria-hidden>
+        {title}
+      </div>
+    );
+  }
+  return (
+    <img
+      className="card-photo"
+      src={src}
+      alt={alt}
+      loading="lazy"
+      onError={() => setBroken(true)}
+    />
+  );
+}
 
 export function ProductCard({
   listing,
@@ -11,12 +40,8 @@ export function ProductCard({
 }) {
   return (
     <Link to={`/product/${listing.id}`} className={`card ${className}`}>
-      <img
-        className="card-photo"
-        src={listing.photoUrl}
-        alt={listing.title}
-        loading="lazy"
-      />
+      <Photo src={listing.photoUrl} alt={listing.title} title={listing.title} />
+      <p className="card-title">{listing.title}</p>
       <div className="card-meta">
         <span className="price">{formatTsh(listing.priceTzs)}</span>
         <span className="dist">{formatDistance(listing.distanceMeters)}</span>

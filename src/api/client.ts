@@ -19,9 +19,10 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
     signal,
     headers: { Accept: "application/json" },
   });
-  if (!res.ok) {
+  const type = res.headers.get("content-type") || "";
+  if (!res.ok || !type.includes("json")) {
     const err = new Error(`http_${res.status}`) as Error & { status: number };
-    err.status = res.status;
+    err.status = res.ok ? 0 : res.status;
     throw err;
   }
   return res.json() as Promise<T>;
@@ -87,12 +88,11 @@ export async function fetchListingDetail(
     };
   } catch (e) {
     const status = (e as { status?: number }).status;
-    if (status === 404) return { detail: null, source: "api", status: 404 };
-    if (status === 500) return { detail: null, source: "api", status: 500 };
     const paid = Boolean(paidToken);
     const detail = mockDetail(id, paid);
-    if (!detail) return { detail: null, source: "mock", status: status ?? 404 };
-    return { detail, source: "mock", status };
+    if (detail) return { detail, source: "mock", status };
+    if (status === 500) return { detail: null, source: "api", status: 500 };
+    return { detail: null, source: "mock", status: status ?? 404 };
   }
 }
 

@@ -15,7 +15,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
       () => setI((n) => (n + 1) % LINES.length),
       2800,
     );
-    const done = window.setTimeout(onDone, 3200);
+    const done = window.setTimeout(onDone, 1400);
     return () => {
       window.clearInterval(rotate);
       window.clearTimeout(done);
@@ -35,7 +35,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
 export function RoutePulse() {
   return (
     <div className="route-pulse" aria-hidden>
-      <img src="/brand/logo4_submark.svg" alt="" />
+      <img className="pulse-mark" src="/brand/logo6_dark.svg" alt="" />
     </div>
   );
 }

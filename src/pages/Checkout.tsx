@@ -40,7 +40,7 @@ export function CheckoutPage() {
       <div className="checkout-page">
         {step === 0 && (
           <>
-            <h1 className="product-title">Pickup in Kariakoo</h1>
+            <h1 className="product-title">Pickup nearby</h1>
             <p className="muted">
               Walk-up after payment. We keep the stall address until you pay.
             </p>
