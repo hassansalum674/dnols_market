@@ -17,7 +17,7 @@ export function LandingPage() {
       <Link className="btn" to={paths.home}>
         Open app
       </Link>
-      <Link className="landing-sell" to={paths.shop} reloadDocument>
+      <Link className="landing-sell" to={paths.shop}>
         Sell on Dnols
       </Link>
     </div>
