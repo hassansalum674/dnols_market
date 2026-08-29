@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getTrending } from "../api";
 import { ShimmerList } from "../components/Splash";
-import { shopPaths } from "../paths";
 import type { PublicListing } from "../types";
 import { formatTzs } from "./errors";
 
@@ -21,7 +20,7 @@ export function NotFoundPage() {
         Page missing.
       </h1>
       <p className="muted">Still in the stall app. Trending SKUs from GET /trending.</p>
-      <Link className="btn" to={shopPaths.home} style={{ width: "auto", padding: "0 24px", margin: "16px 0" }}>
+      <Link className="btn" to="/" style={{ width: "auto", padding: "0 24px", margin: "16px 0" }}>
         Back to Today
       </Link>
       {row === null ? (

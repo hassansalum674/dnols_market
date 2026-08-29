@@ -6,7 +6,7 @@ Exact shop coordinates, street address, and shop name are **never** returned on 
 
 ## Run
 
-From the repo root (API + one Vite for buyer and seller, one origin):
+From the repo root (API + buyer Vite + seller Vite, one origin):
 
 ```bash
 cd api && npm install && cd ..

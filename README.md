@@ -4,31 +4,30 @@ Shop-only marketplace for **Kariakoo, Dar es Salaam**: search nearby stock, **pa
 
 Product name is **Dnols** on every screen (splash, tabs, 404, PWA).
 
-## One command (`npm run dev`)
+## One origin (`npm run dev`)
 
-One Vite, one origin. The API starts as a child of the same command.
+Buyer, seller, and API stay **separate packages**. One command from the repo root starts all three, and you only open **one** browser origin:
 
 ```bash
 npm install
 cd api && npm install && cd ..
+cd shop && npm install && cd ..
 npm run icons
 npm run dev
 ```
 
-Open **http://localhost:5173** only.
+Open **http://localhost:5173**
 
-| URL | What |
-| --- | --- |
-| `/` | Marketing landing (wordmark, thesis, **Open app**). No tabs, search, or grid. |
-| `/app` | Buyer PWA — **Home · Cart · Orders · You**. PWA `start_url`. |
-| `/shop` | Seller UI — **Today · Stock · Orders · Shop**. Same Vite, source in `shop/src`. |
-| `/api` | Fastify (health, listings, escrow), proxied to `:8787`. |
+| URL | What | Process |
+| --- | --- | --- |
+| `/` | Marketing landing (wordmark, thesis, **Open app**). No tabs, search, or grid. | Buyer Vite **:5173** |
+| `/app` | Buyer PWA — **Home · Cart · Orders · You**. PWA `start_url`. | Buyer Vite **:5173** |
+| `/shop` | Seller UI — **Today · Stock · Orders · Shop**. | Proxied → seller Vite **:5174** |
+| `/api` | Fastify (health, listings, escrow). | Proxied → API **:8787** |
 
-Do **not** run `cd shop && npm run dev`. There is no port **5174**.
+`scripts/dev.mjs` starts API + shop Vite + buyer Vite **in parallel**. If `:8787` or `:5174` is already listening, that process is reused (no crash). It does **not** run `npm install` on boot.
 
-`scripts/dev.mjs` starts API + **one** root Vite. If `:8787` is already listening, that process is reused (no crash). Seller pages are imported from `shop/` into the root app.
-
-`shop/` stays on disk (source, lockfile, `vite.config.ts`) so it is not a wipe. Root is not an npm workspace (`api/package-lock.json` stays).
+`shop/` is still its own Vite app (source, lockfile, `vite.config.ts` stay there). Root is not an npm workspace.
 
 Legacy shopper paths (`/cart`, `/product/:id`, `/search`, …) redirect under `/app`. `/?place=…` redirects to `/app?place=…`.
 
@@ -38,7 +37,7 @@ Health: `curl -s http://localhost:5173/api/health` (or `curl -s http://localhost
 
 Add to Home Screen from the browser (opens `/app`). Theme `#0D0D0D`.
 
-Split processes if you need them: `npm run dev:api`, `npm run dev:web`. Build (buyer + seller routes): `npm run build`. Preview: `npm run preview` (API still needed on 8787).
+Split processes if you need them: `npm run dev:api`, `npm run dev:shop`, `npm run dev:web`. Build the buyer site: `npm run build`. Preview: `npm run preview` (API still needed on 8787).
 
 ## Brand and type
 
@@ -66,7 +65,7 @@ Blue `#1A6FD4`, black `#0D0D0D`. **Playfair Display** 400/700 self-hosted in `pu
 
 Buyer tabs on `/app*`: **Home · Cart · Orders · You**. Search in the header. Checkout hides tabs.
 
-Seller tabs on `/shop*`: **Today · Stock · Orders · Shop**. Landing **Sell on Dnols** and You → **Sell on Dnols** both go to `/shop`. Seller **Switch to buying** goes to `/app`.
+Seller tabs on `/shop*`: **Today · Stock · Orders · Shop**. Landing **Sell on Dnols** and You → **Sell on Dnols** both go to `/shop`.
 
 ## API contract
 

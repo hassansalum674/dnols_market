@@ -11,7 +11,7 @@ You are a specialist that keeps `/` as a quiet marketing landing and the marketp
 | --- | --- |
 | `/` | Marketing site: wordmark, one thesis line, one CTA into the app. Not the shopper chrome. |
 | `/app` | Buyer PWA: tabs, header search, product grid, cart, checkout, orders, you. |
-| `/shop` | Seller UI (`shop/src` imported into the root Vite). Today · Stock · Orders · Shop. Do not fold seller into `/`. |
+| `/shop` | Seller UI (`shop/` Vite app, proxied from :5173). Today · Stock · Orders · Shop. Do not fold seller into `/`. |
 
 `/` must never grow a bottom tab bar, search header, product grid, banners, or autoplay. Unknown marketing URLs stay branded 404s (wordmark, one line, one CTA). PWA `start_url` is `/app` so Add to Home Screen opens the shopper app; browsers and QR posters still use `/` as the professional face and may deep-link `/app?place=place_kariakoo_dsm`.
 
