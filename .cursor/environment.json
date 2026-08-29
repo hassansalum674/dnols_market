@@ -5,12 +5,11 @@
     {
       "name": "stack",
       "command": "npm run dev",
-      "description": "API :8787 + shop Vite :5174 + buyer Vite :5173. Open only http://localhost:5173 — / landing, /app buyer, /shop seller, /api proxied. Market QR: http://localhost:5173/app?place=place_kariakoo_dsm"
+      "description": "API :8787 + one Vite :5173. Open http://localhost:5173 — / landing, /app buyer, /shop seller (shop/src), /api proxied. Market QR: http://localhost:5173/app?place=place_kariakoo_dsm"
     }
   ],
   "ports": [
     { "name": "api", "port": 8787 },
-    { "name": "web (open this)", "port": 5173 },
-    { "name": "shop vite (proxied)", "port": 5174 }
+    { "name": "web (open this)", "port": 5173 }
   ]
 }

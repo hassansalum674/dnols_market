@@ -65,7 +65,7 @@ export function StockPage() {
       </button>
       {rows.length === 0 && (
         <div className="center-state">
-          <p>No SKUs. Start the API on 8787, or add a local item.</p>
+          <p>No SKUs. Add a local item, or check that the API is up.</p>
         </div>
       )}
       {rows.map((r) => {
