@@ -1,19 +1,14 @@
-# Dnols Shop (seller PWA)
+# Dnols Shop (seller source)
 
-Phone app for stall owners. Source stays in this folder — it is a real Vite package on port **5174**. Do not mix its tab chrome with the buyer PWA.
-
-Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700. Marks: `logo6_dark` splash and headers (from [`public/brand/`](public/brand/) / [`../brand/`](../brand/)).
-
-## One origin (preferred)
-
-From the **repo root**:
+Phone app for stall owners. **Do not start this in dev.** From the repo root:
 
 ```bash
-cd shop && npm install && cd ..
 npm run dev
 ```
 
-Then open **http://localhost:5173/shop** (not :5174). Root Vite proxies `/shop` → this app, including HMR. `base` is `/shop/` so assets and client routes work under that prefix. Router `basename` is `/shop`.
+Then open **http://localhost:5173/shop**. Root Vite imports this folder (`shop/src`) into the same app. There is no second Vite and no port 5174.
+
+Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700. Marks: `logo6_dark` splash and headers (from [`../brand/`](../brand/) / root `public/brand/`).
 
 | URL on :5173 | Tab |
 | --- | --- |
@@ -22,20 +17,9 @@ Then open **http://localhost:5173/shop** (not :5174). Root Vite proxies `/shop` 
 | `/shop/orders` | Orders |
 | `/shop/profile` | Shop |
 
-## This package alone
+Router routes live under **`/shop`** (leftover `App.tsx` still sets `basename: "/shop"`). Seller API calls use **`/api`** on this origin.
 
-```bash
-cd shop
-npm install
-npm run dev
-# http://localhost:5174/shop/  (base is /shop/)
-```
-
-Vite here also proxies **`/api` → `http://127.0.0.1:8787`**. Override with `VITE_API_URL`.
-
-Build: `npm run build` then `npm run preview` (port **5174**). Icons: `npm run icons`.
-
-Add to home screen. Theme `#0D0D0D`, name **Dnols Shop**, `start_url` `/shop/`.
+This folder stays in git (package.json, src, lockfile, vite.config) so it is not a wipe. It is not a server you run.
 
 ## Tabs (shop chrome)
 

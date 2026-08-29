@@ -3,17 +3,18 @@ import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { getOrder } from "./api";
 import { TabBar } from "./components/TabBar";
 import { RoutePulse, Splash } from "./components/Splash";
-import { useShopData } from "./shopData";
+import { shopPaths } from "./paths";
+import { useShopData, ShopProvider } from "./shopData";
 import { markSplashSeen, splashSeen } from "./storage";
 
 const titles: Record<string, string> = {
-  "/": "Today",
-  "/stock": "Stock",
-  "/orders": "Orders",
-  "/profile": "Shop",
+  [shopPaths.home]: "Today",
+  [shopPaths.stock]: "Stock",
+  [shopPaths.orders]: "Orders",
+  [shopPaths.profile]: "Shop",
 };
 
-export function AppLayout() {
+function ShopChrome() {
   const loc = useLocation();
   const nav = useNavigation();
   const { saved } = useShopData();
@@ -43,7 +44,7 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
-      <div className="app-shell">
+      <div className="app-shell shop-shell">
         <header className="header">
           <div className="header-row">
             <img
@@ -69,3 +70,13 @@ export function AppLayout() {
     </>
   );
 }
+
+export function ShopLayout() {
+  return (
+    <ShopProvider>
+      <ShopChrome />
+    </ShopProvider>
+  );
+}
+
+export { ShopLayout as AppLayout };

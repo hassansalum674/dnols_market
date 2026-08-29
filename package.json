@@ -8,7 +8,6 @@
     "dev": "node scripts/dev.mjs",
     "dev:web": "node --require ./scripts/crypto-polyfill.cjs ./node_modules/vite/bin/vite.js",
     "dev:api": "npm run dev --prefix api",
-    "dev:shop": "npm run dev --prefix shop",
     "build": "tsc -b && node --require ./scripts/crypto-polyfill.cjs ./node_modules/vite/bin/vite.js build",
     "preview": "node --require ./scripts/crypto-polyfill.cjs ./node_modules/vite/bin/vite.js preview",
     "icons": "node scripts/generate-icons.mjs"
