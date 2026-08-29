@@ -39,6 +39,7 @@ Blue `#1A6FD4`, black `#0D0D0D`. **Playfair Display** 400/700 self-hosted in `pu
 - [`docs/field-research.md`](docs/field-research.md) — Kariakoo interview script + escrow vs deposit
 - [`docs/paper-mvp.md`](docs/paper-mvp.md) + [`docs/paper-catalog.csv`](docs/paper-catalog.csv) — 10-shop hide-pin sheet
 - [`docs/payments-legal.md`](docs/payments-legal.md) — Selcom/Pesapal, inspect-and-reject, 2h SLA
+- [`docs/wedge-strategy.md`](docs/wedge-strategy.md) — Alibaba/Amazon/Temu research and the escrowed walk-up wedge (plan, not build)
 
 ## Buyer chrome
 
