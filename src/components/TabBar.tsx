@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { paths } from "../lib/paths";
 import { useCart } from "../store/cart";
 
@@ -10,9 +10,16 @@ const buyer = [
   { to: paths.you, label: "You", end: false },
 ];
 
+const shop = [
+  { to: "/shop", label: "Today", end: true },
+  { to: "/shop/stock", label: "Stock", end: false },
+  { to: "/shop/orders", label: "Orders", end: false },
+  { to: "/shop/profile", label: "Shop", end: false },
+];
+
 function Ico({ name }: { name: string }) {
   const s = { width: 22, height: 22, fill: "none", stroke: "currentColor", strokeWidth: 1.4 };
-  if (name === "Home")
+  if (name === "Home" || name === "Today")
     return (
       <svg {...s} viewBox="0 0 24 24">
         <path d="M4 11.5 12 5l8 6.5V20H4z" />
@@ -31,6 +38,12 @@ function Ico({ name }: { name: string }) {
         <path d="M8 9h8M8 13h6" />
       </svg>
     );
+  if (name === "Stock")
+    return (
+      <svg {...s} viewBox="0 0 24 24">
+        <path d="M4 7h16v12H4zM4 7l2-3h12l2 3" />
+      </svg>
+    );
   return (
     <svg {...s} viewBox="0 0 24 24">
       <circle cx="12" cy="9" r="3" />
@@ -40,11 +53,14 @@ function Ico({ name }: { name: string }) {
 }
 
 export function TabBar() {
+  const { pathname } = useLocation();
+  const shopMode = pathname.startsWith("/shop");
+  const tabs = shopMode ? shop : buyer;
   const { count } = useCart();
 
   return (
     <nav className="tabbar" aria-label="Primary">
-      {buyer.map((t) => (
+      {tabs.map((t) => (
         <NavLink
           key={t.to}
           to={t.to}

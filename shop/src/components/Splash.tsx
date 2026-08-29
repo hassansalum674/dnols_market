@@ -7,7 +7,7 @@ const LINES = [
   "Your stall on the phone",
 ];
 
-export function ShopSplash({ onDone }: { onDone: () => void }) {
+export function Splash({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function ShopSplash({ onDone }: { onDone: () => void }) {
       () => setI((n) => (n + 1) % LINES.length),
       2800,
     );
-    const done = window.setTimeout(onDone, 1600);
+    const done = window.setTimeout(onDone, 3200);
     return () => {
       window.clearInterval(rotate);
       window.clearTimeout(done);
@@ -28,6 +28,14 @@ export function ShopSplash({ onDone }: { onDone: () => void }) {
       <p className="splash-line" key={i}>
         {LINES[i]}
       </p>
+    </div>
+  );
+}
+
+export function RoutePulse() {
+  return (
+    <div className="route-pulse" aria-hidden>
+      <img src="/brand/logo6_dark.svg" alt="" />
     </div>
   );
 }

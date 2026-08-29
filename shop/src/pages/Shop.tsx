@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
 import { getHealth, getOrder, getPlaces } from "../api";
 import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
 import { useShopData } from "../shopData";
 import type { Place, PayoutMock, ShopHours } from "../types";
-import { formatTzs } from "../format";
-import { paths } from "../../lib/paths";
+import { formatTzs } from "./errors";
+
+const BUYER = "http://localhost:5173";
 
 export function ShopPage() {
   const { saved } = useShopData();
@@ -80,7 +80,7 @@ export function ShopPage() {
             "Shop-only cluster. Exact stall pin stays off buyer listings until they pay."}
         </p>
         <p className="hint">
-          API {apiOk === null ? "…" : apiOk ? "up" : "down — run npm run dev from the repo root"}
+          API {apiOk === null ? "…" : apiOk ? "up on :8787" : "down — start api/"}
         </p>
       </section>
 
@@ -123,7 +123,7 @@ export function ShopPage() {
         </button>
         {payoutMsg && <p className="ok">{payoutMsg}</p>}
         {payouts.slice(0, 5).map((p) => (
-          <div key={p.id} className="shop-card">
+          <div key={p.id} className="card">
             <div className="card-meta">
               <span className="price">{formatTzs(p.amountTzs)}</span>
               <span className="muted">{new Date(p.at).toLocaleString()}</span>
@@ -133,10 +133,10 @@ export function ShopPage() {
         ))}
       </section>
 
-      <Link className="buy-link" to={paths.home}>
+      <a className="buy-link" href={BUYER}>
         Switch to buying
-      </Link>
-      <p className="hint">Opens the buyer PWA at {paths.home}.</p>
+      </a>
+      <p className="hint">Opens the buyer PWA at {BUYER}.</p>
     </div>
   );
 }

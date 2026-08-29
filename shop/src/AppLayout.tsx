@@ -1,21 +1,19 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { getOrder } from "./api";
-import { ShopTabBar } from "./TabBar";
-import { ShopSplash } from "./Splash";
-import { RoutePulse } from "../components/Splash";
-import { useShopData, ShopProvider } from "./shopData";
+import { TabBar } from "./components/TabBar";
+import { RoutePulse, Splash } from "./components/Splash";
+import { useShopData } from "./shopData";
 import { markSplashSeen, splashSeen } from "./storage";
-import { paths } from "../lib/paths";
 
 const titles: Record<string, string> = {
-  [paths.shop]: "Today",
-  [paths.shopStock]: "Stock",
-  [paths.shopOrders]: "Orders",
-  [paths.shopProfile]: "Shop",
+  "/": "Today",
+  "/stock": "Stock",
+  "/orders": "Orders",
+  "/shop": "Shop",
 };
 
-function ShopChrome() {
+export function AppLayout() {
   const loc = useLocation();
   const nav = useNavigation();
   const { saved } = useShopData();
@@ -44,8 +42,8 @@ function ShopChrome() {
 
   return (
     <>
-      {splash && <ShopSplash onDone={done} />}
-      <div className="app-shell shop-shell">
+      {splash && <Splash onDone={done} />}
+      <div className="app-shell">
         <header className="header">
           <div className="header-row">
             <img
@@ -66,16 +64,8 @@ function ShopChrome() {
             </Suspense>
           )}
         </main>
-        <ShopTabBar pickupCount={held} />
+        <TabBar pickupCount={held} />
       </div>
     </>
-  );
-}
-
-export function ShopLayout() {
-  return (
-    <ShopProvider>
-      <ShopChrome />
-    </ShopProvider>
   );
 }

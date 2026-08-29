@@ -6,7 +6,6 @@ import type {
   PublicListing,
 } from "./types";
 
-/** Same-origin proxy (`/api` → Fastify :8787). Optional absolute override. */
 const BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
 async function json<T>(path: string, init?: RequestInit): Promise<T> {
@@ -44,6 +43,10 @@ export async function getListings(): Promise<{
   items: PublicListing[];
 }> {
   return json("/listings?placeId=place_kariakoo_dsm");
+}
+
+export async function getListing(id: string): Promise<PublicListing> {
+  return json(`/listings/${encodeURIComponent(id)}`);
 }
 
 export async function payOrder(listingIds: string[]): Promise<PayResponse> {

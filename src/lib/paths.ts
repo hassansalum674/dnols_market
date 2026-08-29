@@ -14,7 +14,4 @@ export const paths = {
   orders: `${APP}/orders`,
   you: `${APP}/you`,
   shop: "/shop",
-  shopStock: "/shop/stock",
-  shopOrders: "/shop/orders",
-  shopProfile: "/shop/profile",
 } as const;

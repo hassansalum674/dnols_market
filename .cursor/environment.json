@@ -3,13 +3,24 @@
   "install": "bash .cursor/install.sh",
   "terminals": [
     {
-      "name": "stack",
+      "name": "api",
+      "command": "cd api && npm start",
+      "description": "Fastify escrow API on http://localhost:8787 (distance-only listings; reveals shop location only after mock payment)."
+    },
+    {
+      "name": "web",
       "command": "npm run dev",
-      "description": "API (:8787) + Vite (:5173) together. `/` landing, `/app` buyer, `/shop` seller. Proxies /api -> :8787. Market QR: http://localhost:5173/app?place=place_kariakoo_dsm"
+      "description": "Buyer site + PWA (Vite) on http://localhost:5173. `/` marketing landing; `/app` shopper. Proxies /api -> :8787. Market QR: http://localhost:5173/app?place=place_kariakoo_dsm"
+    },
+    {
+      "name": "shop",
+      "command": "cd shop && npm run dev",
+      "description": "Seller/stall PWA (Vite) on http://localhost:5174. Proxies /api -> :8787."
     }
   ],
   "ports": [
     { "name": "api", "port": 8787 },
-    { "name": "web (buyer + seller)", "port": 5173 }
+    { "name": "web (buyer site + PWA)", "port": 5173 },
+    { "name": "shop (seller PWA)", "port": 5174 }
   ]
 }

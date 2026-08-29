@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getTrending } from "../api";
-import { ShimmerList } from "../Splash";
+import { ShimmerList } from "../components/Splash";
 import type { PublicListing } from "../types";
-import { formatTzs } from "../format";
-import { paths } from "../../lib/paths";
+import { formatTzs } from "./errors";
 
-export function ShopNotFoundPage() {
+export function NotFoundPage() {
   const [row, setRow] = useState<PublicListing[] | null>(null);
 
   useEffect(() => {
@@ -21,11 +20,7 @@ export function ShopNotFoundPage() {
         Page missing.
       </h1>
       <p className="muted">Still in the stall app. Trending SKUs from GET /trending.</p>
-      <Link
-        className="btn"
-        to={paths.shop}
-        style={{ width: "auto", padding: "0 24px", margin: "16px 0" }}
-      >
+      <Link className="btn" to="/" style={{ width: "auto", padding: "0 24px", margin: "16px 0" }}>
         Back to Today
       </Link>
       {row === null ? (

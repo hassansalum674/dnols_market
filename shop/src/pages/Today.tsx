@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getOrder, handoverOrder } from "../api";
-import { ShimmerList } from "../Splash";
+import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
 import type { OrderView, SavedOrder } from "../types";
-import { formatTzs } from "../format";
-import { paths } from "../../lib/paths";
+import { formatTzs } from "./errors";
 
 type Row = { saved: SavedOrder; live: OrderView | null; err?: string };
 
@@ -52,11 +51,7 @@ export function TodayPage() {
     return (
       <div className="page">
         <div className="center-state">
-          <img
-            src="/brand/logo6_dark.svg"
-            alt=""
-            className="state-mark"
-          />
+          <img src="/brand/logo6_dark.svg" alt="" style={{ width: 168, height: "auto" }} />
           <p>You're offline. Pickups need the API.</p>
         </div>
       </div>
@@ -75,13 +70,9 @@ export function TodayPage() {
     return (
       <div className="page">
         <div className="center-state">
-          <img
-            src="/brand/logo6_dark.svg"
-            alt=""
-            className="state-mark"
-          />
+          <img src="/brand/logo6_dark.svg" alt="" style={{ width: 168, height: "auto" }} />
           <p>No pickups waiting. Demo an incoming order from Orders.</p>
-          <Link className="btn" to={paths.shopOrders}>
+          <Link className="btn" to="/orders">
             Open Orders
           </Link>
         </div>
@@ -139,7 +130,7 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
   }
 
   return (
-    <article className="shop-card">
+    <article className="card">
       <span className="pill live">pickup · {live.escrow}</span>
       <h2>{live.orderId}</h2>
       <div className="card-meta">

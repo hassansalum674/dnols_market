@@ -1,23 +1,18 @@
 # Dnols API (Kariakoo stub)
 
-Independent Node + TypeScript + Fastify backend for the shop-only marketplace. It is an npm workspace of the repo root: `npm install` and `npm run dev` from the root start this API together with the Vite app (buyer `/app` + seller `/shop`). Vite proxies `/api` here.
+Independent Node + TypeScript + Fastify backend for the shop-only marketplace. The Vite PWA at the repo root is a separate package — this folder has its own `package.json`. Do not point the PWA `npm start` here.
 
 Exact shop coordinates, street address, and shop name are **never** returned on listing endpoints until mock payment succeeds.
 
 ## Run
 
-From the repo root (API + Vite):
-
 ```bash
-npm install && npm run icons && npm run dev
+cd api
+npm install
+npm start
 ```
 
-API only:
-
-```bash
-npm run dev:api
-# or: cd api && npm run dev
-```
+Dev reload: `npm run dev`
 
 Listens on **http://localhost:8787** (override with `PORT`). JSON only. CORS defaults to `*` so Vite on `http://localhost:5173` works.
 
