@@ -1,13 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="dnols">
-  <!--
-    Optical d: bowl left + stem right, both centered on 256,256.
-    Rasterized by scripts/generate-icons.mjs for favicon + PWA.
-  -->
-  <rect width="512" height="512" rx="96" fill="#1A6FD4"/>
-  <!-- Bowl (outer) -->
-  <circle cx="256" cy="256" r="116" fill="#FFFFFF"/>
-  <!-- Counter (hole) -->
-  <circle cx="256" cy="256" r="56" fill="#1A6FD4"/>
-  <!-- Stem: sits on the right of the bowl, same right edge as the outer circle -->
-  <rect x="312" y="134" width="60" height="244" rx="8" fill="#FFFFFF"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="7" fill="#1A6FD4"/>
+  <text x="16" y="25" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="24" font-weight="900" fill="#FFFFFF">d</text>
 </svg>

@@ -28,7 +28,7 @@ CI: repo secret `FIREBASE_SERVICE_ACCOUNT` (paste the JSON) or `FIREBASE_TOKEN`.
 ```bash
 cd /home/gaula/Desktop/Dnols
 npm install
-npm run icons      # PNGs from brand/logo5_favicon.svg
+npm run icons      # PWA PNGs from brand/logo5_favicon.png
 npm run dev        # http://localhost:5173
 ```
 
@@ -54,7 +54,7 @@ Original marks live in [`brand/`](brand/) (do not redraw logo text):
 |---|---|
 | `logo6_dark.svg` | Cold-start splash |
 | `logo4_submark.svg` | Route pulse loader, header mark |
-| `logo5_favicon.svg` | Favicon + PWA icons (generated PNGs) |
+| `logo5_favicon.png` / `.svg` | Favicon + PWA icons (PNG is the artwork) |
 | `logo1_primary.svg` / `logo3_wordmark.svg` | Extra brand files |
 
 Tokens: blue `#1A6FD4`, black `#0D0D0D`, white `#FFFFFF`. Type: self-hosted **Playfair Display** (latin 400 + 700, `font-display: swap`, Georgia fallback). Prices use lining + tabular numerals.
