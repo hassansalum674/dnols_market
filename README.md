@@ -9,10 +9,7 @@ Product name is **Dnols** on every screen (splash, tabs, 404, PWA).
 One Vite, one origin. The API starts as a child of the same command.
 
 ```bash
-npm install
-cd api && npm install && cd ..
-npm run icons
-npm run dev
+npm install && npm run icons && npm run dev
 ```
 
 Open **http://localhost:5173** only.
@@ -28,7 +25,7 @@ Do **not** run `cd shop && npm run dev`. There is no port **5174**.
 
 `scripts/dev.mjs` starts API + **one** root Vite. If `:8787` is already listening, that process is reused (no crash). Seller pages are imported from `shop/` into the root app.
 
-`shop/` stays on disk (source, lockfile, `vite.config.ts`) so it is not a wipe. Root is not an npm workspace (`api/package-lock.json` stays).
+`shop/` stays on disk as seller source (`shop/src` is imported by the root Vite app). Root `npm install` also installs the API (npm workspace). Do not start a second Vite in `shop/`.
 
 Legacy shopper paths (`/cart`, `/product/:id`, `/search`, …) redirect under `/app`. `/?place=…` redirects to `/app?place=…`.
 

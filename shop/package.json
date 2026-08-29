@@ -3,9 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Dnols seller PWA — stall phone app for Kariakoo pickups",
+  "description": "Dnols seller UI source \u2014 served at /shop by the root Vite app",
   "scripts": {
-    "dev": "vite",
+    "dev": "node -e \"console.error('Seller UI is http://localhost:5173/shop \u2014 run npm run dev from the repo root.'); process.exit(1)\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "icons": "node scripts/generate-icons.mjs"
