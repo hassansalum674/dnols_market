@@ -3,8 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Dnols \u2014 Tanzania shop marketplace PWA",
+  "description": "Dnols — Tanzania shop marketplace PWA",
   "scripts": {
+    "postinstall": "npm install --prefix api",
     "dev": "node scripts/dev.mjs",
     "dev:web": "node --require ./scripts/crypto-polyfill.cjs ./node_modules/vite/bin/vite.js",
     "dev:api": "npm run dev --prefix api",
@@ -30,8 +31,5 @@
     "typescript": "^5.8.3",
     "vite": "^5.4.19",
     "vite-plugin-pwa": "^0.21.2"
-  },
-  "workspaces": [
-    "api"
-  ]
+  }
 }

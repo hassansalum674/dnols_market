@@ -1,6 +1,6 @@
 # Dnols API (Kariakoo stub)
 
-Independent Node + TypeScript + Fastify backend. It is an npm workspace of the repo root: `npm install` and `npm run dev` from the root start this API together with Vite.
+Independent Node + TypeScript + Fastify backend. This folder has its own `package.json` and `package-lock.json` — it is **not** an npm workspace of the repo root. Root `npm install` runs `postinstall` to install this package.
 
 Exact shop coordinates, street address, and shop name are **never** returned on listing endpoints until mock payment succeeds.
 

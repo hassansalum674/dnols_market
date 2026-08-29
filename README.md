@@ -25,7 +25,7 @@ Do **not** run `cd shop && npm run dev`. There is no port **5174**.
 
 `scripts/dev.mjs` starts API + **one** root Vite. If `:8787` is already listening, that process is reused (no crash). Seller pages are imported from `shop/` into the root app.
 
-`shop/` stays on disk as seller source (`shop/src` is imported by the root Vite app). Root `npm install` also installs the API (npm workspace). Do not start a second Vite in `shop/`.
+`shop/` stays on disk as seller source (`shop/src` is imported by the root Vite app). Root `npm install` also installs the API via `postinstall` (`cd api && npm install`) — **not** an npm workspace, so `api/package-lock.json` stays. Do not start a second Vite in `shop/`.
 
 Legacy shopper paths (`/cart`, `/product/:id`, `/search`, …) redirect under `/app`. `/?place=…` redirects to `/app?place=…`.
 
