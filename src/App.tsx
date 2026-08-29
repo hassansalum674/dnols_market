@@ -18,6 +18,9 @@ const HomePage = lazy(() =>
 const SearchPage = lazy(() =>
   import("./pages/Search").then((m) => ({ default: m.SearchPage })),
 );
+const CategoriesPage = lazy(() =>
+  import("./pages/Categories").then((m) => ({ default: m.CategoriesPage })),
+);
 const ProductPage = lazy(() =>
   import("./pages/Product").then((m) => ({ default: m.ProductPage })),
 );
@@ -74,6 +77,7 @@ const router = createBrowserRouter([
         children: [
           { path: "app", element: <HomePage /> },
           { path: "app/search", element: <SearchPage /> },
+          { path: "app/categories", element: <CategoriesPage /> },
           { path: "app/product/:id", element: <ProductPage /> },
           { path: "app/cart", element: <CartPage /> },
           { path: "app/checkout", element: <CheckoutPage /> },
@@ -93,6 +97,7 @@ const router = createBrowserRouter([
         ],
       },
       { path: "search", element: <RedirectToApp /> },
+      { path: "categories", element: <RedirectToApp /> },
       { path: "product/:id", element: <RedirectToApp /> },
       { path: "cart", element: <RedirectToApp /> },
       { path: "checkout", element: <RedirectToApp /> },

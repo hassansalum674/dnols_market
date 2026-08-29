@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchListings } from "../api/client";
+import { fetchListings, fetchTrending } from "../api/client";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { CategoryCards, Shelf, SectionHead } from "../components/Shelf";
 import { StatusScreen } from "../components/EmptyState";
+import { getRecentProducts } from "../store/persist";
 import { PLACE_LABEL } from "../lib/format";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
 
@@ -49,8 +51,22 @@ export function HomePage() {
   const [listings, setListings] = useState<PublicListing[] | null>(null);
   const [source, setSource] = useState<"api" | "mock">("mock");
   const [err, setErr] = useState<"offline" | "500" | null>(null);
+  const [trending, setTrending] = useState<PublicListing[]>([]);
+  const [recent, setRecent] = useState<PublicListing[]>([]);
+
+  const isIdle =
+    !filters.category &&
+    !filters.maxDistance &&
+    !filters.inStock &&
+    (filters.minPrice === "" || filters.minPrice == null) &&
+    (filters.maxPrice === "" || filters.maxPrice == null);
 
   useEffect(() => setDraft(filters), [filters]);
+
+  useEffect(() => {
+    void fetchTrending().then(setTrending);
+    setRecent(getRecentProducts<PublicListing>());
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -117,12 +133,17 @@ export function HomePage() {
     );
   }
 
+  const nearestInStock = (listings ?? []).filter((l) => l.inStock).slice(0, 10);
+
   return (
     <div className="page">
       <p className="place-line">
         Near {PLACE_LABEL()}
         {sp.get("place") ? ` · ${sp.get("place")}` : ""}
       </p>
+      {isIdle && (
+        <p className="hint">Distance now · exact stall after you pay.</p>
+      )}
       <div className="filters-bar">
         <div className="chips">
           {(["fashion", "electronics"] as const).map((c) => (
@@ -184,6 +205,21 @@ export function HomePage() {
       )}
       {source === "mock" && listings && (
         <p className="hint">Showing nearby mock listings — API at :8787 is optional.</p>
+      )}
+      {isIdle && listings && listings.length > 0 && (
+        <>
+          <CategoryCards listings={listings} />
+          <Shelf
+            title="Closest to you"
+            listings={nearestInStock}
+            hint="In stock, walkable now"
+          />
+          <Shelf title="Popular in Kariakoo" listings={trending} />
+          {recent.length > 0 && (
+            <Shelf title="Recently viewed" listings={recent} />
+          )}
+          <SectionHead title="All nearby" />
+        </>
       )}
       {listings === null ? (
         <SkeletonGrid />
