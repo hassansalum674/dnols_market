@@ -15,7 +15,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
       () => setI((n) => (n + 1) % LINES.length),
       2800,
     );
-    const done = window.setTimeout(onDone, 1600);
+    const done = window.setTimeout(onDone, 3200);
     return () => {
       window.clearInterval(rotate);
       window.clearTimeout(done);
