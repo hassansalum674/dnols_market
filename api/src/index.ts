@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { registerRoutes } from "./routes.js";
+import { registerPhotoRoutes } from "./photos/routes.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const HOST = process.env.HOST ?? "0.0.0.0";
@@ -15,6 +16,7 @@ await app.register(cors, {
 });
 
 registerRoutes(app, { buyerLat, buyerLng });
+await registerPhotoRoutes(app);
 
 app.get("/openapi.json", async (_req, reply) => {
   return reply.send({
@@ -36,6 +38,8 @@ app.get("/openapi.json", async (_req, reply) => {
       "GET /orders/:id",
       "POST /orders/:id/handover",
       "GET /trending",
+      "POST /photos/process",
+      "GET /cdn/:id",
     ],
   });
 });

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CharCount, RadioGroup, Toggle } from "../components/OnboardingLayout";
-import { PhotoUpload } from "../components/PhotoUpload";
+import { ProductPhotoUpload } from "../components/ProductPhotoUpload";
 import { SellHeader } from "../components/SellHeader";
+import { isCdnPhoto } from "../lib/photoPipeline";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
 import { loadProducts, loadProfile, upsertProduct } from "../storage";
 import type { ProductCondition, SellerProduct, ShopCategory } from "../types";
@@ -58,6 +59,7 @@ export function ProductFormPage() {
   );
   const [customVariant, setCustomVariant] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [addingPhoto, setAddingPhoto] = useState(false);
 
   useEffect(() => {
     if (!profile || profile.status !== "active") {
@@ -69,13 +71,19 @@ export function ProductFormPage() {
     setProduct((prev) => ({ ...prev, ...partial }));
   }
 
-  function addPhoto(dataUrl: string) {
+  function addPhoto(cdnUrl: string) {
     if (product.photos.length >= 5) return;
-    patch({ photos: [...product.photos, dataUrl] });
+    const next = [...product.photos, cdnUrl];
+    patch({
+      photos: next,
+      coverPhoto: next[0],
+    });
+    setAddingPhoto(false);
   }
 
   function removePhoto(index: number) {
-    patch({ photos: product.photos.filter((_, i) => i !== index) });
+    const next = product.photos.filter((_, i) => i !== index);
+    patch({ photos: next, coverPhoto: next[0] });
   }
 
   function toggleVariant(v: string) {
@@ -99,7 +107,11 @@ export function ProductFormPage() {
       return;
     }
     if (product.photos.length < 1) {
-      setErr("At least one photo is required.");
+      setErr("At least one cover photo is required.");
+      return;
+    }
+    if (!product.photos.every(isCdnPhoto)) {
+      setErr("All photos must be processed via CDN before saving.");
       return;
     }
     const price = parseTzsPrice(priceInput);
@@ -180,9 +192,14 @@ export function ProductFormPage() {
           <label className="lbl">
             Photos ({product.photos.length}/5) * — first is cover
           </label>
+          <p className="hint">
+            Cover: white background, square 1:1, min 800×800. Photos 2–5: detail
+            shots, no white bg required. All served via CDN — raw uploads never
+            shown to buyers.
+          </p>
           <div className="photo-grid">
             {product.photos.map((url, i) => (
-              <div key={i} className="photo-grid-item">
+              <div key={url} className="photo-grid-item">
                 <img src={url} alt="" />
                 {i === 0 && <span className="cover-badge">Cover</span>}
                 <button
@@ -195,14 +212,24 @@ export function ProductFormPage() {
                 </button>
               </div>
             ))}
-            {product.photos.length < 5 && (
-              <PhotoUpload
-                label=""
-                value={null}
-                onChange={addPhoto}
-              />
-            )}
           </div>
+          {product.photos.length < 5 && !addingPhoto && (
+            <button
+              type="button"
+              className="btn ghost"
+              style={{ marginTop: 8 }}
+              onClick={() => setAddingPhoto(true)}
+            >
+              + Add photo
+            </button>
+          )}
+          {addingPhoto && product.photos.length < 5 && (
+            <ProductPhotoUpload
+              mode={product.photos.length === 0 ? "cover" : "detail"}
+              onConfirm={addPhoto}
+              onCancel={() => setAddingPhoto(false)}
+            />
+          )}
 
           <label className="lbl">Price in TZS *</label>
           <input

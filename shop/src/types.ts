@@ -222,7 +222,9 @@ export type SellerProduct = {
   name: string;
   category: ShopCategory;
   condition: ProductCondition;
+  /** CDN URLs only — never raw camera uploads */
   photos: string[];
+  coverPhoto?: string;
   priceTzs: number;
   negotiable: boolean;
   stock: number;

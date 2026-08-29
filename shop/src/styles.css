@@ -1108,3 +1108,82 @@ select.field {
   padding: 8px 0;
   font-size: 16px;
 }
+
+/* ── Photo processing pipeline ── */
+
+.photo-pipeline {
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid var(--faint);
+}
+
+.photo-pipeline.processing {
+  text-align: center;
+  padding: 32px 16px;
+}
+
+.pipeline-spinner {
+  width: 36px;
+  height: 36px;
+  margin: 0 auto 12px;
+  border: 2px solid var(--faint);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.photo-pipeline.preview h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.before-after {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.before-after figure {
+  margin: 0;
+}
+
+.before-after img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #161616;
+}
+
+.before-after figcaption {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  text-align: center;
+}
+
+.notice-inline {
+  background: rgba(26, 111, 212, 0.1);
+  padding: 8px 10px;
+  margin: 8px 0;
+}
+
+.photo-add-btn {
+  min-height: 44px;
+}
+
+.photo-cancel {
+  display: block;
+  margin: 8px auto 0;
+  font-size: 13px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+}

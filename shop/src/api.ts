@@ -80,3 +80,34 @@ export async function rejectOrder(id: string): Promise<HandoverResponse> {
 export async function getTrending(): Promise<{ items: PublicListing[] }> {
   return json("/trending");
 }
+
+export type ProcessedPhotoResponse = {
+  cdnUrl: string;
+  cdnId: string;
+  width: number;
+  height: number;
+  mode: "cover" | "detail";
+  provider: string;
+  sizeKb: number;
+};
+
+export async function processPhoto(
+  file: File,
+  mode: "cover" | "detail",
+): Promise<ProcessedPhotoResponse> {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("mode", mode);
+  const res = await fetch(`${BASE}/photos/process`, {
+    method: "POST",
+    body: form,
+  });
+  const body = (await res.json().catch(() => ({}))) as ProcessedPhotoResponse & {
+    error?: string;
+    message?: string;
+  };
+  if (!res.ok) {
+    throw new Error(body.message || body.error || res.statusText);
+  }
+  return body;
+}

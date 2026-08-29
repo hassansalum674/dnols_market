@@ -59,6 +59,14 @@ export default defineConfig({
             },
           },
           {
+            urlPattern: ({ url }) => url.pathname.startsWith("/api/cdn"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "dnols-shop-cdn",
+              expiration: { maxEntries: 200, maxAgeSeconds: 60 * 60 * 24 * 30 },
+            },
+          },
+          {
             urlPattern: /^https:\/\/picsum\.photos\/.*/i,
             handler: "CacheFirst",
             options: {

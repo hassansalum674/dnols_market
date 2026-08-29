@@ -94,8 +94,12 @@ export function DashboardPage() {
               to={`/products/${p.id}/edit`}
               className="product-row"
             >
-              {p.photos[0] ? (
-                <img className="product-thumb" src={p.photos[0]} alt="" />
+              {p.coverPhoto ?? p.photos[0] ? (
+                <img
+                  className="product-thumb"
+                  src={p.coverPhoto ?? p.photos[0]}
+                  alt=""
+                />
               ) : (
                 <div className="product-thumb skel" />
               )}
