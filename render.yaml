@@ -1,7 +1,8 @@
-# Dnols marketplace API — Render deployment
+# Dnols — Render blueprint (API + buyer + seller static sites)
 # https://render.com/docs/blueprint-spec
 
 services:
+  # ── API (backend) ──
   - type: web
     name: dnols-api
     runtime: node
@@ -18,6 +19,36 @@ services:
         value: "*"
       - key: FAPIAPI_API_KEY
         sync: false
-      # Optional: Resend, Groq, etc. — add in Render dashboard as needed
-      # - key: RESEND_API_KEY
-      #   sync: false
+
+  # ── Buyer PWA (repo root) ──
+  - type: web
+    name: dnols-buyer
+    runtime: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_URL
+        value: https://dnols-83jj.onrender.com
+
+  # ── Seller PWA (shop/) ──
+  - type: web
+    name: dnols-shop
+    runtime: static
+    rootDir: shop
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: VITE_API_URL
+        value: https://dnols-83jj.onrender.com
