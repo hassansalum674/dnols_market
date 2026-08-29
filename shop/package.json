@@ -11,7 +11,7 @@
     "icons": "node scripts/generate-icons.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": "22.x"
   },
   "dependencies": {
     "react": "^19.2.8",
