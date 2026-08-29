@@ -7,8 +7,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:prod": "VITE_API_URL=https://dnols-83jj.onrender.com npm run build",
     "preview": "vite preview",
-    "icons": "node scripts/generate-icons.mjs"
+    "icons": "node scripts/generate-icons.mjs",
+    "firebase:login": "firebase login",
+    "firebase:use": "firebase use --add",
+    "firebase:serve": "firebase emulators:start --only hosting:buyer",
+    "firebase:deploy:buyer": "npm run build:prod && firebase deploy --only hosting:buyer --project dnols-2a394",
+    "firebase:deploy:shop": "cd shop && VITE_API_URL=https://dnols-83jj.onrender.com npm run build && cd .. && firebase deploy --only hosting:shop --project dnols-2a394",
+    "firebase:deploy": "npm run firebase:deploy:buyer && npm run firebase:deploy:shop"
   },
   "engines": {
     "node": "22.x"
