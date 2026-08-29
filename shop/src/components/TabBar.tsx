@@ -1,11 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { shopPaths } from "../paths";
 
 const tabs = [
-  { to: shopPaths.home, label: "Today", end: true, name: "Today" },
-  { to: shopPaths.stock, label: "Stock", end: false, name: "Stock" },
-  { to: shopPaths.orders, label: "Orders", end: false, name: "Orders" },
-  { to: shopPaths.profile, label: "Shop", end: false, name: "Shop" },
+  { to: "/", label: "Today", end: true, name: "Today" },
+  { to: "/stock", label: "Stock", end: false, name: "Stock" },
+  { to: "/orders", label: "Orders", end: false, name: "Orders" },
+  { to: "/profile", label: "Shop", end: false, name: "Shop" },
 ] as const;
 
 function Ico({ name }: { name: string }) {

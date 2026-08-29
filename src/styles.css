@@ -880,27 +880,6 @@ label.lbl {
   font-size: 14px;
 }
 
-/* Seller chrome only — do not let shop card rules reshape buyer product cards. */
-.shop-shell .card {
-  display: block;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--faint);
-}
-
-.shop-shell .card h2 {
-  margin: 0 0 6px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.shop-shell .card-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 14px;
-  align-items: unset;
-}
-
 .err {
   color: #e8a0a0;
   font-size: 13px;

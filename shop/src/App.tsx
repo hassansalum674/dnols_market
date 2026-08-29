@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { ServerErrorPage } from "./pages/errors";
+import { ShopProvider } from "./shopData";
 
 const TodayPage = lazy(() =>
   import("./pages/Today").then((m) => ({ default: m.TodayPage })),
@@ -19,27 +20,28 @@ const NotFoundPage = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFoundPage })),
 );
 
-/** Seller routes for the root Vite (`path: "shop"` under `/`). */
-export const shopRoute = {
-  path: "shop",
-  element: <AppLayout />,
-  errorElement: <ServerErrorPage />,
-  children: [
-    { index: true, element: <TodayPage /> },
-    { path: "stock", element: <StockPage /> },
-    { path: "orders", element: <OrdersPage /> },
-    { path: "profile", element: <ShopPage /> },
-    { path: "*", element: <NotFoundPage /> },
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <AppLayout />,
+      errorElement: <ServerErrorPage />,
+      children: [
+        { index: true, element: <TodayPage /> },
+        { path: "stock", element: <StockPage /> },
+        { path: "orders", element: <OrdersPage /> },
+        { path: "profile", element: <ShopPage /> },
+        { path: "*", element: <NotFoundPage /> },
+      ],
+    },
   ],
-};
+  { basename: "/shop" },
+);
 
-/** Leftover package entry. Do not start this Vite — root `npm run dev` serves `/shop`. */
 export default function App() {
   return (
-    <RouterProvider
-      router={createBrowserRouter([{ ...shopRoute, path: "/" }], {
-        basename: "/shop",
-      })}
-    />
+    <ShopProvider>
+      <RouterProvider router={router} />
+    </ShopProvider>
   );
 }

@@ -59,7 +59,7 @@ export function OrdersPage() {
     } catch (e) {
       setDemoErr(
         e instanceof Error
-          ? `${e.message}. Is npm run dev running (API + site)?`
+          ? `${e.message}. Is the API on :8787?`
           : "pay failed",
       );
     } finally {
@@ -143,12 +143,12 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
   }
 
   return (
-    <article className="shop-card">
+    <article className="card">
       <span className={live?.escrow === "paid_held" ? "pill live" : "pill"}>
         {live?.escrow ?? row.err ?? "unknown"}
       </span>
       <h2>{row.saved.orderId}</h2>
-      <div className="shop-card-meta">
+      <div className="card-meta">
         <span className="price">{formatTzs(row.saved.totalTzs)}</span>
         <span className="muted">{row.saved.listingIds.join(", ")}</span>
       </div>

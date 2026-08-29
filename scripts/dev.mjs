@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /**
- * One command, one browser origin, one Vite.
+ * One command, one browser origin.
  *
  *   npm run dev   →  http://localhost:5173
  *
- * Two processes:
+ * Three processes, started in parallel:
  *   Fastify API     :8787   (reused if already listening)
- *   Root Vite       :5173   — buyer + seller + landing
+ *   Seller Vite     :5174   (reused if already listening)
+ *   Buyer Vite      :5173   — the only origin you open
  *
- * Vite proxies /api → :8787.
- * Seller UI is imported from shop/src (not a second Vite on :5174).
+ * Buyer Vite proxies:
+ *   /api  →  :8787
+ *   /shop →  :5174  (assets + HMR websocket)
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -19,6 +21,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const API_PORT = Number(process.env.PORT ?? 8787);
+const SHOP_PORT = 5174;
 const polyfill = path.join(root, "scripts/crypto-polyfill.cjs");
 const kids = [];
 let shuttingDown = false;
@@ -85,6 +88,22 @@ if (!apiUp) {
   console.log(`[api] already listening on :${API_PORT} — reusing`);
 }
 
+const shopUp = await portOpen(SHOP_PORT);
+if (!shopUp) {
+  const shopDir = path.join(root, "shop");
+  if (!hasVite(shopDir)) {
+    console.error("[shop] missing node_modules — run: cd shop && npm install");
+    process.exit(1);
+  }
+  run("shop", "node", [
+    "--require",
+    polyfill,
+    path.join(shopDir, "node_modules/vite/bin/vite.js"),
+  ], shopDir);
+} else {
+  console.log(`[shop] already listening on :${SHOP_PORT} — reusing`);
+}
+
 run("web", "node", [
   "--require",
   polyfill,
@@ -95,6 +114,6 @@ console.log("");
 console.log("  Dnols  http://localhost:5173");
 console.log("    /       marketing");
 console.log("    /app    buyer PWA");
-console.log("    /shop   seller (shop/src, same Vite)");
+console.log("    /shop   seller (proxied)");
 console.log("    /api    Fastify (proxied)");
 console.log("");

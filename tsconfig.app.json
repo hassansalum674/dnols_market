@@ -15,12 +15,7 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"],
-      "@shop/*": ["./shop/src/*"]
-    }
+    "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "shop/src"]
+  "include": ["src"]
 }

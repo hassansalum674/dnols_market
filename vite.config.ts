@@ -1,16 +1,35 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
+
+/** Shop Vite only serves `/shop/` (with slash). Send `/shop` there. */
+function redirectShopRoot(): Plugin {
+  return {
+    name: "redirect-shop-root",
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const url = req.url || "";
+        if (url === "/shop" || url.startsWith("/shop?")) {
+          res.statusCode = 302;
+          res.setHeader("Location", `/shop/${url.slice("/shop".length)}`);
+          res.end();
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
 
 export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
-      "@shop": path.resolve(__dirname, "shop/src"),
     },
   },
   plugins: [
+    redirectShopRoot(),
     react(),
     VitePWA({
       registerType: "autoUpdate",
@@ -85,6 +104,11 @@ export default defineConfig({
         target: "http://127.0.0.1:8787",
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api/, ""),
+      },
+      "/shop": {
+        target: "http://127.0.0.1:5174",
+        changeOrigin: true,
+        ws: true,
       },
     },
   },
