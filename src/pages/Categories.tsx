@@ -25,7 +25,7 @@ export function CategoriesPage() {
 
   return (
     <div className="page">
-      <h1 className="section-title">Shop Kariakoo</h1>
+      <h1 className="section-title">Categories</h1>
       <p className="section-hint">Fashion and electronics in one market.</p>
       {CATEGORIES.map((cat) => {
         const groups = groupCollections(cat, listings);

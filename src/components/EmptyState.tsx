@@ -7,7 +7,7 @@ export function EmptyCart() {
         <path d="M12 16h24l-2 24H14L12 16z" />
         <path d="M18 16v-3a6 6 0 0 1 12 0v3" />
       </svg>
-      <p>Your bag is empty. Kariakoo is a short walk away.</p>
+      <p>Your bag is empty. Shops are a short walk away.</p>
       <Link className="btn" to="/">
         Start shopping
       </Link>

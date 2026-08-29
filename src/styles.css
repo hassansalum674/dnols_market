@@ -213,9 +213,42 @@ img {
   color: var(--white);
 }
 
-.search-wrap {
+.app-shell > main {
   flex: 1;
+}
+
+.search-wrap {
+  flex: 1 1 140px;
   position: relative;
+  min-width: 0;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 4px;
+}
+
+.search-ico {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--white);
+  opacity: 0.9;
+}
+
+.search-box .search-input {
+  border: none;
+  padding: 10px 0;
+}
+
+.search-box .search-input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .search-input {
@@ -283,13 +316,65 @@ img {
   color: var(--muted);
 }
 
-.trust-strip {
-  margin: 0 0 4px;
-  padding-bottom: 12px;
-  font-size: 13px;
-  line-height: 1.45;
+.site-foot {
+  margin-top: auto;
+  padding: 28px 16px 20px;
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--muted);
-  border-bottom: 1px solid var(--faint);
+  border-top: 1px solid var(--faint);
+}
+
+.browse-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.browse-rail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 8px 28px;
+}
+
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 108px;
+}
+
+.rail-label {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--white);
+}
+
+.rail-option {
+  padding: 3px 0;
+  font-size: 14px;
+  color: var(--muted);
+  text-align: left;
+}
+
+.rail-option.on {
+  color: var(--white);
+}
+
+.rail-more {
+  margin-top: 8px;
+  padding: 3px 0;
+  font-size: 13px;
+  color: var(--blue);
+  text-align: left;
+}
+
+.browse-results {
+  min-width: 0;
 }
 
 /* Tabs */
@@ -832,7 +917,16 @@ img {
     width: 100%;
     max-width: 1120px;
     margin: 0 auto;
-    padding: 8px 32px 64px;
+    padding: 8px 32px 32px;
+    flex: 1;
+  }
+
+  .site-foot {
+    width: 100%;
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 28px 32px 40px;
   }
 
   .header {
@@ -853,7 +947,8 @@ img {
   }
 
   .search-wrap {
-    max-width: 440px;
+    flex: 1 1 auto;
+    max-width: 640px;
   }
 
   .header-links {
@@ -876,6 +971,21 @@ img {
 
   .cat-cards {
     grid-template-columns: repeat(2, minmax(0, 280px));
+  }
+
+  .browse-page {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+  }
+
+  .browse-rail {
+    position: sticky;
+    top: 76px;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 22px;
   }
 
   .product-page {

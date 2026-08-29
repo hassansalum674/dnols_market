@@ -66,6 +66,12 @@ export function AppLayout() {
             </Suspense>
           )}
         </main>
+        {!shop && (
+          <footer className="site-foot">
+            Pay now. Money is held. We then show the stall. You may refuse at
+            the counter if it is not as listed.
+          </footer>
+        )}
         {!hideTabs && <TabBar />}
       </div>
     </>

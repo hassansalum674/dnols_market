@@ -57,20 +57,33 @@ export function HeaderSearch({
 
   return (
     <div className="search-wrap" ref={box}>
-      <input
-        className="search-input"
-        placeholder="Search Kariakoo"
-        value={q}
-        onChange={(e) => {
-          setQ(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") go(q, suggest[0]?.photoUrl);
-        }}
-        aria-label="Search"
-      />
+      <div className="search-box">
+        <svg
+          className="search-ico"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          aria-hidden
+        >
+          <circle cx="11" cy="11" r="6.5" />
+          <path d="M16 16.5 21 21.5" />
+        </svg>
+        <input
+          className="search-input"
+          placeholder="Search products"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") go(q, suggest[0]?.photoUrl);
+          }}
+          aria-label="Search products"
+        />
+      </div>
       {open && (
         <div className="search-panel">
           {suggest.length > 0 && (

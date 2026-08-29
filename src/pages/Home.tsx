@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchListings, fetchTrending } from "../api/client";
+import { BrowseRail } from "../components/BrowseRail";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
-import { CategoryCards, SectionHead, Shelf } from "../components/Shelf";
+import { SectionHead, Shelf } from "../components/Shelf";
 import { StatusScreen } from "../components/EmptyState";
-import { PLACE_LABEL } from "../lib/format";
 import { getRecentProducts } from "../store/persist";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
 
@@ -104,82 +104,39 @@ export function HomePage() {
   }
 
   return (
-    <div className="page">
-      <p className="trust-strip">
-        Pay now. Money is held. We then show the stall. You may refuse at the
-        counter if it is not as listed.
-      </p>
-      <p className="place-line">Near {PLACE_LABEL()}</p>
-      <div className="filters-bar">
-        <div className="chips">
-          {(["fashion", "electronics"] as const).map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={`chip ${filters.category === c ? "on" : ""}`}
-              onClick={() =>
-                setFilters({
-                  ...filters,
-                  category: filters.category === c ? "" : c,
-                })
-              }
-            >
-              {c === "fashion" ? "Fashion" : "Electronics"}
-            </button>
-          ))}
-          {[200, 500, 1000].map((m) => (
-            <button
-              key={m}
-              type="button"
-              className={`chip ${filters.maxDistance === m ? "on" : ""}`}
-              onClick={() =>
-                setFilters({
-                  ...filters,
-                  maxDistance: filters.maxDistance === m ? "" : m,
-                })
-              }
-            >
-              {m === 1000 ? "1km" : `${m}m`}
-            </button>
-          ))}
-          <button
-            type="button"
-            className={`chip ${filters.inStock ? "on" : ""}`}
-            onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
-          >
-            In stock
-          </button>
-        </div>
-        <button type="button" className="chip on" onClick={() => setOpen(true)}>
-          Filters
-        </button>
+    <>
+    <div className="page browse-page">
+      <BrowseRail
+        filters={filters}
+        onChange={setFilters}
+        onMore={() => setOpen(true)}
+      />
+      <div className="browse-results">
+        {listings === null ? (
+          <SkeletonGrid />
+        ) : listings.length === 0 ? (
+          <p className="muted">Nothing in this range. Widen the walk.</p>
+        ) : isIdle ? (
+          <>
+            <Shelf
+              title="Closest"
+              hint="In stock, walk-up"
+              listings={closest}
+            />
+            <Shelf title="Popular" listings={trending} />
+            {recent.length > 0 && (
+              <Shelf title="Recently viewed" listings={recent} />
+            )}
+            <section className="shelf">
+              <SectionHead title="Products" />
+              <ProductGrid listings={listings} />
+            </section>
+          </>
+        ) : (
+          <ProductGrid listings={listings} />
+        )}
       </div>
-
-      {listings === null ? (
-        <SkeletonGrid />
-      ) : listings.length === 0 ? (
-        <p className="muted">Nothing in this range. Widen the walk.</p>
-      ) : isIdle ? (
-        <>
-          <CategoryCards listings={listings} />
-          <Shelf
-            title="Closest to you"
-            hint="In stock, walk-up"
-            listings={closest}
-          />
-          <Shelf title="Popular in Kariakoo" listings={trending} />
-          {recent.length > 0 && (
-            <Shelf title="Recently viewed" listings={recent} />
-          )}
-          <section className="shelf">
-            <SectionHead title="All nearby" />
-            <ProductGrid listings={listings} />
-          </section>
-        </>
-      ) : (
-        <ProductGrid listings={listings} />
-      )}
-
+    </div>
       <FilterSheet
         open={open}
         filters={draft}
@@ -188,6 +145,6 @@ export function HomePage() {
         onChange={setDraft}
         onApply={() => setFilters(draft)}
       />
-    </div>
+    </>
   );
 }

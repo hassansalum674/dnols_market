@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { Category, ListingFilters, Sort } from "../types";
+import type { ListingFilters, Sort } from "../types";
 
 type Props = {
   open: boolean;
@@ -36,34 +36,7 @@ export function FilterSheet({
     <>
       <div className="sheet-backdrop" onClick={onClose} />
       <div className="sheet" role="dialog" aria-label="Filters">
-        <h3>Filters</h3>
-        <label htmlFor="cat">Category</label>
-        <select
-          id="cat"
-          value={filters.category ?? ""}
-          onChange={(e) =>
-            set({ category: (e.target.value || "") as Category | "" })
-          }
-        >
-          <option value="">All</option>
-          <option value="fashion">Fashion</option>
-          <option value="electronics">Electronics</option>
-        </select>
-        <label htmlFor="dist">Walking distance</label>
-        <select
-          id="dist"
-          value={filters.maxDistance ?? ""}
-          onChange={(e) =>
-            set({
-              maxDistance: e.target.value ? Number(e.target.value) : "",
-            })
-          }
-        >
-          <option value="">Any</option>
-          <option value="200">200m</option>
-          <option value="500">500m</option>
-          <option value="1000">1km</option>
-        </select>
+        <h3>Price & sort</h3>
         <label htmlFor="sort">Sort</label>
         <select
           id="sort"
@@ -93,14 +66,6 @@ export function FilterSheet({
             set({ maxPrice: e.target.value === "" ? "" : Number(e.target.value) })
           }
         />
-        <label>
-          <input
-            type="checkbox"
-            checked={Boolean(filters.inStock)}
-            onChange={(e) => set({ inStock: e.target.checked })}
-          />{" "}
-          In stock
-        </label>
         <div style={{ height: 16 }} />
         <button
           type="button"
