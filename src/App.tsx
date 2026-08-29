@@ -7,12 +7,10 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
-import { ShopLayout } from "./shop/ShopLayout";
 import { CartProvider } from "./store/cart";
 import { paths } from "./lib/paths";
 import { LandingPage, MarketingNotFoundPage } from "./pages/Landing";
 import { ServerErrorPage } from "./pages/errors";
-import { ShopServerErrorPage } from "./shop/pages/errors";
 
 const HomePage = lazy(() =>
   import("./pages/Home").then((m) => ({ default: m.HomePage })),
@@ -40,21 +38,6 @@ const YouPage = lazy(() =>
 );
 const NotFoundPage = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFoundPage })),
-);
-const ShopToday = lazy(() =>
-  import("./shop/pages/Today").then((m) => ({ default: m.TodayPage })),
-);
-const ShopStock = lazy(() =>
-  import("./shop/pages/Stock").then((m) => ({ default: m.StockPage })),
-);
-const ShopOrders = lazy(() =>
-  import("./shop/pages/Orders").then((m) => ({ default: m.OrdersPage })),
-);
-const ShopProfile = lazy(() =>
-  import("./shop/pages/Shop").then((m) => ({ default: m.ShopPage })),
-);
-const ShopNotFound = lazy(() =>
-  import("./shop/pages/NotFound").then((m) => ({ default: m.ShopNotFoundPage })),
 );
 
 /** Old PWA paths (`/cart`, `/product/:id`, …) → `/app…` */
@@ -86,18 +69,6 @@ const router = createBrowserRouter([
           { path: "app/orders", element: <OrdersPage /> },
           { path: "app/you", element: <YouPage /> },
           { path: "app/*", element: <NotFoundPage /> },
-        ],
-      },
-      {
-        path: "shop",
-        element: <ShopLayout />,
-        errorElement: <ShopServerErrorPage />,
-        children: [
-          { index: true, element: <ShopToday /> },
-          { path: "stock", element: <ShopStock /> },
-          { path: "orders", element: <ShopOrders /> },
-          { path: "profile", element: <ShopProfile /> },
-          { path: "*", element: <ShopNotFound /> },
         ],
       },
       { path: "search", element: <RedirectToApp /> },

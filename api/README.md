@@ -1,30 +1,33 @@
 # Dnols API (Kariakoo stub)
 
-Independent Node + TypeScript + Fastify backend for the shop-only marketplace. It is an npm workspace of the repo root: `npm install` and `npm run dev` from the root start this API together with the Vite app (buyer `/app` + seller `/shop`). Vite proxies `/api` here.
+Independent Node + TypeScript + Fastify backend. This folder has its own `package.json` and `package-lock.json` — it is **not** an npm workspace of the repo root.
 
 Exact shop coordinates, street address, and shop name are **never** returned on listing endpoints until mock payment succeeds.
 
 ## Run
 
-From the repo root (API + Vite):
+From the repo root (API + buyer Vite + seller Vite, one origin):
 
 ```bash
-npm install && npm run icons && npm run dev
+cd api && npm install && cd ..
+npm run dev
 ```
 
-API only:
+Vite on **http://localhost:5173** proxies `/api` here. You can also hit the API directly:
 
 ```bash
-npm run dev:api
-# or: cd api && npm run dev
+cd api
+npm install
+npm run dev
 ```
 
-Listens on **http://localhost:8787** (override with `PORT`). JSON only. CORS defaults to `*` so Vite on `http://localhost:5173` works.
+Listens on **http://localhost:8787** (override with `PORT`). JSON only. CORS defaults to `*` so Vite on `http://localhost:5173` works. If `:8787` is already taken, root `npm run dev` **reuses** that process instead of crashing.
 
 Copy `.env.example` if you want `PORT`, `HOST`, `CORS_ORIGIN`, `BUYER_LAT`, `BUYER_LNG`. Variables are optional; defaults match Kariakoo.
 
 ```bash
-curl -s http://localhost:8787/health
+curl -s http://localhost:5173/api/health
+# or: curl -s http://localhost:8787/health
 ```
 
 OpenAPI: [`openapi.yaml`](./openapi.yaml) and `GET /openapi.json`.

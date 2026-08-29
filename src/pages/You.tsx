@@ -46,7 +46,9 @@ export function YouPage() {
           }}
         />
         <p className="hint">
-          <Link to={paths.shop}>Sell on Dnols</Link>
+          <Link to={paths.shop} reloadDocument>
+            Sell on Dnols
+          </Link>
         </p>
         <label className="muted" htmlFor="phone">
           Phone

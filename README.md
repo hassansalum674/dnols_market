@@ -4,34 +4,40 @@ Shop-only marketplace for **Kariakoo, Dar es Salaam**: search nearby stock, **pa
 
 Product name is **Dnols** on every screen (splash, tabs, 404, PWA).
 
-## One stack
+## One origin (`npm run dev`)
 
-Buyer, seller, and API share this repo. From the root:
+Buyer, seller, and API stay **separate packages**. One command from the repo root starts all three, and you only open **one** browser origin:
 
 ```bash
-npm install && npm run icons && npm run dev
+npm install
+cd api && npm install && cd ..
+cd shop && npm install && cd ..
+npm run icons
+npm run dev
 ```
 
-That installs **api** deps (npm workspace) and starts **Fastify :8787 + Vite :5173** together. Vite proxies `/api` → `:8787`.
+Open **http://localhost:5173**
 
-| URL | What |
-| --- | --- |
-| `/` | Marketing landing (wordmark, thesis, **Open app**). No tabs, search, or grid. |
-| `/app` | Buyer PWA — **Home · Cart · Orders · You**. PWA `start_url`. |
-| `/shop` | Seller chrome — **Today · Stock · Orders · Shop**. Same origin, same API. |
-| `/shop/stock` | Catalog + local SKU notes |
-| `/shop/orders` | Escrow list + **Demo incoming order** |
-| `/shop/profile` | Place, hours, payout stub |
+| URL | What | Process |
+| --- | --- | --- |
+| `/` | Marketing landing (wordmark, thesis, **Open app**). No tabs, search, or grid. | Buyer Vite **:5173** |
+| `/app` | Buyer PWA — **Home · Cart · Orders · You**. PWA `start_url`. | Buyer Vite **:5173** |
+| `/shop` | Seller UI — **Today · Stock · Orders · Shop**. | Proxied → seller Vite **:5174** |
+| `/api` | Fastify (health, listings, escrow). | Proxied → API **:8787** |
+
+`scripts/dev.mjs` starts API + shop Vite + buyer Vite **in parallel**. If `:8787` or `:5174` is already listening, that process is reused (no crash). It does **not** run `npm install` on boot.
+
+`shop/` is still its own Vite app (source, lockfile, `vite.config.ts` stay there). Root is not an npm workspace.
 
 Legacy shopper paths (`/cart`, `/product/:id`, `/search`, …) redirect under `/app`. `/?place=…` redirects to `/app?place=…`.
 
 Market QR: `http://localhost:5173/app?place=place_kariakoo_dsm`
 
-Health check: `curl -s http://localhost:8787/health` (or `curl -s http://localhost:5173/api/health` through the proxy).
+Health: `curl -s http://localhost:5173/api/health` (or `curl -s http://localhost:8787/health`).
 
 Add to Home Screen from the browser (opens `/app`). Theme `#0D0D0D`.
 
-Split processes if you need them: `npm run dev:api` and `npm run dev:web`. Build: `npm run build` (API `tsc` + Vite). Preview the site with `npm run preview` (API still needed on 8787).
+Split processes if you need them: `npm run dev:api`, `npm run dev:shop`, `npm run dev:web`. Build the buyer site: `npm run build`. Preview: `npm run preview` (API still needed on 8787).
 
 ## Brand and type
 
@@ -65,6 +71,6 @@ Seller tabs on `/shop*`: **Today · Stock · Orders · Shop**. Landing **Sell on
 
 See [`api/README.md`](api/README.md). Unpaid listings never include lat/lng/shop name. `POST /payments/stk-push` then `POST /orders/pay` releases directions. `POST /orders/:id/handover` with PIN or `{ "action": "reject" }`.
 
-Seller pages call **`/api`** on this origin (no separate :5174 app). SKU add/edit and hours stay in `localStorage` until a seller CRUD API exists. **Demo incoming order** on `/shop/orders` is `POST /api/orders/pay` with `lst_kitenge_maxi_01`.
+Seller pages call **`/api`** on this origin. SKU add/edit and hours stay in `localStorage` until a seller CRUD API exists. **Demo incoming order** on `/shop/orders` is `POST /api/orders/pay` with `lst_kitenge_maxi_01`.
 
 Flutter is **not** used for this PWA. Later: Flutter Android on the same API.
