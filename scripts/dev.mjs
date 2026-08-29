@@ -97,4 +97,5 @@ console.log("    /       marketing");
 console.log("    /app    buyer PWA");
 console.log("    /shop   seller (shop/src, same Vite)");
 console.log("    /api    Fastify (proxied)");
+console.log("  Never open :5174 — that leftover shop Vite is dead.");
 console.log("");

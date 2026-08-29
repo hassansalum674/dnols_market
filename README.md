@@ -12,7 +12,7 @@ One Vite, one origin. The API starts as a child of the same command.
 npm install && npm run icons && npm run dev
 ```
 
-Open **http://localhost:5173** only.
+Open **http://localhost:5173** only. Never **5174**.
 
 | URL | What |
 | --- | --- |
@@ -21,7 +21,7 @@ Open **http://localhost:5173** only.
 | `/shop` | Seller UI — **Today · Stock · Orders · Shop**. Same Vite, source in `shop/src`. |
 | `/api` | Fastify (health, listings, escrow), proxied to `:8787`. |
 
-Do **not** run `cd shop && npm run dev`. There is no port **5174**.
+**Port 5174 is dead.** If the tab title is **Dnols Shop** and the URL is `http://localhost:5174`, you started the leftover standalone shop Vite — stop that process. `cd shop && npm run dev` (and `preview`) now exit with an error. Seller UI is **http://localhost:5173/shop**.
 
 `scripts/dev.mjs` starts API + **one** root Vite. If `:8787` is already listening, that process is reused (no crash). Seller pages are imported from `shop/` into the root app.
 

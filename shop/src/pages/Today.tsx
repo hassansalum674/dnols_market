@@ -52,7 +52,7 @@ export function TodayPage() {
     return (
       <div className="page">
         <div className="center-state">
-          <img src="/brand/logo6_dark.svg" alt="" style={{ width: 168, height: "auto" }} />
+          <img className="state-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
           <p>You're offline. Pickups need the API.</p>
         </div>
       </div>
@@ -71,7 +71,7 @@ export function TodayPage() {
     return (
       <div className="page">
         <div className="center-state">
-          <img src="/brand/logo6_dark.svg" alt="" style={{ width: 168, height: "auto" }} />
+          <img className="state-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
           <p>No pickups waiting. Demo an incoming order from Orders.</p>
           <Link className="btn" to={shopPaths.orders}>
             Open Orders

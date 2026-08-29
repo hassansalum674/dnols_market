@@ -14,6 +14,19 @@ const titles: Record<string, string> = {
   [shopPaths.profile]: "Shop",
 };
 
+function DeadShopPort() {
+  return (
+    <div className="center-state" style={{ minHeight: "100dvh" }}>
+      <img className="state-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
+      <p>This is the old shop Vite on port 5174. Stop this process.</p>
+      <p>From the repo root run npm run dev, then open the seller UI on 5173.</p>
+      <a className="btn" href="http://localhost:5173/shop">
+        Open http://localhost:5173/shop
+      </a>
+    </div>
+  );
+}
+
 function ShopChrome() {
   const loc = useLocation();
   const nav = useNavigation();
@@ -72,6 +85,9 @@ function ShopChrome() {
 }
 
 export function ShopLayout() {
+  if (typeof window !== "undefined" && window.location.port === "5174") {
+    return <DeadShopPort />;
+  }
   return (
     <ShopProvider>
       <ShopChrome />

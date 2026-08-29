@@ -1,14 +1,21 @@
-# Dnols Shop (seller source)
+# Seller source (`shop/`)
 
-Phone app for stall owners. **Do not start this in dev.** From the repo root:
+This folder is **not a website you start**. Root Vite imports `shop/src` and serves it at `/shop`.
 
 ```bash
+# repo root — one command, one origin
 npm run dev
 ```
 
-Then open **http://localhost:5173/shop**. Root Vite imports this folder (`shop/src`) into the same app. There is no second Vite and no port 5174.
+Then open **http://localhost:5173/shop**.
 
-Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700. Marks: `logo6_dark` splash and headers (from [`../brand/`](../brand/) / root `public/brand/`).
+## Port 5174 is dead
+
+Do **not** run `npm run dev`, `npm start`, `npm run preview`, or `npx vite` in this folder. Those scripts exit with an error (Vite config refuses `serve` / `preview` too).
+
+If you see **Dnols Shop** on `http://localhost:5174`, you started the leftover standalone shop app — **stop it**. Pull, then from the repo root: `npm run dev`. Open **5173** only (`/`, `/app`, `/shop`).
+
+Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700. In-app mark is always `logo6_dark` (wordmark). `logo5_favicon` is favicon / PWA icons only.
 
 | URL on :5173 | Tab |
 | --- | --- |
@@ -17,7 +24,7 @@ Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700. Marks: `logo6_dark` sp
 | `/shop/orders` | Orders |
 | `/shop/profile` | Shop |
 
-Router routes live under **`/shop`** (leftover `App.tsx` still sets `basename: "/shop"`). Seller API calls use **`/api`** on this origin.
+Router routes live under **`/shop`**. Seller API calls use **`/api`** on this origin. Leftover `App.tsx` still sets `basename: "/shop"` for a package entry you must not start.
 
 This folder stays in git (package.json, src, lockfile, vite.config) so it is not a wipe. It is not a server you run.
 

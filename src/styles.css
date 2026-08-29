@@ -108,6 +108,7 @@ img {
 .splash-logo {
   width: min(78vw, 360px);
   height: auto;
+  max-width: none;
   animation: splashPulse 2.4s ease-in-out infinite;
 }
 
@@ -155,12 +156,15 @@ img {
 .route-pulse img {
   width: 148px;
   height: auto;
+  max-width: none;
   animation: splashPulse 1.8s ease-in-out infinite;
 }
 
 .state-mark {
   width: 168px;
   height: auto;
+  max-width: none;
+  object-fit: contain;
 }
 
 .history-glyph {
@@ -209,7 +213,10 @@ img {
 .header-mark {
   height: 26px;
   width: auto;
+  max-width: none;
   flex-shrink: 0;
+  object-fit: contain;
+  object-position: left center;
 }
 
 .search-wrap {

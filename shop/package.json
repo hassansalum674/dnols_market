@@ -5,9 +5,10 @@
   "type": "module",
   "description": "Dnols seller UI source \u2014 served at /shop by the root Vite app",
   "scripts": {
-    "dev": "node -e \"console.error('Seller UI is http://localhost:5173/shop \u2014 run npm run dev from the repo root.'); process.exit(1)\"",
+    "dev": "node scripts/refuse-standalone.mjs",
+    "start": "node scripts/refuse-standalone.mjs",
     "build": "tsc -b && vite build",
-    "preview": "vite preview",
+    "preview": "node scripts/refuse-standalone.mjs",
     "icons": "node scripts/generate-icons.mjs"
   },
   "engines": {
