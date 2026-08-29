@@ -16,7 +16,9 @@ Dev reload: `npm run dev`
 
 Listens on **http://localhost:8787** (override with `PORT`). JSON only. CORS defaults to `*` so Vite on `http://localhost:5173` works.
 
-Copy `.env.example` if you want `PORT`, `HOST`, `CORS_ORIGIN`, `BUYER_LAT`, `BUYER_LNG`. Variables are optional; defaults match Kariakoo.
+Copy `.env.example` if you want `PORT`, `HOST`, `CORS_ORIGIN`, `BUYER_LAT`, `BUYER_LNG`, `FAPIAPI_API_KEY`, `API_PUBLIC_URL`. Variables are optional; defaults match Kariakoo.
+
+**Production (Render):** see [`docs/render.md`](../docs/render.md) — set `FAPIAPI_API_KEY` and `API_PUBLIC_URL=https://dnols-83jj.onrender.com` on the API Web Service.
 
 ```bash
 curl -s http://localhost:8787/health

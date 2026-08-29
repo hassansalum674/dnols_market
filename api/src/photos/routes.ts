@@ -37,9 +37,12 @@ export async function registerPhotoRoutes(app: FastifyInstance): Promise<void> {
           : await processDetailPhoto(buffer);
 
       const id = await saveCdnWebp(result.buffer);
+      const publicBase = (process.env.API_PUBLIC_URL ?? "").replace(/\/$/, "");
+      const cdnPath = `/cdn/${id}.webp`;
+      const cdnUrl = publicBase ? `${publicBase}${cdnPath}` : `/api/cdn/${id}.webp`;
 
       return {
-        cdnUrl: `/api/cdn/${id}.webp`,
+        cdnUrl,
         cdnId: id,
         width: result.width,
         height: result.height,

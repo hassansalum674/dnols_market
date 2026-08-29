@@ -1,0 +1,23 @@
+# Dnols marketplace API — Render deployment
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: dnols-api
+    runtime: node
+    rootDir: api
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: API_PUBLIC_URL
+        value: https://dnols-83jj.onrender.com
+      - key: CORS_ORIGIN
+        value: "*"
+      - key: FAPIAPI_API_KEY
+        sync: false
+      # Optional: Resend, Groq, etc. — add in Render dashboard as needed
+      # - key: RESEND_API_KEY
+      #   sync: false

@@ -54,10 +54,26 @@ export async function processProductPhoto(
     throw new Error(body.message || body.error || "Photo processing failed");
   }
 
-  return { beforeUrl, after: body };
+  const after = {
+    ...body,
+    cdnUrl: resolveApiUrl(body.cdnUrl),
+  };
+
+  return { beforeUrl, after };
+}
+
+/** Resolve relative CDN paths when API is on a different host than the PWA */
+export function resolveApiUrl(url: string): string {
+  if (!url || url.startsWith("http") || url.startsWith("blob:")) return url;
+  if (url.startsWith("/api/")) {
+    const path = url.slice(4);
+    return `${BASE}${path}`;
+  }
+  if (url.startsWith("/")) return `${BASE}${url}`;
+  return url;
 }
 
 /** Returns true if URL is a CDN-served processed image (safe for buyers) */
 export function isCdnPhoto(url: string): boolean {
-  return url.includes("/cdn/") && url.endsWith(".webp");
+  return /\/cdn\/[a-f0-9]+\.webp$/i.test(url);
 }

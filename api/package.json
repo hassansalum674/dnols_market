@@ -5,7 +5,7 @@
   "description": "Dnols shop-only marketplace backend stub (Kariakoo, Tanzania)",
   "type": "module",
   "scripts": {
-    "start": "tsx src/index.ts",
+    "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
     "build": "tsc"
   },
