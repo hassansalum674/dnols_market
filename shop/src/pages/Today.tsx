@@ -4,6 +4,7 @@ import { getOrder, handoverOrder } from "../api";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
 import type { OrderView, SavedOrder } from "../types";
+import { shopPaths } from "../paths";
 import { formatTzs } from "./errors";
 
 type Row = { saved: SavedOrder; live: OrderView | null; err?: string };
@@ -51,7 +52,7 @@ export function TodayPage() {
     return (
       <div className="page">
         <div className="center-state">
-          <img src="/brand/logo4_submark.svg" alt="" width={48} height={48} />
+          <img className="state-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
           <p>You're offline. Pickups need the API.</p>
         </div>
       </div>
@@ -70,9 +71,9 @@ export function TodayPage() {
     return (
       <div className="page">
         <div className="center-state">
-          <img src="/brand/logo4_submark.svg" alt="" width={48} height={48} />
+          <img className="state-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
           <p>No pickups waiting. Demo an incoming order from Orders.</p>
-          <Link className="btn" to="/orders">
+          <Link className="btn" to={shopPaths.orders}>
             Open Orders
           </Link>
         </div>
@@ -130,10 +131,10 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
   }
 
   return (
-    <article className="card">
+    <article className="shop-card">
       <span className="pill live">pickup · {live.escrow}</span>
       <h2>{live.orderId}</h2>
-      <div className="card-meta">
+      <div className="shop-card-meta">
         <span className="price">{formatTzs(live.totalTzs)}</span>
         <span className="muted">{live.listingIds.length} SKU</span>
       </div>

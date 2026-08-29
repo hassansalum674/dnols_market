@@ -6,14 +6,33 @@
     <meta name="theme-color" content="#0D0D0D" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Dnols Shop" />
-    <meta name="description" content="Dnols Shop — stall phone app for Kariakoo pickups." />
+    <meta name="apple-mobile-web-app-title" content="Dnols" />
+    <meta name="description" content="Dnols — stall phone app. Open http://localhost:5173/shop — do not start Vite in this folder. Port 5174 is dead." />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>Dnols Shop</title>
+    <title>Dnols</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      (function () {
+        if (location.port !== "5174") return;
+        window.__DNOLS_SKIP_SHOP = true;
+        document.title = "Stop — port 5174 is dead";
+        document.documentElement.style.background = "#0D0D0D";
+        document.getElementById("root").innerHTML =
+          '<div style="min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px 24px;text-align:center;font-family:Georgia,serif;color:#fff;background:#0D0D0D">' +
+          '<img src="/brand/logo6_dark.svg" alt="Dnols" width="168" style="width:168px;height:auto;max-width:none" />' +
+          "<p style=\"margin:0;color:rgba(255,255,255,.87);font-size:16px;max-width:22em\">This is the old shop Vite on port 5174. Stop this process.</p>" +
+          '<p style="margin:0;color:rgba(255,255,255,.55);font-size:15px;max-width:22em">From the repo root run npm run dev, then open the seller UI on 5173.</p>' +
+          '<a href="http://localhost:5173/shop" style="display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 28px;background:#1A6FD4;color:#fff;font-weight:700;text-decoration:none;border-radius:2px">Open http://localhost:5173/shop</a>' +
+          "</div>";
+      })();
+    </script>
+    <script type="module">
+      if (!window.__DNOLS_SKIP_SHOP) {
+        import("/src/main.tsx");
+      }
+    </script>
   </body>
 </html>

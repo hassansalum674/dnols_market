@@ -121,11 +121,31 @@ export function registerRoutes(
       return da - db;
     });
 
-    return {
+    const payload = {
       placeId: PLACE_ID,
       count: rows.length,
       items: rows.map((l) => toPublicListing(l, buyerLat, buyerLng)),
     };
+    return payload;
+  });
+
+  /** Alias so the PWA can call /search?q= */
+  app.get("/search", async (req, reply) => {
+    const q = req.query as Record<string, string | undefined>;
+    (req.query as Record<string, string | undefined>).q = q.q ?? q.query ?? "";
+    return app.inject({
+      method: "GET",
+      url:
+        "/listings?" +
+        new URLSearchParams(
+          Object.entries(req.query as Record<string, string>).filter(
+            ([, v]) => v != null && v !== "",
+          ) as [string, string][],
+        ).toString(),
+    }).then((res) => {
+      reply.code(res.statusCode);
+      return res.json();
+    });
   });
 
   app.get("/listings/:id", async (req, reply) => {
@@ -207,6 +227,46 @@ export function registerRoutes(
     }
 
     return { sessionId: sid, items: store.getCart(sid) };
+  });
+
+  const stk = new Map<
+    string,
+    { phone: string; listingIds: string[]; status: "success" }
+  >();
+
+  /** Mock M-Pesa / Mixx STK push. Always succeeds; then call POST /orders/pay. */
+  app.post("/payments/stk-push", async (req, reply) => {
+    const body = (req.body ?? {}) as {
+      phone?: string;
+      listingIds?: string[];
+    };
+    const phone = (body.phone ?? "").replace(/\s/g, "");
+    if (!phone || phone.length < 9) {
+      return reply.code(400).send({
+        error: "bad_phone",
+        message: "Tanzanian mobile number required for STK push.",
+      });
+    }
+    const listingIds = body.listingIds;
+    if (!Array.isArray(listingIds) || listingIds.length === 0) {
+      return reply.code(400).send({ error: "bad_body" });
+    }
+    const requestId = `stk_${Date.now().toString(36)}`;
+    stk.set(requestId, { phone, listingIds, status: "success" });
+    return {
+      requestId,
+      status: "success",
+      provider: "mpesa_stk_stub",
+      rails: ["M-Pesa", "Mixx by Yas", "Airtel Money"],
+      note: "Stub: prompt accepted. Call POST /orders/pay with the same listingIds.",
+    };
+  });
+
+  app.get("/payments/stk-push/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const row = stk.get(id);
+    if (!row) return reply.code(404).send({ error: "not_found" });
+    return { requestId: id, ...row };
   });
 
   app.post("/orders/pay", async (req, reply) => {

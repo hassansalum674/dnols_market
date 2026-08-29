@@ -1,0 +1,11 @@
+shop_id,shop_name,category,sku_id,title,price_tzs,distance_m_from_gate,in_stock,buyer_sees_before_pay,buyer_sees_after_pay
+shop_mama_aisha,Mama Aisha Kitenge,fashion,lst_kitenge_maxi_01,Kitenge maxi dress — indigo,45000,80,Y,"~80m, Kariakoo","Mama Aisha Kitenge, Congo St"
+shop_swahili_threads,Swahili Threads,fashion,lst_kanga_set_01,Kanga pair — coastal print,18000,120,Y,"~120m, Kariakoo","Swahili Threads, Msimbazi St"
+shop_kariakoo_kicks,Kariakoo Kicks,fashion,lst_sneakers_01,Low-top sneakers,65000,95,Y,"~95m, Kariakoo","Kariakoo Kicks, Uhuru St"
+shop_night_market_bags,Night Market Bags,fashion,lst_leather_tote_01,Market tote bag,22000,150,Y,"~150m, Kariakoo","Night Market Bags, Nyamwezi St"
+shop_tech_alley,Tech Alley DSM,electronics,lst_earbuds_01,Wireless earbuds,35000,110,Y,"~110m, Kariakoo","Tech Alley DSM, Livingstone St"
+shop_phone_city,Phone City Kariakoo,electronics,lst_phone_a15_01,Android phone A-series,280000,70,Y,"~70m, Kariakoo","Phone City Kariakoo, Mchikichi St"
+shop_volt_accessories,Volt Accessories,electronics,lst_charger_gan_01,GaN charger 65W,28000,200,Y,"~200m, Kariakoo","Volt Accessories, Aggrey St"
+shop_radio_house,Radio House TZ,electronics,lst_bt_speaker_01,Bluetooth speaker,42000,160,Y,"~160m, Kariakoo","Radio House TZ, Swahili St"
+shop_mama_aisha,Mama Aisha Kitenge,fashion,lst_headwrap_01,Kitenge headwrap,8000,80,Y,"~80m, Kariakoo","Mama Aisha Kitenge, Congo St"
+shop_phone_city,Phone City Kariakoo,electronics,lst_powerbank_01,Power bank 20000mAh,32000,70,Y,"~70m, Kariakoo","Phone City Kariakoo, Mchikichi St"

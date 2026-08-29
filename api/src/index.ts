@@ -36,6 +36,9 @@ app.get("/openapi.json", async (_req, reply) => {
       "GET /orders/:id",
       "POST /orders/:id/handover",
       "GET /trending",
+      "GET /search",
+      "POST /payments/stk-push",
+      "GET /payments/stk-push/:id",
     ],
   });
 });

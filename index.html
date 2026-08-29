@@ -11,9 +11,66 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>Dnols</title>
+    <style>
+      html, body, #root { height: 100%; margin: 0; background: #0D0D0D; color: #fff; }
+      .landing-boot {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 48px 24px;
+        max-width: 480px;
+        margin: 0 auto;
+        font-family: "Playfair Display", Georgia, serif;
+      }
+      .landing-boot img { width: min(72vw, 280px); height: auto; }
+      .landing-boot p {
+        margin: 28px 0 36px;
+        font-size: 18px;
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.87);
+      }
+      .landing-boot a.btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 28px;
+        background: #1A6FD4;
+        color: #fff;
+        font-weight: 700;
+        font-size: 16px;
+        border-radius: 2px;
+        width: max-content;
+        text-decoration: none;
+      }
+      .landing-boot .sell {
+        margin-top: 20px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.55);
+        text-decoration: none;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (function () {
+        var p = location.pathname;
+        if (p !== "/" && p !== "") return;
+        if (new URLSearchParams(location.search).has("place")) return;
+        document.getElementById("root").innerHTML =
+          '<div class="landing-boot">' +
+          '<img src="/brand/logo6_dark.svg" alt="Dnols" />' +
+          '<p>Pay, then we show the way — escrowed walk-up to Kariakoo shops.</p>' +
+          '<a class="btn" href="/app">Open app</a>' +
+          '<a class="sell" href="/shop">Sell on Dnols</a>' +
+          "</div>";
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

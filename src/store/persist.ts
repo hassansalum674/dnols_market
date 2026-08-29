@@ -81,3 +81,24 @@ export function getLocalOrders<T>(): T[] {
     return [];
   }
 }
+
+const RECENT = "dnols.recentProducts.v1";
+
+/** Lightweight "browsing history" of viewed products (public fields only). */
+export function getRecentProducts<T>(): T[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT) || "[]") as T[];
+  } catch {
+    return [];
+  }
+}
+
+export function pushRecentProduct<T extends { id: string }>(product: T) {
+  try {
+    const cur = getRecentProducts<T>().filter((p) => p.id !== product.id);
+    cur.unshift(product);
+    localStorage.setItem(RECENT, JSON.stringify(cur.slice(0, 12)));
+  } catch {
+    /* ignore */
+  }
+}

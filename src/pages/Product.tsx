@@ -4,8 +4,14 @@ import { fetchListingDetail } from "../api/client";
 import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
-import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
-import type { PublicListingDetail } from "../types";
+import { paths } from "../lib/paths";
+import {
+  getPaidTokens,
+  toggleSaved,
+  getSavedIds,
+  pushRecentProduct,
+} from "../store/persist";
+import type { PublicListing, PublicListingDetail } from "../types";
 import { ServerErrorPage } from "./errors";
 import { NotFoundPage } from "./NotFound";
 
@@ -22,6 +28,17 @@ export function ProductPage() {
     void fetchListingDetail(id, token).then(({ detail: d, status }) => {
       setFail(status ?? null);
       setDetail(d);
+      if (d) {
+        pushRecentProduct<PublicListing>({
+          id: d.id,
+          title: d.title,
+          priceTzs: d.priceTzs,
+          category: d.category,
+          photoUrl: d.photoUrl,
+          distanceMeters: d.distanceMeters,
+          inStock: d.inStock,
+        });
+      }
     });
   }, [id]);
 
@@ -61,7 +78,7 @@ export function ProductPage() {
           {saved ? "Saved" : "Save for later"}
         </button>
         <p className="hint">
-          <Link to="/">Back to nearby</Link>
+          <Link to={paths.home}>Back to nearby</Link>
         </p>
       </div>
       <div className="sticky-pay">

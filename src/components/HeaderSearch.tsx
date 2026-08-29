@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { paths } from "../lib/paths";
 import { fetchSuggest } from "../api/client";
 import {
   clearHistory,
@@ -52,7 +53,7 @@ export function HeaderSearch({
     setHistory(getHistory());
     setOpen(false);
     if (onSubmitQuery) onSubmitQuery(trimmed);
-    else nav(`/search?q=${encodeURIComponent(trimmed)}`);
+    else nav(paths.search(trimmed));
   };
 
   return (
@@ -88,7 +89,7 @@ export function HeaderSearch({
                       at: Date.now(),
                     });
                     setOpen(false);
-                    nav(`/product/${s.id}`);
+                    nav(paths.product(s.id));
                   }}
                 >
                   <img src={s.photoUrl} alt="" />
@@ -110,7 +111,12 @@ export function HeaderSearch({
                   {h.photoUrl ? (
                     <img src={h.photoUrl} alt="" />
                   ) : (
-                    <img src="/brand/logo4_submark.svg" alt="" />
+                    <span className="history-glyph" aria-hidden>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                        <circle cx="11" cy="11" r="6" />
+                        <path d="m20 20-4.2-4.2" />
+                      </svg>
+                    </span>
                   )}
                   <span>{h.q}</span>
                 </button>

@@ -1,4 +1,5 @@
 import { formatDistance, formatTsh } from "../lib/format";
+import { paths } from "../lib/paths";
 import type { PublicListing } from "../types";
 import { Link } from "react-router-dom";
 
@@ -10,7 +11,7 @@ export function ProductCard({
   className?: string;
 }) {
   return (
-    <Link to={`/product/${listing.id}`} className={`card ${className}`}>
+    <Link to={paths.product(listing.id)} className={`card ${className}`}>
       <img
         className="card-photo"
         src={listing.photoUrl}

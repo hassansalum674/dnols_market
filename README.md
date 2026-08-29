@@ -1,55 +1,74 @@
 # Dnols
 
-Tanzania shop marketplace PWA (Vite + React + TypeScript). Quiet black UI, Kariakoo-first, walk-up pickup after pay.
+Shop-only marketplace for **Kariakoo, Dar es Salaam**: search nearby stock, **pay into escrow**, then get directions. Distance before pay; stall pin after pay. Inspect-and-reject at pickup.
 
-## How to run
+Product name is **Dnols** on every screen (splash, tabs, 404, PWA).
 
-```bash
-cd /home/gaula/Desktop/Dnols
-npm install
-npm run icons      # PNGs from brand/logo5_favicon.svg
-npm run dev        # http://localhost:5173
-```
+## One command (`npm run dev`)
 
-Production build:
+One Vite, one origin. The API starts as a child of the same command.
 
 ```bash
-npm run build
-npm run preview
+npm install && npm run icons && npm run dev
 ```
 
-Optional API (port **8787**). Vite proxies `/api` → `http://localhost:8787`. Override with `VITE_API_URL`.
+Open **http://localhost:5173** only. Never **5174**.
 
-```bash
-cd api && npm install && npm run dev
-```
+| URL | What |
+| --- | --- |
+| `/` | Marketing landing (wordmark, thesis, **Open app**). No tabs, search, or grid. |
+| `/app` | Buyer PWA — **Home · Cart · Orders · You**. PWA `start_url`. |
+| `/shop` | Seller UI — **Today · Stock · Orders · Shop**. Same Vite, source in `shop/src`. |
+| `/api` | Fastify (health, listings, escrow), proxied to `:8787`. |
 
-Add to home screen from the browser install prompt. Theme color `#0D0D0D`, name **Dnols**.
-## Brand
+**Port 5174 is dead.** If the tab title is **Dnols Shop** and the URL is `http://localhost:5174`, you started the leftover standalone shop Vite — stop that process. `cd shop && npm run dev` (and `preview`) now exit with an error. Seller UI is **http://localhost:5173/shop**.
 
-Original marks live in [`brand/`](brand/) (do not redraw logo text):
+`scripts/dev.mjs` starts API + **one** root Vite. If `:8787` is already listening, that process is reused (no crash). Seller pages are imported from `shop/` into the root app.
+
+`shop/` stays on disk as seller source (`shop/src` is imported by the root Vite app). Root `npm install` also installs the API via `postinstall` (`cd api && npm install`) — **not** an npm workspace, so `api/package-lock.json` stays. Do not start a second Vite in `shop/`.
+
+Legacy shopper paths (`/cart`, `/product/:id`, `/search`, …) redirect under `/app`. `/?place=…` redirects to `/app?place=…`.
+
+Market QR: `http://localhost:5173/app?place=place_kariakoo_dsm`
+
+Health: `curl -s http://localhost:5173/api/health` (or `curl -s http://localhost:8787/health`).
+
+Add to Home Screen from the browser (opens `/app`). Theme `#0D0D0D`.
+
+Split processes if you need them: `npm run dev:api`, `npm run dev:web`. Build (buyer + seller routes): `npm run build`. Preview: `npm run preview` (API still needed on 8787).
+
+## Brand and type
+
+Marks in [`brand/`](brand/) — do not redraw SVG text.
 
 | File | Use |
-|---|---|
-| `logo6_dark.svg` | Cold-start splash |
-| `logo4_submark.svg` | Route pulse loader, header mark |
-| `logo5_favicon.svg` | Favicon + PWA icons (generated PNGs) |
-| `logo1_primary.svg` / `logo3_wordmark.svg` | Extra brand files |
+| --- | --- |
+| `logo6_dark.svg` | **Everywhere in-app**: splash, pulse loaders, headers, empty/error states |
+| `logo5_favicon.svg` | Favicon + PWA icons **only** (the single place the "d" appears) |
+| `logo4_submark.svg` | Reserved; not shown in the UI |
+| `logo1_primary.svg` / `logo3_wordmark.svg` | Light/print leftovers |
 
-Tokens: blue `#1A6FD4`, black `#0D0D0D`, white `#FFFFFF`. Type: self-hosted **Playfair Display** (latin 400 + 700, `font-display: swap`, Georgia fallback). Prices use lining + tabular numerals.
+UI rules: [`docs/ui-spec.md`](docs/ui-spec.md).
 
-## Mocked vs real
+Blue `#1A6FD4`, black `#0D0D0D`. **Playfair Display** 400/700 self-hosted in `public/fonts` (`font-display: swap`). Prices: lining + tabular numerals.
 
-| Surface | Behavior |
-|---|---|
-| Listings, search suggest, trending, product detail | Tries `GET /api/listings`, `/api/listings/:id`, `/api/search`. If the API is down or empty, uses local Kariakoo mocks (fashion + electronics). Distances are meters only. |
-| Product address / lat / lng | Hidden until `paid: true` (after checkout token stored locally, or API `directions` on the listing). |
-| Cart | Local only (`localStorage`). |
-| Checkout pay | `POST /api/orders` when the API is up; otherwise a local paid_held stub + pickup code. |
-| Orders | Merges `GET /api/orders` with locally saved checkouts. |
-| Saved (You) | Local ids. |
-| Shop mode `/shop` | Stub screens (Today, Stock, Orders, Shop). |
-| Web Push | No-op stub (`registerPushStub`). |
-| Photos | `picsum.photos` seeds (same as API seed). |
+## Docs (pre-code work in the plan)
 
-Buyer tabs are always **Home · Cart · Orders · You** (guest and signed-in). Search is the header, not a tab. Saved lives under You. Checkout hides the tab bar.
+- [`docs/field-research.md`](docs/field-research.md) — Kariakoo interview script + escrow vs deposit
+- [`docs/paper-mvp.md`](docs/paper-mvp.md) + [`docs/paper-catalog.csv`](docs/paper-catalog.csv) — 10-shop hide-pin sheet
+- [`docs/payments-legal.md`](docs/payments-legal.md) — Selcom/Pesapal, inspect-and-reject, 2h SLA
+- [`docs/wedge-strategy.md`](docs/wedge-strategy.md) — Alibaba/Amazon/Temu research and the escrowed walk-up wedge (plan, not build)
+
+## Chrome (never mixed)
+
+Buyer tabs on `/app*`: **Home · Cart · Orders · You**. Search in the header. Checkout hides tabs.
+
+Seller tabs on `/shop*`: **Today · Stock · Orders · Shop**. Landing **Sell on Dnols** and You → **Sell on Dnols** both go to `/shop`. Seller **Switch to buying** goes to `/app`.
+
+## API contract
+
+See [`api/README.md`](api/README.md). Unpaid listings never include lat/lng/shop name. `POST /payments/stk-push` then `POST /orders/pay` releases directions. `POST /orders/:id/handover` with PIN or `{ "action": "reject" }`.
+
+Seller pages call **`/api`** on this origin. SKU add/edit and hours stay in `localStorage` until a seller CRUD API exists. **Demo incoming order** on `/shop/orders` is `POST /api/orders/pay` with `lst_kitenge_maxi_01`.
+
+Flutter is **not** used for this PWA. Later: Flutter Android on the same API.

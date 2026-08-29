@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      "@shop": path.resolve(__dirname, "shop/src"),
     },
   },
   plugins: [
@@ -28,7 +29,7 @@ export default defineConfig({
         background_color: "#0D0D0D",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/",
+        start_url: "/app",
         scope: "/",
         lang: "en",
         icons: [
@@ -77,10 +78,11 @@ export default defineConfig({
     }),
   ],
   server: {
+    host: true,
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:8787",
+        target: "http://127.0.0.1:8787",
         changeOrigin: true,
         rewrite: (p) => p.replace(/^\/api/, ""),
       },

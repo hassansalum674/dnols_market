@@ -1,25 +1,33 @@
 # Dnols API (Kariakoo stub)
 
-Independent Node + TypeScript + Fastify backend for the shop-only marketplace. The Vite PWA at the repo root is a separate package — this folder has its own `package.json`. Do not point the PWA `npm start` here.
+Independent Node + TypeScript + Fastify backend. This folder has its own `package.json` and `package-lock.json` — it is **not** an npm workspace of the repo root. Root `npm install` runs `postinstall` to install this package.
 
 Exact shop coordinates, street address, and shop name are **never** returned on listing endpoints until mock payment succeeds.
 
 ## Run
 
+From the repo root (API + one Vite for buyer and seller, one origin):
+
+```bash
+cd api && npm install && cd ..
+npm run dev
+```
+
+Vite on **http://localhost:5173** proxies `/api` here. You can also hit the API directly:
+
 ```bash
 cd api
 npm install
-npm start
+npm run dev
 ```
 
-Dev reload: `npm run dev`
-
-Listens on **http://localhost:8787** (override with `PORT`). JSON only. CORS defaults to `*` so Vite on `http://localhost:5173` works.
+Listens on **http://localhost:8787** (override with `PORT`). JSON only. CORS defaults to `*` so Vite on `http://localhost:5173` works. If `:8787` is already taken, root `npm run dev` **reuses** that process instead of crashing.
 
 Copy `.env.example` if you want `PORT`, `HOST`, `CORS_ORIGIN`, `BUYER_LAT`, `BUYER_LNG`. Variables are optional; defaults match Kariakoo.
 
 ```bash
-curl -s http://localhost:8787/health
+curl -s http://localhost:5173/api/health
+# or: curl -s http://localhost:8787/health
 ```
 
 OpenAPI: [`openapi.yaml`](./openapi.yaml) and `GET /openapi.json`.
@@ -40,7 +48,9 @@ Keep these even if the frontend uses different helper names:
 | POST | `/orders/reserve` | Demo unpaid escrow (`reserved`) so `GET /orders/:id` can hide location. |
 | GET | `/orders/:id` | Unpaid: no coordinates. Paid (`paid_held` / `handed_over`): `directions` payload. |
 | POST | `/orders/:id/handover` | `{ "pin": "...." }` confirm → `handed_over`. `{ "action": "reject" }` → `rejected_refund`. |
-| GET | `/trending` | In-stock SKUs for a 404 page. |
+| GET | `/search` | Alias of listings with `q` |
+| POST | `/payments/stk-push` | Mock STK: `{ phone, listingIds }` → success, then pay |
+| GET | `/payments/stk-push/:id` | Poll stub |
 
 Escrow mock: **reserved → paid_held → handed_over | rejected_refund**. `POST /orders/pay` jumps to `paid_held`.
 

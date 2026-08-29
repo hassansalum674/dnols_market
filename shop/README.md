@@ -1,42 +1,32 @@
-# Dnols Shop (seller PWA)
+# Seller source (`shop/`)
 
-Phone app for stall owners. Separate from the buyer PWA at the repo root (`http://localhost:5173`). Do not mix their tab chrome.
-
-Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700 (self-hosted from the buyer font files). Marks: `logo6_dark` splash, `logo4_submark` header / pulse (from [`../brand/`](../brand/)).
-
-## How to run (shop 5174 + API 8787)
-
-Leave the buyer app alone. In two terminals:
+This folder is **not a website you start**. Root Vite imports `shop/src` and serves it at `/shop`.
 
 ```bash
-# 1. Mock API
-cd /home/gaula/Desktop/Dnols/api
-npm install
+# repo root — one command, one origin
 npm run dev
-# http://localhost:8787  (CORS *)
 ```
 
-```bash
-# 2. Seller PWA
-cd /home/gaula/Desktop/Dnols/shop
-npm install
-npm run dev
-# http://localhost:5174
-```
+Then open **http://localhost:5173/shop**.
 
-Optional buyer alongside:
+## Port 5174 is dead
 
-```bash
-cd /home/gaula/Desktop/Dnols
-npm run dev
-# http://localhost:5173
-```
+Do **not** run `npm run dev`, `npm start`, `npm run preview`, or `npx vite` in this folder. Those scripts exit with an error (Vite config refuses `serve` / `preview` too).
 
-Vite in this folder proxies **`/api` → `http://localhost:8787`**. Override with `VITE_API_URL`.
+If you see **Dnols Shop** on `http://localhost:5174`, you started the leftover standalone shop app — **stop it**. Pull, then from the repo root: `npm run dev`. Open **5173** only (`/`, `/app`, `/shop`).
 
-Build: `npm run build` then `npm run preview` (also port **5174**). Icons: `npm run icons`.
+Quiet black UI, blue `#1A6FD4`, Playfair Display 400/700. In-app mark is always `logo6_dark` (wordmark). `logo5_favicon` is favicon / PWA icons only.
 
-Add to home screen. Theme `#0D0D0D`, name **Dnols Shop**.
+| URL on :5173 | Tab |
+| --- | --- |
+| `/shop` | Today |
+| `/shop/stock` | Stock |
+| `/shop/orders` | Orders |
+| `/shop/profile` | Shop |
+
+Router routes live under **`/shop`**. Seller API calls use **`/api`** on this origin. Leftover `App.tsx` still sets `basename: "/shop"` for a package entry you must not start.
+
+This folder stays in git (package.json, src, lockfile, vite.config) so it is not a wipe. It is not a server you run.
 
 ## Tabs (shop chrome)
 
@@ -54,6 +44,6 @@ Add to home screen. Theme `#0D0D0D`, name **Dnols Shop**.
 | Hours / payout | Local mock. Payout amount = handed_over totals minus stub payouts. |
 | Place | `GET /places` (Kariakoo). |
 | 404 in-shell | `GET /trending`. |
-| Switch to buying | Link to `http://localhost:5173`. |
+| Switch to buying | `/app` on the same origin. |
 
 Escrow on the API: **reserved → paid_held → handed_over | rejected_refund**. Pay jumps to `paid_held`.

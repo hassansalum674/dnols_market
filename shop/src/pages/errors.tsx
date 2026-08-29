@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
+import { shopPaths } from "../paths";
 
 export function ServerErrorPage() {
   return (
     <div className="center-state">
-      <img src="/brand/logo4_submark.svg" alt="Dnols" width={64} height={64} />
+      <img
+        className="state-mark"
+        src="/brand/logo6_dark.svg"
+        alt="Dnols"
+      />
       <p>Something broke on our side.</p>
-      <Link className="btn" to="/">
+      <Link className="btn" to={shopPaths.home}>
         Back to Today
       </Link>
     </div>

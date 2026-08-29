@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { paths } from "../lib/paths";
 
 export function EmptyCart() {
   return (
@@ -8,7 +9,7 @@ export function EmptyCart() {
         <path d="M18 16v-3a6 6 0 0 1 12 0v3" />
       </svg>
       <p>Your bag is empty. Kariakoo is a short walk away.</p>
-      <Link className="btn" to="/">
+      <Link className="btn" to={paths.home}>
         Start shopping
       </Link>
     </div>
@@ -28,7 +29,7 @@ export function StatusScreen({
 }) {
   return (
     <div className="center-state">
-      <img src="/brand/logo4_submark.svg" alt="Dnols" width={64} height={64} />
+      <img className="state-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
       <p>{line}</p>
       {to ? (
         <Link className="btn" to={to}>
