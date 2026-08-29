@@ -31,7 +31,7 @@ export function ProductPage() {
   if (detail === null) return <NotFoundPage soldOut />;
 
   return (
-    <div>
+    <div className="product-page">
       <img className="hero" src={detail.photoUrl} alt={detail.title} />
       <div className="product-body">
         <h1 className="product-title">{detail.title}</h1>
@@ -61,12 +61,12 @@ export function ProductPage() {
         >
           {saved ? "Saved" : "Save for later"}
         </button>
+        <div className="sticky-pay">
+          <AddToCartButton listing={detail} label="Pay / Reserve" />
+        </div>
         <p className="hint">
           <Link to="/">Back to nearby</Link>
         </p>
-      </div>
-      <div className="sticky-pay">
-        <AddToCartButton listing={detail} label="Pay / Reserve" />
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ export function CartPage() {
   if (items.length === 0) return <EmptyCart />;
 
   return (
-    <div className="page" style={{ paddingBottom: 100 }}>
+    <div className="page cart-page">
       {items.map((line) => (
         <div key={line.listing.id} className="order-card" style={{ display: "flex", gap: 12 }}>
           <img
