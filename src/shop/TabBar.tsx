@@ -1,10 +1,11 @@
 import { NavLink } from "react-router-dom";
+import { paths } from "../lib/paths";
 
 const tabs = [
-  { to: "/", label: "Today", end: true, name: "Today" },
-  { to: "/stock", label: "Stock", end: false, name: "Stock" },
-  { to: "/orders", label: "Orders", end: false, name: "Orders" },
-  { to: "/shop", label: "Shop", end: false, name: "Shop" },
+  { to: paths.shop, label: "Today", end: true, name: "Today" },
+  { to: paths.shopStock, label: "Stock", end: false, name: "Stock" },
+  { to: paths.shopOrders, label: "Orders", end: false, name: "Orders" },
+  { to: paths.shopProfile, label: "Shop", end: false, name: "Shop" },
 ] as const;
 
 function Ico({ name }: { name: string }) {
@@ -42,7 +43,7 @@ function Ico({ name }: { name: string }) {
   );
 }
 
-export function TabBar({ pickupCount }: { pickupCount: number }) {
+export function ShopTabBar({ pickupCount }: { pickupCount: number }) {
   return (
     <nav className="tabbar" aria-label="Shop">
       {tabs.map((t) => (

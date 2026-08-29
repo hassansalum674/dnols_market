@@ -17,7 +17,6 @@ export function AppLayout() {
   const hideTabs =
     loc.pathname.startsWith(`${APP}/checkout`) ||
     loc.pathname.startsWith(`${APP}/pickup`);
-  const shop = loc.pathname.startsWith("/shop");
   const showSplash = inBuyerApp(loc.pathname);
   const [splash, setSplash] = useState(() => {
     try {
@@ -52,19 +51,9 @@ export function AppLayout() {
     <>
       {splash && showSplash && <Splash onDone={done} />}
       <div className={`app-shell ${hideTabs ? "no-tabs" : ""}`}>
-        {!shop && (
-          <BuyerHeader>
-            <HeaderSearch />
-          </BuyerHeader>
-        )}
-        {shop && (
-          <header className="header">
-            <div className="header-row">
-              <img className="header-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
-              <span style={{ fontWeight: 700 }}>Shop</span>
-            </div>
-          </header>
-        )}
+        <BuyerHeader>
+          <HeaderSearch />
+        </BuyerHeader>
         <main>
           {nav.state === "loading" ? (
             <RoutePulse />
