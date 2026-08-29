@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { getListings } from "../api";
-import { ShimmerList } from "../components/Splash";
+import { ShimmerList } from "../Splash";
 import { loadSkus, saveSkus } from "../storage";
 import type { Category, LocalSku, PublicListing } from "../types";
-import { formatTzs } from "./errors";
+import { formatTzs } from "../format";
 
 type Merged = {
   key: string;
@@ -65,7 +65,7 @@ export function StockPage() {
       </button>
       {rows.length === 0 && (
         <div className="center-state">
-          <p>No SKUs. Start the API on 8787, or add a local item.</p>
+          <p>No SKUs. Check that the API is up, or add a local item.</p>
         </div>
       )}
       {rows.map((r) => {
@@ -194,7 +194,7 @@ function SkuSheet({
           <button
             type="button"
             className={inStock ? "btn" : "btn ghost"}
-            style={{ width: "auto", minHeight: 36, padding: "0 16px" }}
+            style={{ width: "auto", minHeight: 44, padding: "0 16px" }}
             onClick={() => setInStock((v) => !v)}
           >
             {inStock ? "Yes" : "No"}

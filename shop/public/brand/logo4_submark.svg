@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <rect width="200" height="200" fill="#FFFFFF"/>
-  <rect x="15" y="15" width="170" height="170" rx="32" fill="#1A6FD4"/>
-  <text x="100" y="152" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="134" font-weight="900" fill="#FFFFFF">d</text>
-</svg>

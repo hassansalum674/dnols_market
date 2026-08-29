@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { getOrder, handoverOrder, payOrder, rejectOrder } from "../api";
-import { ShimmerList } from "../components/Splash";
+import { ShimmerList } from "../Splash";
 import { useShopData } from "../shopData";
 import type { OrderView, SavedOrder } from "../types";
-import { formatTzs } from "./errors";
+import { formatTzs } from "../format";
 
 const DEMO_LISTING = "lst_kitenge_maxi_01";
 
@@ -59,7 +59,7 @@ export function OrdersPage() {
     } catch (e) {
       setDemoErr(
         e instanceof Error
-          ? `${e.message}. Is the API on :8787?`
+          ? `${e.message}. Is the API running? Use npm run dev from the repo root.`
           : "pay failed",
       );
     } finally {
@@ -143,7 +143,7 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
   }
 
   return (
-    <article className="card">
+    <article className="shop-card">
       <span className={live?.escrow === "paid_held" ? "pill live" : "pill"}>
         {live?.escrow ?? row.err ?? "unknown"}
       </span>

@@ -204,7 +204,7 @@ export function HomePage() {
         </div>
       )}
       {source === "mock" && listings && (
-        <p className="hint">Showing nearby mock listings — API at :8787 is optional.</p>
+        <p className="hint">Showing nearby mock listings — API is optional.</p>
       )}
       {isIdle && listings && listings.length > 0 && (
         <>
