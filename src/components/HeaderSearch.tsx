@@ -110,7 +110,7 @@ export function HeaderSearch({
                   {h.photoUrl ? (
                     <img src={h.photoUrl} alt="" />
                   ) : (
-                    <img src="/brand/logo4_submark.svg" alt="" />
+                    <img src="/brand/logo6_dark.svg" alt="" />
                   )}
                   <span>{h.q}</span>
                 </button>

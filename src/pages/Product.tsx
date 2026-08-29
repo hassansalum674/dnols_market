@@ -4,7 +4,7 @@ import { fetchListingDetail } from "../api/client";
 import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
-import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
+import { getPaidTokens, toggleSaved, getSavedIds, pushRecent } from "../store/persist";
 import type { PublicListingDetail } from "../types";
 import { ServerErrorPage } from "./errors";
 import { NotFoundPage } from "./NotFound";
@@ -22,6 +22,7 @@ export function ProductPage() {
     void fetchListingDetail(id, token).then(({ detail: d, status }) => {
       setFail(status ?? null);
       setDetail(d);
+      if (d) pushRecent(d);
     });
   }, [id]);
 

@@ -1,3 +1,5 @@
+import type { PublicListing } from "../types";
+
 const KEY = "dnols.searchHistory.v1";
 
 export type HistoryEntry = {
@@ -64,6 +66,33 @@ export function markPaid(listingIds: string[], token: string) {
     cur[id] = token;
   });
   localStorage.setItem("dnols.paid.v1", JSON.stringify(cur));
+}
+
+const RECENT = "dnols.recent.v1";
+
+export function getRecentProducts(): PublicListing[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT) || "[]") as PublicListing[];
+  } catch {
+    return [];
+  }
+}
+
+export function pushRecent(listing: PublicListing) {
+  const slim: PublicListing = {
+    id: listing.id,
+    title: listing.title,
+    priceTzs: listing.priceTzs,
+    category: listing.category,
+    photoUrl: listing.photoUrl,
+    distanceMeters: listing.distanceMeters,
+    inStock: listing.inStock,
+  };
+  const next = [
+    slim,
+    ...getRecentProducts().filter((p) => p.id !== listing.id),
+  ].slice(0, 8);
+  localStorage.setItem(RECENT, JSON.stringify(next));
 }
 
 const ORDERS = "dnols.orders.v1";

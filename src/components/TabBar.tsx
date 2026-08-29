@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
 
 const buyer = [
@@ -80,11 +80,21 @@ export function TabBar() {
 }
 
 export function BuyerHeader({ children }: { children?: ReactNode }) {
+  const { count } = useCart();
   return (
     <header className="header">
       <div className="header-row">
-        <img className="header-mark" src="/brand/logo4_submark.svg" alt="" />
+        <Link to="/" className="header-brand" aria-label="Dnols home">
+          <img className="header-mark" src="/brand/logo6_dark.svg" alt="Dnols" />
+        </Link>
         {children}
+        <nav className="header-links" aria-label="Account">
+          <Link to="/cart">
+            Cart{count > 0 ? ` · ${count}` : ""}
+          </Link>
+          <Link to="/orders">Orders</Link>
+          <Link to="/you">You</Link>
+        </nav>
       </div>
     </header>
   );

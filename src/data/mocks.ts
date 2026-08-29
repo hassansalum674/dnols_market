@@ -4,9 +4,9 @@ import type {
   PublicListing,
   PublicListingDetail,
 } from "../types";
+import { productPhoto } from "./photos";
 
-const pic = (seed: string) =>
-  `https://picsum.photos/seed/${encodeURIComponent(seed)}/640/640`;
+const pic = (seed: string) => productPhoto(seed);
 
 /** Distances from a Kariakoo pin — never expose shop lat/lng here. */
 const D: Record<string, number> = {

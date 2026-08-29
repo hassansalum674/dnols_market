@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { fetchListings } from "../api/client";
+import { fetchListings, fetchTrending } from "../api/client";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { CategoryCards, SectionHead, Shelf } from "../components/Shelf";
 import { StatusScreen } from "../components/EmptyState";
 import { PLACE_LABEL } from "../lib/format";
+import { getRecentProducts } from "../store/persist";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
 
 function fromParams(sp: URLSearchParams): ListingFilters {
@@ -47,22 +49,32 @@ export function HomePage() {
   const [draft, setDraft] = useState(filters);
   const [open, setOpen] = useState(false);
   const [listings, setListings] = useState<PublicListing[] | null>(null);
-  const [source, setSource] = useState<"api" | "mock">("mock");
   const [err, setErr] = useState<"offline" | "500" | null>(null);
+  const [trending, setTrending] = useState<PublicListing[]>([]);
+  const [recent, setRecent] = useState<PublicListing[]>([]);
+
+  const isIdle =
+    !filters.category &&
+    !filters.maxDistance &&
+    !filters.inStock &&
+    (filters.minPrice === "" || filters.minPrice == null) &&
+    (filters.maxPrice === "" || filters.maxPrice == null);
 
   useEffect(() => setDraft(filters), [filters]);
+
+  useEffect(() => {
+    void fetchTrending().then(setTrending);
+    setRecent(getRecentProducts());
+  }, []);
 
   useEffect(() => {
     let live = true;
     setListings(null);
     setErr(null);
-    if (!navigator.onLine) {
-      setErr("offline");
-    }
-    void fetchListings(filters).then(({ listings: rows, source: src }) => {
+    if (!navigator.onLine) setErr("offline");
+    void fetchListings(filters).then(({ listings: rows }) => {
       if (!live) return;
       setListings(rows);
-      setSource(src);
     });
     return () => {
       live = false;
@@ -73,39 +85,13 @@ export function HomePage() {
     setSp(toParams(next, sp), { replace: true });
   };
 
-  const chips: { key: string; label: string; on: boolean; clear: () => void }[] =
-    [];
-  if (filters.category)
-    chips.push({
-      key: "cat",
-      label: filters.category === "fashion" ? "Fashion" : "Electronics",
-      on: true,
-      clear: () => setFilters({ ...filters, category: "" }),
-    });
-  if (filters.maxDistance)
-    chips.push({
-      key: "max",
-      label:
-        Number(filters.maxDistance) >= 1000
-          ? "1km"
-          : `${filters.maxDistance}m`,
-      on: true,
-      clear: () => setFilters({ ...filters, maxDistance: "" }),
-    });
-  if (filters.inStock)
-    chips.push({
-      key: "stock",
-      label: "In stock",
-      on: true,
-      clear: () => setFilters({ ...filters, inStock: false }),
-    });
-  if (filters.minPrice !== "" && filters.minPrice != null)
-    chips.push({
-      key: "min",
-      label: `From TSh ${filters.minPrice}`,
-      on: true,
-      clear: () => setFilters({ ...filters, minPrice: "" }),
-    });
+  const closest = useMemo(() => {
+    if (!listings) return [];
+    return [...listings]
+      .filter((l) => l.inStock)
+      .sort((a, b) => a.distanceMeters - b.distanceMeters)
+      .slice(0, 8);
+  }, [listings]);
 
   if (err === "offline") {
     return (
@@ -119,6 +105,10 @@ export function HomePage() {
 
   return (
     <div className="page">
+      <p className="trust-strip">
+        Pay now. Money is held. We then show the stall. You may refuse at the
+        counter if it is not as listed.
+      </p>
       <p className="place-line">Near {PLACE_LABEL()}</p>
       <div className="filters-bar">
         <div className="chips">
@@ -164,30 +154,32 @@ export function HomePage() {
           Filters
         </button>
       </div>
-      {chips.length > 0 && (
-        <div className="chips">
-          {chips.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              className="chip on removable"
-              onClick={c.clear}
-            >
-              {c.label} ×
-            </button>
-          ))}
-        </div>
-      )}
-      {source === "mock" && listings && (
-        <p className="hint">Showing nearby mock listings — API at :8787 is optional.</p>
-      )}
+
       {listings === null ? (
         <SkeletonGrid />
       ) : listings.length === 0 ? (
         <p className="muted">Nothing in this range. Widen the walk.</p>
+      ) : isIdle ? (
+        <>
+          <CategoryCards listings={listings} />
+          <Shelf
+            title="Closest to you"
+            hint="In stock, walk-up"
+            listings={closest}
+          />
+          <Shelf title="Popular in Kariakoo" listings={trending} />
+          {recent.length > 0 && (
+            <Shelf title="Recently viewed" listings={recent} />
+          )}
+          <section className="shelf">
+            <SectionHead title="All nearby" />
+            <ProductGrid listings={listings} />
+          </section>
+        </>
       ) : (
         <ProductGrid listings={listings} />
       )}
+
       <FilterSheet
         open={open}
         filters={draft}

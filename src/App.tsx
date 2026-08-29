@@ -25,6 +25,9 @@ const OrdersPage = lazy(() =>
 const YouPage = lazy(() =>
   import("./pages/You").then((m) => ({ default: m.YouPage })),
 );
+const CategoriesPage = lazy(() =>
+  import("./pages/Categories").then((m) => ({ default: m.CategoriesPage })),
+);
 const NotFoundPage = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFoundPage })),
 );
@@ -57,6 +60,7 @@ const router = createBrowserRouter([
       { path: "checkout", element: <CheckoutPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "you", element: <YouPage /> },
+      { path: "categories", element: <CategoriesPage /> },
       {
         path: "shop",
         element: <ShopLayout />,
