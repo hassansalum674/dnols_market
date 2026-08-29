@@ -148,7 +148,7 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
         {live?.escrow ?? row.err ?? "unknown"}
       </span>
       <h2>{row.saved.orderId}</h2>
-      <div className="card-meta">
+      <div className="shop-card-meta">
         <span className="price">{formatTzs(row.saved.totalTzs)}</span>
         <span className="muted">{row.saved.listingIds.join(", ")}</span>
       </div>

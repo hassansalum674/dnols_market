@@ -142,7 +142,7 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
     <article className="shop-card">
       <span className="pill live">pickup · {live.escrow}</span>
       <h2>{live.orderId}</h2>
-      <div className="card-meta">
+      <div className="shop-card-meta">
         <span className="price">{formatTzs(live.totalTzs)}</span>
         <span className="muted">{live.listingIds.length} SKU</span>
       </div>

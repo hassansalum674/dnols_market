@@ -124,7 +124,7 @@ export function ShopPage() {
         {payoutMsg && <p className="ok">{payoutMsg}</p>}
         {payouts.slice(0, 5).map((p) => (
           <div key={p.id} className="shop-card">
-            <div className="card-meta">
+            <div className="shop-card-meta">
               <span className="price">{formatTzs(p.amountTzs)}</span>
               <span className="muted">{new Date(p.at).toLocaleString()}</span>
             </div>
