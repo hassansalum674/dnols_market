@@ -93,3 +93,147 @@ export type PayoutMock = {
   at: string;
   note: string;
 };
+
+/* ── Seller onboarding types ── */
+
+export type ShopCategory =
+  | "fashion_shoes"
+  | "fabrics_textiles"
+  | "phones_accessories"
+  | "electronics_gadgets";
+
+export const SHOP_CATEGORIES: { id: ShopCategory; label: string }[] = [
+  { id: "fashion_shoes", label: "Fashion & Shoes" },
+  { id: "fabrics_textiles", label: "Fabrics & Textiles" },
+  { id: "phones_accessories", label: "Phones & Accessories" },
+  { id: "electronics_gadgets", label: "Electronics & Gadgets" },
+];
+
+export type Floor = "ground" | "1st" | "2nd" | "3rd" | "basement";
+
+export const FLOORS: { id: Floor; label: string }[] = [
+  { id: "ground", label: "Ground" },
+  { id: "1st", label: "1st" },
+  { id: "2nd", label: "2nd" },
+  { id: "3rd", label: "3rd" },
+  { id: "basement", label: "Basement" },
+];
+
+export type PreferredLanguage = "english" | "swahili";
+
+export type MobileMoneyProvider = "mpesa" | "airtel" | "mixx" | "tigopesa";
+
+export const MOBILE_MONEY_PROVIDERS: {
+  id: MobileMoneyProvider;
+  label: string;
+  prefixes: string[];
+}[] = [
+  { id: "mpesa", label: "M-Pesa", prefixes: ["074", "075", "076", "077", "078", "079"] },
+  { id: "airtel", label: "Airtel Money", prefixes: ["068", "069", "078"] },
+  { id: "mixx", label: "Mixx by Yas", prefixes: ["065", "067", "071"] },
+  { id: "tigopesa", label: "Tigopesa", prefixes: ["065", "067", "071"] },
+];
+
+export type DayOfWeek = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+
+export const DAYS: { id: DayOfWeek; label: string }[] = [
+  { id: "mon", label: "Mon" },
+  { id: "tue", label: "Tue" },
+  { id: "wed", label: "Wed" },
+  { id: "thu", label: "Thu" },
+  { id: "fri", label: "Fri" },
+  { id: "sat", label: "Sat" },
+  { id: "sun", label: "Sun" },
+];
+
+export type SellerApplicationStatus =
+  | "draft"
+  | "pending_review"
+  | "active"
+  | "rejected"
+  | "suspended";
+
+export type OnboardingDraft = {
+  currentStep: number;
+  step1: {
+    shopName: string;
+    categories: ShopCategory[];
+    profilePhoto: string | null;
+    description: string;
+  };
+  step2: {
+    street: string;
+    stallNumber: string;
+    floor: Floor | "";
+    blockName: string;
+    landmark: string;
+  };
+  step3: {
+    primaryPhone: string;
+    whatsappSame: boolean;
+    whatsappPhone: string;
+    language: PreferredLanguage;
+  };
+  step4: {
+    legalName: string;
+    nidaNumber: string;
+    idFront: string | null;
+    idBack: string | null;
+    selfieWithId: string | null;
+  };
+  step5: {
+    provider: MobileMoneyProvider | "";
+    mobileMoneyNumber: string;
+    accountName: string;
+  };
+  step6: {
+    openDays: DayOfWeek[];
+    openingTime: string;
+    closingTime: string;
+    closedOnHolidays: boolean;
+  };
+  submittedAt: string | null;
+  updatedAt: string;
+};
+
+export type SellerProfile = OnboardingDraft & {
+  status: SellerApplicationStatus;
+  rejectionReason?: string;
+  shopId: string;
+  viewsToday: number;
+  viewsThisWeek: number;
+};
+
+export type ProductCondition =
+  | "new"
+  | "used_good"
+  | "used_fair"
+  | "refurbished";
+
+export const PRODUCT_CONDITIONS: { id: ProductCondition; label: string }[] = [
+  { id: "new", label: "New" },
+  { id: "used_good", label: "Used — Good" },
+  { id: "used_fair", label: "Used — Fair" },
+  { id: "refurbished", label: "Refurbished" },
+];
+
+export type SellerProduct = {
+  id: string;
+  name: string;
+  category: ShopCategory;
+  condition: ProductCondition;
+  photos: string[];
+  priceTzs: number;
+  negotiable: boolean;
+  stock: number;
+  variants: string[];
+  description: string;
+  skuCode: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type SellerSession = {
+  phone: string;
+  signedInAt: string;
+};

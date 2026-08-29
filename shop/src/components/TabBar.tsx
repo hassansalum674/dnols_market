@@ -1,10 +1,10 @@
 import { NavLink } from "react-router-dom";
 
 const tabs = [
-  { to: "/", label: "Today", end: true, name: "Today" },
-  { to: "/stock", label: "Stock", end: false, name: "Stock" },
-  { to: "/orders", label: "Orders", end: false, name: "Orders" },
-  { to: "/shop", label: "Shop", end: false, name: "Shop" },
+  { to: "/stall", label: "Today", end: true, name: "Today" },
+  { to: "/stall/stock", label: "Stock", end: false, name: "Stock" },
+  { to: "/stall/orders", label: "Orders", end: false, name: "Orders" },
+  { to: "/stall/shop", label: "Shop", end: false, name: "Shop" },
 ] as const;
 
 function Ico({ name }: { name: string }) {

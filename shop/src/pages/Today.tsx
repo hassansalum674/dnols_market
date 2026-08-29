@@ -72,7 +72,7 @@ export function TodayPage() {
         <div className="center-state">
           <img src="/brand/logo4_submark.svg" alt="" width={48} height={48} />
           <p>No pickups waiting. Demo an incoming order from Orders.</p>
-          <Link className="btn" to="/orders">
+          <Link className="btn" to="/stall/orders">
             Open Orders
           </Link>
         </div>

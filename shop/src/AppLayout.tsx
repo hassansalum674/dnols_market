@@ -7,10 +7,14 @@ import { useShopData } from "./shopData";
 import { markSplashSeen, splashSeen } from "./storage";
 
 const titles: Record<string, string> = {
-  "/": "Today",
+  "/stall": "Today",
+  "/stall/stock": "Stock",
+  "/stall/orders": "Orders",
+  "/stall/shop": "Shop",
   "/stock": "Stock",
   "/orders": "Orders",
   "/shop": "Shop",
+  "/today": "Today",
 };
 
 export function AppLayout() {
