@@ -1,0 +1,501 @@
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { payOrder } from "../api/client";
+import { PickupMap } from "./PickupMap";
+import { formatTsh } from "../lib/format";
+import {
+  loadLastPayMethod,
+  loadLastPayPhone,
+  PAY_METHODS,
+  saveCheckoutPrefs,
+} from "../lib/checkout";
+import {
+  formatTzPhoneDisplay,
+  isValidTzPhone,
+  normalizeTzPhone,
+} from "../lib/phone";
+import { useAuth } from "../store/auth";
+import { useCart } from "../store/cart";
+import { useCheckoutSheet } from "../store/checkoutSheet";
+import { markPaid, saveLocalOrder } from "../store/persist";
+
+export function CheckoutSheet() {
+  const {
+    step,
+    method,
+    order,
+    openPay,
+    goBack,
+    close,
+    setStep,
+    setMethod,
+    setOrder,
+  } = useCheckoutSheet();
+  const { items, totalTzs, remove, setQty, clear } = useCart();
+  const { user } = useAuth();
+  const nav = useNavigate();
+
+  const [phone, setPhone] = useState("");
+  const [editingContact, setEditingContact] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (step === "closed") return;
+    setMethod(loadLastPayMethod());
+    setPhone(loadLastPayPhone());
+    setErr(null);
+  }, [step, setMethod]);
+
+  useEffect(() => {
+    if (step !== "closed") {
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = "";
+      };
+    }
+  }, [step]);
+
+  if (step === "closed") return null;
+
+  const selectedMethod = PAY_METHODS.find((m) => m.id === method)!;
+  const displayPhone = formatTzPhoneDisplay(phone);
+  const savedPhone = loadLastPayPhone();
+  const contactEmail = user?.email ?? "Add email when you sign in";
+  const primaryDirection = order?.directions?.[0];
+
+  const startPayment = async () => {
+    setErr(null);
+    if (!isValidTzPhone(phone)) {
+      setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
+      return;
+    }
+    const normalized = normalizeTzPhone(phone);
+    setStep("waiting");
+    const listingIds = [...new Set(items.map((i) => i.listing.id))];
+    try {
+      await new Promise((r) => setTimeout(r, 2200));
+      const paid = await payOrder({
+        listingIds,
+        payMethod: method,
+        phone: normalized,
+      });
+      saveCheckoutPrefs(normalized, method);
+      markPaid(paid.listingIds, paid.accessToken || "paid");
+      saveLocalOrder(paid);
+      clear();
+      setOrder(paid);
+      setStep("success");
+    } catch (e) {
+      setStep("pay");
+      setErr(e instanceof Error ? e.message : "Payment failed. Try again.");
+    }
+  };
+
+  const handleClose = () => {
+    close();
+    if (window.location.pathname === "/cart" || window.location.pathname === "/checkout") {
+      nav("/", { replace: true });
+    }
+  };
+
+  return (
+    <>
+      <div
+        className="sheet-backdrop checkout-sheet-backdrop"
+        onClick={handleClose}
+        aria-hidden
+      />
+      <div
+        className="sheet checkout-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label={
+          step === "basket"
+            ? "Your basket"
+            : step === "pay"
+              ? "Checkout"
+              : step === "waiting"
+                ? "Confirm payment"
+                : "Order confirmed"
+        }
+      >
+        {step === "basket" && (
+          <>
+            <div className="sheet-head">
+              <h3>Your basket</h3>
+              <button
+                type="button"
+                className="sheet-close"
+                onClick={handleClose}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            {items.length === 0 ? (
+              <div className="checkout-sheet-empty">
+                <p>Your basket is empty.</p>
+                <button type="button" className="btn" onClick={handleClose}>
+                  Keep shopping
+                </button>
+              </div>
+            ) : (
+              <>
+                <ul className="uc-items">
+                  {items.map((line) => (
+                    <li key={line.listing.id} className="uc-item">
+                      <img
+                        className="uc-item-photo"
+                        src={line.listing.photoUrl}
+                        alt=""
+                      />
+                      <div className="uc-item-body">
+                        <p className="uc-item-title">{line.listing.title}</p>
+                        <p className="uc-item-price">
+                          {formatTsh(line.listing.priceTzs)}
+                        </p>
+                        <div className="uc-item-actions">
+                          <div className="uc-qty">
+                            <button
+                              type="button"
+                              aria-label="Decrease quantity"
+                              onClick={() =>
+                                setQty(line.listing.id, line.qty - 1)
+                              }
+                            >
+                              −
+                            </button>
+                            <span>{line.qty}</span>
+                            <button
+                              type="button"
+                              aria-label="Increase quantity"
+                              onClick={() =>
+                                setQty(line.listing.id, line.qty + 1)
+                              }
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="uc-trash"
+                            aria-label="Remove item"
+                            onClick={() => remove(line.listing.id)}
+                          >
+                            🗑
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+
+                <section className="uc-totals" aria-label="Order totals">
+                  <div className="uc-totals-row">
+                    <span>Subtotal</span>
+                    <span>{formatTsh(totalTzs)}</span>
+                  </div>
+                  <div className="uc-totals-row">
+                    <span>Pickup in Kariakoo</span>
+                    <span className="uc-free">FREE</span>
+                  </div>
+                  <div className="uc-totals-row uc-totals-total">
+                    <span>Total</span>
+                    <span>{formatTsh(totalTzs)}</span>
+                  </div>
+                </section>
+
+                <section className="uc-pay-section" aria-label="Unified checkout">
+                  <p className="uc-pay-label">Unified checkout</p>
+                  <p className="uc-pay-hint">
+                    Funds held in escrow until you pick up. Seller paid only
+                    after handover.
+                  </p>
+                  <div className="uc-pay-buttons">
+                    {PAY_METHODS.map((m, i) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        className={`uc-pay-btn ${i === PAY_METHODS.length - 1 ? "uc-pay-btn--dark" : ""}`}
+                        onClick={() => openPay(m.id)}
+                      >
+                        <span
+                          className="uc-pay-mark"
+                          style={{ background: m.accent }}
+                          aria-hidden
+                        >
+                          {m.label.charAt(0)}
+                        </span>
+                        {m.checkoutLabel}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="uc-pay-foot">
+                    M-Pesa · Mix by Yas · Airtel Money ·{" "}
+                    <Link to="/terms" onClick={handleClose}>
+                      escrow terms
+                    </Link>
+                  </p>
+                </section>
+              </>
+            )}
+          </>
+        )}
+
+        {step === "pay" && (
+          <>
+            <div className="sheet-head">
+              <button
+                type="button"
+                className="uc-back"
+                aria-label="Back to basket"
+                onClick={goBack}
+              >
+                ←
+              </button>
+              <h3 className="uc-topbar-title--caps">Checkout</h3>
+              <button
+                type="button"
+                className="sheet-close"
+                onClick={handleClose}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+
+            <section className="uc-panel">
+              <div className="uc-panel-head">
+                <h2 className="uc-panel-label">Contact details</h2>
+                <button
+                  type="button"
+                  className="uc-edit"
+                  onClick={() => setEditingContact((v) => !v)}
+                >
+                  {editingContact ? "Done" : "Edit"}
+                </button>
+              </div>
+              {editingContact || !user ? (
+                <div className="uc-contact-edit">
+                  {!user && (
+                    <p className="hint">
+                      <Link to="/signin" onClick={handleClose}>
+                        Sign in
+                      </Link>{" "}
+                      to save orders across devices.
+                    </p>
+                  )}
+                  <label className="field-label" htmlFor="sheet-pay-phone">
+                    Mobile money number
+                  </label>
+                  <input
+                    id="sheet-pay-phone"
+                    className="sheet-field"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="+255 7XX XXX XXX"
+                    value={phone}
+                    onChange={(e) => {
+                      setPhone(e.target.value);
+                      setErr(null);
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="uc-contact">
+                  <p className="uc-panel-strong">{contactEmail}</p>
+                  <p className="muted">
+                    {displayPhone || "Add your mobile money number"}
+                  </p>
+                </div>
+              )}
+            </section>
+
+            <section className="uc-panel">
+              <div className="uc-panel-head">
+                <h2 className="uc-panel-label">Payment details</h2>
+                <button type="button" className="uc-edit" onClick={goBack}>
+                  Switch
+                </button>
+              </div>
+
+              <div className="uc-wallets">
+                {PAY_METHODS.map((m) => (
+                  <button
+                    key={m.id}
+                    type="button"
+                    className={`uc-wallet ${method === m.id ? "on" : ""}`}
+                    onClick={() => setMethod(m.id)}
+                  >
+                    <span
+                      className="uc-pay-mark"
+                      style={{ background: m.accent }}
+                      aria-hidden
+                    >
+                      {m.label.charAt(0)}
+                    </span>
+                    <div className="uc-wallet-text">
+                      <p className="uc-panel-strong">{m.label}</p>
+                      <p className="muted">{m.network}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {savedPhone && savedPhone !== phone && (
+                <button
+                  type="button"
+                  className="uc-use-saved"
+                  onClick={() => setPhone(savedPhone)}
+                >
+                  Use saved number · {formatTzPhoneDisplay(savedPhone)}
+                </button>
+              )}
+
+              <label className="field-label" htmlFor="sheet-charge-phone">
+                Number to charge
+              </label>
+              <input
+                id="sheet-charge-phone"
+                className="sheet-field"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+255 7XX XXX XXX"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  setErr(null);
+                }}
+              />
+              <p className="hint">{selectedMethod.stkHint}</p>
+            </section>
+
+            <section className="uc-panel uc-panel--compact">
+              <div className="uc-totals-row">
+                <span>Total</span>
+                <span className="price">{formatTsh(totalTzs)}</span>
+              </div>
+            </section>
+
+            {err && <p className="err">{err}</p>}
+
+            <button
+              type="button"
+              className="btn checkout-sheet-continue"
+              onClick={() => void startPayment()}
+            >
+              Continue
+            </button>
+          </>
+        )}
+
+        {step === "waiting" && (
+          <div className="checkout-waiting">
+            <div className="stk-pulse" aria-hidden />
+            <h2 className="checkout-title">Check your phone</h2>
+            <p className="section-desc">
+              We sent a request to <strong>{displayPhone || phone}</strong> on{" "}
+              {selectedMethod.label}.
+            </p>
+            <p className="hint">{selectedMethod.stkHint}</p>
+            <p className="checkout-waiting-note">
+              Do not close this screen until payment completes.
+            </p>
+          </div>
+        )}
+
+        {step === "success" && order && (
+          <div className="checkout-sheet-success">
+            <div className="checkout-success-badge" aria-hidden>
+              ✓
+            </div>
+            <h2 className="uc-success-title">Thank you for shopping with us!</h2>
+
+            <section className="uc-panel checkout-code-panel">
+              <p className="uc-panel-label">Checkout code</p>
+              <p className="checkout-code-value">{order.pickupCode}</p>
+              <p className="hint">
+                Show this 6-character code at the stall in Kariakoo.
+              </p>
+            </section>
+
+            {primaryDirection ? (
+              <section className="uc-panel">
+                <h2 className="uc-panel-label">Pickup at</h2>
+                <p className="uc-panel-strong">{primaryDirection.shopName}</p>
+                <p className="muted">{primaryDirection.streetAddress}</p>
+                <PickupMap location={primaryDirection} />
+                <p className="hint">{primaryDirection.mapsHint}</p>
+              </section>
+            ) : (
+              <section className="uc-panel">
+                <p className="hint">
+                  Stall location will appear when the seller has registered their
+                  shop on Dnols.
+                </p>
+              </section>
+            )}
+
+            {order.directions && order.directions.length > 1 && (
+              <section className="uc-panel">
+                <h2 className="uc-panel-label">Other stalls</h2>
+                {order.directions.slice(1).map((d) => (
+                  <div key={d.shopName} className="checkout-direction">
+                    <p className="checkout-direction-name">{d.shopName}</p>
+                    <p className="muted">{d.streetAddress}</p>
+                    <PickupMap location={d} />
+                  </div>
+                ))}
+              </section>
+            )}
+
+            <section className="uc-panel">
+              <h2 className="uc-panel-label">Payment method</h2>
+              <div className="uc-paid-with">
+                <span
+                  className="uc-pay-mark"
+                  style={{ background: selectedMethod.accent }}
+                  aria-hidden
+                >
+                  {selectedMethod.label.charAt(0)}
+                </span>
+                <div>
+                  <p className="uc-panel-strong">{selectedMethod.label}</p>
+                  <p className="muted">
+                    {order.payPhone
+                      ? formatTzPhoneDisplay(order.payPhone)
+                      : displayPhone}
+                  </p>
+                </div>
+              </div>
+              <p className="hint">
+                {formatTsh(order.totalTzs)} held in escrow until handover.
+              </p>
+            </section>
+
+            <button
+              type="button"
+              className="btn checkout-sheet-continue"
+              onClick={() => {
+                handleClose();
+                nav("/orders");
+              }}
+            >
+              View my orders
+            </button>
+            <button
+              type="button"
+              className="uc-continue-link"
+              onClick={handleClose}
+            >
+              Continue shopping
+            </button>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}

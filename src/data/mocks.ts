@@ -1,5 +1,6 @@
 import type {
   Category,
+  DirectionsPayload,
   ListingFilters,
   PublicListing,
   PublicListingDetail,
@@ -552,6 +553,25 @@ export function mockByIds(ids: string[]): PublicListing[] {
     .map((id) => SEED.find((s) => s.id === id))
     .filter(Boolean)
     .map((s) => toPublic(s!));
+}
+
+/** Shop pickup coords unlocked after pay — one entry per stall. */
+export function mockDirectionsForListingIds(ids: string[]): DirectionsPayload[] {
+  const seen = new Set<string>();
+  const out: DirectionsPayload[] = [];
+  for (const id of ids) {
+    const s = SEED.find((x) => x.id === id);
+    if (!s || seen.has(s.shopId)) continue;
+    seen.add(s.shopId);
+    out.push({
+      shopName: s.shopName,
+      lat: s.lat,
+      lng: s.lng,
+      streetAddress: s.streetAddress,
+      mapsHint: `After payment: open Google Maps and search “${s.shopName}” or pin ${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}. Pickup is in Kariakoo — ask for the stall by shop name.`,
+    });
+  }
+  return out;
 }
 
 export const MOCK_CATEGORIES: Category[] = ["fashion", "electronics"];

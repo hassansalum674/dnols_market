@@ -2,6 +2,7 @@ import {
   filterListings,
   mockByIds,
   mockDetail,
+  mockDirectionsForListingIds,
   mockSuggest,
   mockTrending,
 } from "../data/mocks";
@@ -13,6 +14,7 @@ import type {
   PublicListing,
   PublicListingDetail,
 } from "../types";
+import { generatePickupCode } from "../lib/pickupCode";
 import { apiBase } from "../lib/apiBase";
 
 const BASE = apiBase();
@@ -165,11 +167,13 @@ export async function payOrder(input: {
       id: `ord_mock_${Date.now().toString(36)}`,
       listingIds: input.listingIds,
       status: "paid_held",
-      pickupCode: String(1000 + Math.floor(Math.random() * 9000)),
+      pickupCode: generatePickupCode(),
+      handoverPin: generatePickupCode(),
       totalTzs: mockByIds(input.listingIds).reduce((s, l) => s + l.priceTzs, 0),
       createdAt: new Date().toISOString(),
       paidAt: new Date().toISOString(),
       accessToken: `tok_mock_${Math.random().toString(36).slice(2)}`,
+      directions: mockDirectionsForListingIds(input.listingIds),
       payMethod: input.payMethod,
       payPhone: input.phone,
     };

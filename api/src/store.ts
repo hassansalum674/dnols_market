@@ -15,6 +15,17 @@ function pin4(): string {
   return String(Math.floor(1000 + Math.random() * 9000));
 }
 
+/** 6-char mixed-case checkout code for buyer pickup. */
+function pickupCode6(): string {
+  const chars =
+    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  let code = "";
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)]!;
+  }
+  return code;
+}
+
 function token(): string {
   return `tok_${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
 }
@@ -79,8 +90,8 @@ export class Store {
       listingIds: unique,
       shopIds,
       status: "paid_held",
-      pickupCode: pin4(),
-      handoverPin: pin4(),
+      pickupCode: pickupCode6(),
+      handoverPin: pickupCode6(),
       accessToken: token(),
       totalTzs,
       createdAt: now,
@@ -118,8 +129,8 @@ export class Store {
       listingIds: unique,
       shopIds,
       status: "reserved",
-      pickupCode: pin4(),
-      handoverPin: pin4(),
+      pickupCode: pickupCode6(),
+      handoverPin: pickupCode6(),
       accessToken: token(),
       totalTzs,
       createdAt: now,

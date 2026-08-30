@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
 import { useCart } from "../store/cart";
+import { useCheckoutSheet } from "../store/checkoutSheet";
 import type { PublicListing } from "../types";
 
 type Props = {
@@ -7,15 +7,15 @@ type Props = {
   label?: string;
 };
 
-/** Reserve a single item and go straight to checkout / payment. */
+/** Reserve a single item and open checkout sheet from the bottom. */
 export function ReservePayButton({ listing, label = "Reserve & pay" }: Props) {
   const { replaceWith } = useCart();
-  const navigate = useNavigate();
+  const { openBasket } = useCheckoutSheet();
 
   function reserve() {
     if (!listing.inStock) return;
     replaceWith(listing);
-    navigate("/cart");
+    openBasket();
   }
 
   return (

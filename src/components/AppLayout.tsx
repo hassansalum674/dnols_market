@@ -5,6 +5,7 @@ import { BuyerSubNav } from "./BuyerSubNav";
 import { HeaderSearch } from "./HeaderSearch";
 import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
+import { CheckoutSheet } from "./CheckoutSheet";
 import { SiteFooter } from "./SiteFooter";
 
 const SPLASH_KEY = "dnols.splash.session";
@@ -12,8 +13,6 @@ const SPLASH_KEY = "dnols.splash.session";
 export function AppLayout() {
   const loc = useLocation();
   const nav = useNavigation();
-  const hideTabs =
-    loc.pathname.startsWith("/checkout") || loc.pathname.startsWith("/cart");
   const legal =
     loc.pathname === "/terms" || loc.pathname === "/privacy";
   const shop = loc.pathname.startsWith("/shop");
@@ -49,8 +48,8 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
-      <div className={`app-shell ${hideTabs || legal ? "no-tabs" : ""}`}>
-        {!hideTabs && !legal && !shop && (
+      <div className={`app-shell ${legal ? "no-tabs" : ""}`}>
+        {!shop && (
           <>
             <BuyerHeader>
               <HeaderSearch />
@@ -77,8 +76,9 @@ export function AppLayout() {
             </Suspense>
           )}
         </main>
-        {!hideTabs && !legal && <TabBar />}
-        {!shop && !hideTabs && <SiteFooter />}
+        {!legal && <TabBar />}
+        {!shop && <SiteFooter />}
+        <CheckoutSheet />
         {!shop && (
           <p className="build-stamp" aria-hidden>
             build {typeof __BUILD_SHA__ !== "undefined" ? __BUILD_SHA__ : "dev"}

@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { CartProvider } from "./store/cart";
+import { CheckoutSheetProvider } from "./store/checkoutSheet";
 import { AuthProvider } from "./store/auth";
 import { ServerErrorPage } from "./pages/errors";
 
@@ -93,7 +94,9 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <RouterProvider router={router} />
+        <CheckoutSheetProvider>
+          <RouterProvider router={router} />
+        </CheckoutSheetProvider>
       </CartProvider>
     </AuthProvider>
   );

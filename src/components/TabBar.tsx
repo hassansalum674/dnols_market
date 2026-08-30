@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
+import { useCheckoutSheet } from "../store/checkoutSheet";
 import { useAuth } from "../store/auth";
 import { SELLER_URL } from "../lib/urls";
 import { BrandLogo } from "./BrandLogo";
@@ -66,26 +67,47 @@ export function TabBar() {
   const shopMode = pathname.startsWith("/shop");
   const tabs = shopMode ? shop : buyer;
   const { count } = useCart();
+  const { openBasket } = useCheckoutSheet();
+
+  const openCart = (e: MouseEvent) => {
+    e.preventDefault();
+    openBasket();
+  };
 
   return (
     <nav className="tabbar" aria-label="Primary">
       <div className="tabbar-inner">
-        {tabs.map((t) => (
-          <NavLink
-            key={t.to}
-            to={t.to}
-            end={t.end}
-            className={({ isActive }) => (isActive ? "active" : "")}
-          >
-            <span className="tab-ico">
-              <Ico name={t.label} />
-              {t.label === "Cart" && count > 0 && (
-                <span className="badge">{count}</span>
-              )}
-            </span>
-            <span className="tab-label">{t.label}</span>
-          </NavLink>
-        ))}
+        {tabs.map((t) =>
+          t.label === "Cart" && !shopMode ? (
+            <button
+              key={t.to}
+              type="button"
+              className="tabbar-cart-btn"
+              onClick={openCart}
+            >
+              <span className="tab-ico">
+                <Ico name={t.label} />
+                {count > 0 && <span className="badge">{count}</span>}
+              </span>
+              <span className="tab-label">{t.label}</span>
+            </button>
+          ) : (
+            <NavLink
+              key={t.to}
+              to={t.to}
+              end={t.end}
+              className={({ isActive }) => (isActive ? "active" : "")}
+            >
+              <span className="tab-ico">
+                <Ico name={t.label} />
+                {t.label === "Cart" && count > 0 && (
+                  <span className="badge">{count}</span>
+                )}
+              </span>
+              <span className="tab-label">{t.label}</span>
+            </NavLink>
+          ),
+        )}
       </div>
     </nav>
   );
@@ -94,6 +116,7 @@ export function TabBar() {
 export function BuyerHeader({ children }: { children?: ReactNode }) {
   const { count } = useCart();
   const { user, loading } = useAuth();
+  const { openBasket } = useCheckoutSheet();
   const displayName = user?.displayName || user?.email?.split("@")[0];
 
   return (
@@ -133,10 +156,14 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Home
           </NavLink>
-          <NavLink to="/cart" className={({ isActive }) => (isActive ? "active" : "")}>
+          <button
+            type="button"
+            className="header-nav-cart"
+            onClick={() => openBasket()}
+          >
             Cart
             {count > 0 && <span className="header-badge">{count}</span>}
-          </NavLink>
+          </button>
           <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
             Orders
           </NavLink>

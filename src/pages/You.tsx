@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useCheckoutSheet } from "../store/checkoutSheet";
 import { fetchListingDetail } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { GoogleSignInButton } from "../components/GoogleSignInButton";
@@ -10,6 +11,7 @@ import type { PublicListing } from "../types";
 
 export function YouPage() {
   const { user, loading, signOut } = useAuth();
+  const { openBasket } = useCheckoutSheet();
   const [saved, setSaved] = useState<PublicListing[] | null>(null);
 
   useEffect(() => {
@@ -69,10 +71,10 @@ export function YouPage() {
           <span className="account-tile-label">Orders</span>
           <span className="muted">Track pickups & escrow</span>
         </Link>
-        <Link to="/cart" className="account-tile">
+        <button type="button" className="account-tile" onClick={() => openBasket()}>
           <span className="account-tile-label">Cart</span>
           <span className="muted">Items to pay for</span>
-        </Link>
+        </button>
       </div>
 
       <section className="account-section escrow-card">

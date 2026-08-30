@@ -1073,6 +1073,129 @@ img {
   border-top-right-radius: 16px;
 }
 
+.checkout-sheet-backdrop {
+  z-index: 50;
+  animation: fade-in 0.25s ease;
+}
+
+.checkout-sheet {
+  z-index: 51;
+  max-height: 92vh;
+  animation: sheet-slide-up 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes sheet-slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.checkout-sheet .sheet-head {
+  display: grid;
+  grid-template-columns: 40px 1fr 40px;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--surface);
+  padding-bottom: 8px;
+}
+
+.checkout-sheet .sheet-head h3 {
+  margin: 0;
+  flex: 1;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.checkout-sheet-empty {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.checkout-sheet-continue {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.checkout-sheet-success {
+  text-align: center;
+  padding-bottom: 8px;
+}
+
+.checkout-code-panel {
+  text-align: center;
+}
+
+.checkout-code-value {
+  margin: 8px 0;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pickup-map {
+  display: block;
+  margin: 12px 0 8px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--faint);
+}
+
+.pickup-map iframe {
+  display: block;
+  width: 100%;
+  height: 180px;
+  border: 0;
+  pointer-events: none;
+}
+
+.tabbar-cart-btn,
+.header-nav-cart {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: none;
+}
+
+.tabbar-cart-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.header-nav-cart {
+  position: relative;
+  font-weight: 600;
+  color: var(--white);
+}
+
+.header-nav-cart:hover {
+  color: var(--brand);
+}
+
 .sheet-head {
   display: flex;
   align-items: center;
@@ -2415,6 +2538,11 @@ img {
   border: 1px solid var(--faint);
   border-radius: var(--radius);
   text-decoration: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
 }
 
 .account-tile-label {

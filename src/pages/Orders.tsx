@@ -64,7 +64,7 @@ export function OrdersPage() {
 
           {o.pickupCode && o.status === "paid_held" && (
             <div className="order-pickup">
-              <span className="muted">Pickup code</span>
+              <span className="muted">Checkout code</span>
               <span className="order-pickup-code">{o.pickupCode}</span>
             </div>
           )}
