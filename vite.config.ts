@@ -2,8 +2,22 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "node:path";
+import { execSync } from "node:child_process";
+
+function gitSha(): string {
+  try {
+    return execSync("git rev-parse --short HEAD", { encoding: "utf8" }).trim();
+  } catch {
+    return "dev";
+  }
+}
+
+const BUILD_SHA = gitSha();
 
 export default defineConfig({
+  define: {
+    __BUILD_SHA__: JSON.stringify(BUILD_SHA),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
@@ -11,6 +25,15 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    {
+      name: "dnols-build-stamp",
+      transformIndexHtml(html) {
+        return html.replace(
+          "<title>Dnols</title>",
+          `<title>Dnols</title>\n    <meta name="dnols-build" content="${BUILD_SHA}" />`,
+        );
+      },
+    },
     VitePWA({
       registerType: "autoUpdate",
       minify: false,
