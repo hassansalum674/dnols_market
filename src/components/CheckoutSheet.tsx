@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { PickupMap } from "./PickupMap";
+import { IconTrash } from "./IconTrash";
 import { formatTsh } from "../lib/format";
 import {
   loadLastPayMethod,
@@ -183,7 +184,7 @@ export function CheckoutSheet() {
                             aria-label="Remove item"
                             onClick={() => remove(line.listing.id)}
                           >
-                            🗑
+                            <IconTrash />
                           </button>
                         </div>
                       </div>

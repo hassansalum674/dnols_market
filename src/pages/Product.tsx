@@ -67,14 +67,12 @@ export function ProductPage() {
           <p className="hint">
             <Link to="/">Back to products</Link>
           </p>
-          <div className="product-buy product-buy-desktop">
-            <ReservePayButton listing={detail} />
-            <AddToCartButton listing={detail} label="Add to cart" fly={false} />
-          </div>
         </div>
       </div>
-      <div className="sticky-pay sticky-pay-mobile">
+
+      <div className="product-actions" aria-label="Purchase options">
         <ReservePayButton listing={detail} />
+        <AddToCartButton listing={detail} label="Add to cart" fly={false} />
       </div>
     </div>
   );

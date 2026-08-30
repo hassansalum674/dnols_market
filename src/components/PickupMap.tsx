@@ -5,26 +5,26 @@ type Props = {
   className?: string;
 };
 
-/** Embedded map using shop coordinates from the seller's registered stall. */
+/** Map preview using shop coordinates registered by the seller. */
 export function PickupMap({ location, className = "" }: Props) {
   const { lat, lng, shopName } = location;
-  const pad = 0.004;
-  const bbox = `${lng - pad},${lat - pad},${lng + pad},${lat + pad}`;
-  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${lat}%2C${lng}`;
+  const mapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+  const embedSrc = `https://maps.google.com/maps?q=${lat},${lng}&z=16&output=embed`;
 
   return (
     <a
       className={`pickup-map ${className}`.trim()}
-      href={`https://www.google.com/maps?q=${lat},${lng}`}
+      href={mapsLink}
       target="_blank"
       rel="noreferrer"
       aria-label={`Open ${shopName} in Google Maps`}
     >
       <iframe
         title={`Map: ${shopName}`}
-        src={src}
+        src={embedSrc}
         loading="lazy"
         referrerPolicy="no-referrer-when-downgrade"
+        allowFullScreen
       />
     </a>
   );
