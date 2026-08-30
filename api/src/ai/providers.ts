@@ -182,7 +182,7 @@ export async function generateJsonText(
       throw new Error(data.error?.message || `OpenAI failed (${res.status})`);
     }
     const raw = data.choices?.[0]?.message?.content ?? "{}";
-    return { data: parseJsonContent(raw), provider: "groq" };
+    return { data: parseJsonContent(raw), provider: "openai" };
   }
 
   throw new Error("No text AI provider configured.");

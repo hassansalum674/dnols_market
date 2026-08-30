@@ -48,6 +48,125 @@ If Firebase asks you to choose **Kotlin** or **Groovy**, or to download **`googl
 
 **Correct path for Dnols:** Add app → **Web** (`</>`) → copy the three config values into `.env.production`.
 
+## Google Sign-In popup (what you see in Chrome)
+
+When a seller taps **Continue with Google**, Firebase opens Google’s account picker in a **small popup window** (your screenshot: “Choose an account → continue to **dnols-2a394.firebaseapp.com**”). That popup **is** Google’s sign-in dialog — it is normal and secure.
+
+Flow on **shop.dnols.com**:
+
+1. Seller taps **Start** → Dnols shows a **sign-in modal** on your site (dark overlay).
+2. Seller taps **Continue with Google** → Google popup opens on top.
+3. After they pick an account, the popup closes and they continue to onboarding or add product.
+
+If the popup is blocked, the app falls back to a full-page redirect.
+
+---
+
+## Step-by-step: Firebase Console (required)
+
+### 1. Enable Google sign-in
+
+1. Open [Firebase Console](https://console.firebase.google.com) → project **`dnols-2a394`**
+2. Left menu: **Build** → **Authentication**
+3. Tab: **Sign-in method**
+4. Click **Google** → toggle **Enable** → pick a **Project support email** → **Save**
+
+### 2. Authorized domains (critical)
+
+Still in **Authentication**:
+
+1. Tab: **Settings**
+2. Section: **Authorized domains**
+3. Click **Add domain** and add each of these (no `https://`):
+
+| Domain |
+|--------|
+| `shop.dnols.com` |
+| `dnols.com` |
+| `localhost` (already there for dev) |
+
+Without `shop.dnols.com`, Google sign-in will fail on the seller app.
+
+### 3. Web app config (API keys for the PWA)
+
+1. **Project settings** (gear icon) → **Your apps**
+2. If no web app: **Add app** → **Web** (`</>`) → name it `dnols-seller` → **Register app**
+3. Copy **apiKey**, **authDomain**, **projectId** into `shop/.env.production`:
+
+```bash
+VITE_FIREBASE_API_KEY=AIzaSy...
+VITE_FIREBASE_AUTH_DOMAIN=dnols-2a394.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=dnols-2a394
+```
+
+Rebuild and redeploy the shop PWA after changing env vars.
+
+---
+
+## Step-by-step: Google Cloud Console (branding on the popup)
+
+Firebase uses the same Google Cloud project. Use this to set the app name/logo on the Google account picker.
+
+1. Open [Google Cloud Console](https://console.cloud.google.com)
+2. Top bar: select project **`dnols-2a394`** (same as Firebase)
+3. Menu: **APIs & Services** → **OAuth consent screen**
+
+### OAuth consent screen
+
+| Step | What to do |
+|------|------------|
+| User type | **External** (unless you only use Google Workspace) |
+| App name | **Dnols** |
+| User support email | Your email |
+| App logo | Upload your Dnols logo (optional; shows on Google popup) |
+| App domain | `https://shop.dnols.com` and `https://dnols.com` |
+| Authorized domains | `dnols.com`, `shop.dnols.com` |
+| Developer contact | Your email |
+
+**Scopes:** Firebase only needs basic profile/email — defaults are fine.
+
+**Test users:** While app status is **Testing**, add emails of people who should sign in (e.g. `hassansalum674@gmail.com`).
+
+**Publishing:** When ready for everyone, click **Publish app** on the consent screen.
+
+### OAuth client (credentials)
+
+1. **APIs & Services** → **Credentials**
+2. Open **Web client (auto created by Google Service)** — Firebase creates this automatically
+
+Check **Authorized JavaScript origins**:
+
+```
+https://shop.dnols.com
+https://dnols.com
+http://localhost:5173
+```
+
+Check **Authorized redirect URIs** includes:
+
+```
+https://dnols-2a394.firebaseapp.com/__/auth/handler
+```
+
+You usually **do not** need to create a new OAuth client — edit the auto-created one if origins are missing.
+
+---
+
+## Seller app: sign-in before selling
+
+The seller PWA now enforces:
+
+| Action | Sign-in required? |
+|--------|-------------------|
+| Browse landing page | No |
+| **Start** seller onboarding | **Yes** (modal) |
+| Onboarding steps | **Yes** |
+| Dashboard / **Add product** | **Yes** |
+
+Sign-in methods: **Google** or **email/password**.
+
+---
+
 ## Enable sign-in providers
 
 In Firebase Console → **Authentication** → **Sign-in method**:

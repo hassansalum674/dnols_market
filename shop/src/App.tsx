@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import { RequireSellerAuth } from "./components/RequireSellerAuth";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { ServerErrorPage } from "./pages/errors";
@@ -53,15 +54,50 @@ const NotFoundPage = lazy(() =>
 const router = createBrowserRouter([
   { path: "/", element: <SellLandingPage /> },
   { path: "/signin", element: <SignInPage /> },
-  { path: "/onboarding", element: <OnboardingPage /> },
-  { path: "/onboarding/:step", element: <OnboardingPage /> },
+  {
+    path: "/onboarding",
+    element: (
+      <RequireSellerAuth afterSignIn="/onboarding/1">
+        <OnboardingPage />
+      </RequireSellerAuth>
+    ),
+  },
+  {
+    path: "/onboarding/:step",
+    element: (
+      <RequireSellerAuth>
+        <OnboardingPage />
+      </RequireSellerAuth>
+    ),
+  },
   { path: "/pending", element: <PendingReviewPage /> },
   { path: "/rejected", element: <RejectedPage /> },
   { path: "/demo/approve", element: <DemoApprovePage /> },
   { path: "/demo/reject", element: <DemoRejectPage /> },
-  { path: "/dashboard", element: <DashboardPage /> },
-  { path: "/products/new", element: <ProductFormPage /> },
-  { path: "/products/:id/edit", element: <ProductFormPage /> },
+  {
+    path: "/dashboard",
+    element: (
+      <RequireSellerAuth>
+        <DashboardPage />
+      </RequireSellerAuth>
+    ),
+  },
+  {
+    path: "/products/new",
+    element: (
+      <RequireSellerAuth>
+        <ProductFormPage />
+      </RequireSellerAuth>
+    ),
+  },
+  {
+    path: "/products/:id/edit",
+    element: (
+      <RequireSellerAuth>
+        <ProductFormPage />
+      </RequireSellerAuth>
+    ),
+  },
   {
     path: "/stall",
     element: <AppLayout />,

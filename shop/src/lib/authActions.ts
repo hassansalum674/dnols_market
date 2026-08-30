@@ -47,10 +47,22 @@ async function requireAuth() {
 
 async function oauthSignIn(provider: GoogleAuthProvider) {
   const auth = await requireAuth();
-  if (isMobile()) {
-    await signInWithRedirect(auth, provider);
-  } else {
+  try {
     await signInWithPopup(auth, provider);
+  } catch (e) {
+    const code =
+      e && typeof e === "object" && "code" in e
+        ? String((e as { code: string }).code)
+        : "";
+    if (
+      code === "auth/popup-blocked" ||
+      code === "auth/popup-closed-by-user" ||
+      isMobile()
+    ) {
+      await signInWithRedirect(auth, provider);
+      return;
+    }
+    throw e;
   }
 }
 

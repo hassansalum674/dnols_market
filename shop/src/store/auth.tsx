@@ -18,6 +18,7 @@ import {
   type AuthUser,
 } from "../lib/authActions";
 import { initFirebase } from "../lib/firebase";
+import { saveSession } from "../storage";
 
 type AuthState = {
   user: AuthUser | null;
@@ -41,6 +42,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void initFirebase().then((ok) => setConfigured(ok));
     return subscribeAuth(setUser, () => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    saveSession({
+      phone: user.email ?? user.uid,
+      signedInAt: new Date().toISOString(),
+    });
+  }, [user]);
 
   const doSignOut = useCallback(async () => {
     await authSignOut();

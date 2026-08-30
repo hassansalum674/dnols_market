@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../store/auth";
 
 type Mode = "signin" | "signup" | "reset";
@@ -6,15 +6,18 @@ type Mode = "signin" | "signup" | "reset";
 type Props = {
   title?: string;
   subtitle?: string;
+  id?: string;
   onSuccess?: () => void;
 };
 
 export function SignInPanel({
   title = "Sign in to Dnols",
   subtitle = "Use Google or email to manage your seller account.",
+  id,
   onSuccess,
 }: Props) {
   const {
+    user,
     configured,
     loading,
     signInWithGoogle,
@@ -22,6 +25,10 @@ export function SignInPanel({
     signUpWithEmail,
     resetPassword,
   } = useAuth();
+
+  useEffect(() => {
+    if (user) onSuccess?.();
+  }, [user, onSuccess]);
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -72,7 +79,9 @@ export function SignInPanel({
 
   return (
     <div className="signin-panel">
-      <h2 className="signin-title">{title}</h2>
+      <h2 className="signin-title" id={id}>
+        {title}
+      </h2>
       <p className="section-desc">{subtitle}</p>
 
       {!loading && !configured && (

@@ -1,11 +1,16 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { SignInDialog } from "../components/SignInDialog";
 import { SellHeader } from "../components/SellHeader";
-import { isSignedIn, loadDraft, loadProfile } from "../storage";
+import { useAuth } from "../store/auth";
+import { loadDraft, loadProfile } from "../storage";
 
 export function SellLandingPage() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const profile = loadProfile();
   const draft = loadDraft();
-  const signedIn = isSignedIn();
+  const [signInOpen, setSignInOpen] = useState(false);
 
   let ctaPath = "/onboarding";
   let ctaLabel = "Start";
@@ -24,9 +29,30 @@ export function SellLandingPage() {
     ctaLabel = "Continue";
   }
 
+  function goNext() {
+    navigate(ctaPath);
+  }
+
+  function onStartClick(e: React.MouseEvent) {
+    if (user) {
+      goNext();
+      return;
+    }
+    e.preventDefault();
+    setSignInOpen(true);
+  }
+
   return (
     <div className="sell-landing">
       <SellHeader becomeSellerTo={ctaPath} hideSellerCta />
+      <SignInDialog
+        open={signInOpen}
+        onClose={() => setSignInOpen(false)}
+        onSignedIn={() => {
+          setSignInOpen(false);
+          goNext();
+        }}
+      />
       <main className="sell-hero">
         <img
           className="sell-hero-mark"
@@ -53,16 +79,20 @@ export function SellLandingPage() {
           </p>
         </div>
 
-        <Link to={ctaPath} className="btn sell-cta">
+        <button type="button" className="btn sell-cta" onClick={onStartClick}>
           {ctaLabel}
-        </Link>
+        </button>
 
-        {!signedIn && (
+        {!user && (
           <p className="sell-signin-hint">
             Already a seller?{" "}
-            <Link to="/signin" className="text-link">
+            <button
+              type="button"
+              className="text-link-btn"
+              onClick={() => setSignInOpen(true)}
+            >
               Sign in
-            </Link>
+            </button>
           </p>
         )}
       </main>
