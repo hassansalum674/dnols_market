@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import { CartProvider } from "./store/cart";
+import { AuthProvider } from "./store/auth";
 import { ServerErrorPage } from "./pages/errors";
 
 const HomePage = lazy(() =>
@@ -24,6 +25,9 @@ const OrdersPage = lazy(() =>
 );
 const YouPage = lazy(() =>
   import("./pages/You").then((m) => ({ default: m.YouPage })),
+);
+const SettingsPage = lazy(() =>
+  import("./pages/Settings").then((m) => ({ default: m.SettingsPage })),
 );
 const NotFoundPage = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFoundPage })),
@@ -57,6 +61,7 @@ const router = createBrowserRouter([
       { path: "checkout", element: <CheckoutPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "you", element: <YouPage /> },
+      { path: "you/settings", element: <SettingsPage /> },
       {
         path: "shop",
         element: <ShopLayout />,
@@ -74,8 +79,10 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <CartProvider>
-      <RouterProvider router={router} />
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
+    </AuthProvider>
   );
 }

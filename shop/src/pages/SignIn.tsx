@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 import { SellHeader } from "../components/SellHeader";
 import { isValidTzPhone, normalizeTzPhone } from "../lib/validation";
 import { loadDraft, loadProfile, saveSession } from "../storage";
@@ -9,17 +10,15 @@ export function SignInPage() {
   const [phone, setPhone] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isValidTzPhone(phone)) {
-      setErr("Enter a valid +255 phone number.");
-      return;
-    }
+  function afterAuth(identifier: string) {
     saveSession({
-      phone: normalizeTzPhone(phone),
+      phone: identifier,
       signedInAt: new Date().toISOString(),
     });
+    routeAfterSignIn();
+  }
 
+  function routeAfterSignIn() {
     const profile = loadProfile();
     if (profile?.status === "active") {
       navigate("/dashboard");
@@ -33,12 +32,29 @@ export function SignInPage() {
     }
   }
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isValidTzPhone(phone)) {
+      setErr("Enter a valid +255 phone number.");
+      return;
+    }
+    afterAuth(normalizeTzPhone(phone));
+  }
+
   return (
     <div className="sell-landing">
       <SellHeader />
       <main className="page auth-page">
         <h1>Sign in</h1>
-        <p className="muted">Use the phone number you registered with.</p>
+        <p className="muted">Use Google or the phone number you registered with.</p>
+
+        <GoogleSignInButton
+          label="Sign in with Google"
+          onSuccess={(email) => afterAuth(email)}
+        />
+
+        <p className="auth-divider">or use phone</p>
+
         <form onSubmit={submit}>
           <label className="lbl">Phone number</label>
           <input
@@ -51,11 +67,10 @@ export function SignInPage() {
               setPhone(e.target.value);
               setErr(null);
             }}
-            autoFocus
           />
           {err && <p className="err">{err}</p>}
           <button type="submit" className="btn" style={{ marginTop: 20 }}>
-            Continue
+            Continue with phone
           </button>
         </form>
         <p className="hint" style={{ marginTop: 24 }}>

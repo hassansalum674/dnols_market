@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { getSavedIds } from "../store/persist";
+import { useAuth } from "../store/auth";
+import { SELLER_URL } from "../lib/urls";
 import type { PublicListing } from "../types";
 
 export function YouPage() {
+  const { user, loading, signOut } = useAuth();
   const [saved, setSaved] = useState<PublicListing[] | null>(null);
-  const [name, setName] = useState(
-    () => localStorage.getItem("dnols.name") || "",
-  );
 
   useEffect(() => {
     const ids = getSavedIds();
@@ -26,38 +27,92 @@ export function YouPage() {
     });
   }, []);
 
+  const displayName = user?.displayName || user?.email?.split("@")[0] || "Guest";
+
   return (
-    <div className="page">
-      <div className="you-block">
-        <h2>My Account</h2>
-        <p className="muted">Browse as a guest or save your name for faster checkout.</p>
-        <label className="muted" htmlFor="name">
-          Name
-        </label>
-        <input
-          id="name"
-          className="field-input"
-          value={name}
-          placeholder="Optional"
-          onChange={(e) => {
-            setName(e.target.value);
-            localStorage.setItem("dnols.name", e.target.value);
-          }}
-        />
-        <p className="hint">
-          <Link to="/shop">Sell from a stall · shop mode</Link>
-        </p>
+    <div className="page account-page">
+      <h1 className="account-title">My Account</h1>
+
+      {loading ? (
+        <p className="muted">Loading…</p>
+      ) : user ? (
+        <div className="account-profile">
+          {user.photoURL ? (
+            <img className="account-avatar" src={user.photoURL} alt="" />
+          ) : (
+            <div className="account-avatar account-avatar-fallback">
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div>
+            <p className="account-name">{displayName}</p>
+            <p className="muted account-email">{user.email}</p>
+          </div>
+        </div>
+      ) : (
+        <div className="account-signin-card">
+          <p className="section-desc">
+            Sign in with Google to save orders, track escrow payments, and pick up
+            faster at Kariakoo stalls.
+          </p>
+          <GoogleSignInButton label="Sign in with Google" />
+        </div>
+      )}
+
+      <div className="account-tiles">
+        <Link to="/orders" className="account-tile">
+          <span className="account-tile-label">Orders</span>
+          <span className="muted">Track pickups & escrow</span>
+        </Link>
+        <Link to="/cart" className="account-tile">
+          <span className="account-tile-label">Cart</span>
+          <span className="muted">Items to pay for</span>
+        </Link>
       </div>
-      <div className="you-block">
-        <h2>Saved</h2>
+
+      <section className="account-section escrow-card">
+        <h2>How escrow works</h2>
+        <ol className="escrow-steps">
+          <li>You pay upfront — money is held safely</li>
+          <li>Walk to the stall in Kariakoo</li>
+          <li>Show your pickup code to the seller</li>
+          <li>Seller confirms handover — then they get paid</li>
+        </ol>
+      </section>
+
+      <nav className="account-menu" aria-label="Account menu">
+        <Link to="/you/settings" className="account-menu-item">
+          Settings & appearance
+        </Link>
+        <a
+          href={SELLER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="account-menu-item"
+        >
+          Become a seller
+        </a>
+        <Link to="/orders" className="account-menu-item">
+          Order history
+        </Link>
+      </nav>
+
+      {user && (
+        <button type="button" className="btn ghost account-menu-btn" onClick={() => void signOut()}>
+          Sign out
+        </button>
+      )}
+
+      <section className="account-section">
+        <h2>Saved items</h2>
         {saved === null ? (
           <SkeletonGrid n={2} />
         ) : saved.length === 0 ? (
-          <p className="muted">Nothing saved. Heart an item from its page.</p>
+          <p className="muted">Nothing saved yet. Tap Save on a product page.</p>
         ) : (
           <ProductGrid listings={saved} />
         )}
-      </div>
+      </section>
     </div>
   );
 }
