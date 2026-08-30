@@ -15,7 +15,9 @@ export type PhotoPipelineResult = {
   after: ProcessedPhoto;
 };
 
-const BASE = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+import { apiBase } from "./apiBase";
+
+const BASE = apiBase();
 
 /** Read file as object URL for before preview — never persisted as listing photo */
 export function filePreviewUrl(file: File): string {
@@ -30,6 +32,16 @@ export function revokePreviewUrl(url: string): void {
  * Process a product photo through the server pipeline.
  * Raw uploads are never returned to buyers — only CDN URLs from this call.
  */
+function photoFetchError(cause: unknown): Error {
+  const msg = cause instanceof Error ? cause.message : String(cause);
+  if (/failed to fetch|networkerror|load failed/i.test(msg)) {
+    return new Error(
+      "Cannot reach the photo server. The API at dnols-83jj.onrender.com may be offline — redeploy the marketplace API (root directory: api) on Render, then try again.",
+    );
+  }
+  return cause instanceof Error ? cause : new Error(msg || "Photo processing failed");
+}
+
 export async function processProductPhoto(
   file: File,
   mode: PhotoProcessMode,
@@ -39,10 +51,16 @@ export async function processProductPhoto(
   form.append("file", file);
   form.append("mode", mode);
 
-  const res = await fetch(`${BASE}/photos/process`, {
-    method: "POST",
-    body: form,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/photos/process`, {
+      method: "POST",
+      body: form,
+    });
+  } catch (e) {
+    revokePreviewUrl(beforeUrl);
+    throw photoFetchError(e);
+  }
 
   const body = (await res.json().catch(() => ({}))) as ProcessedPhoto & {
     error?: string;
@@ -51,7 +69,12 @@ export async function processProductPhoto(
 
   if (!res.ok) {
     revokePreviewUrl(beforeUrl);
-    throw new Error(body.message || body.error || "Photo processing failed");
+    if (res.status === 404) {
+      throw new Error(
+        "Photo API not found (404). Redeploy dnols_market/api on Render — the service is currently running the wrong app.",
+      );
+    }
+    throw new Error(body.message || body.error || `Photo processing failed (${res.status})`);
   }
 
   const after = {

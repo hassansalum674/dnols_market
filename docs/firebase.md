@@ -71,11 +71,54 @@ Already connected on Firebase site `dnols-2a394`. After deploy, buyer app is liv
 - https://dnols.com
 - https://dnols-2a394.web.app
 
-For seller app, add DNS for **shop.dnols.com** in your domain registrar (Firebase Console shows the exact records):
+### shop.dnols.com SSL ("site not safe")
+
+If the browser warns that **shop.dnols.com** is not secure, the TLS certificate does not yet cover that hostname. Fix in Firebase Console:
+
+1. **Hosting** → site **`shop-buyer`** → **Custom domains**
+2. Open **shop.dnols.com** — status should be **Connected** with a green check
+3. If it shows **Needs setup** or **Pending**, add/update the DNS record your registrar shows (usually a **CNAME** for `shop` → Firebase)
+4. Wait up to 24 hours for SSL provisioning after DNS propagates
+5. Remove any old A/CNAME records pointing `shop` at Render or another host — only Firebase should serve `shop.dnols.com`
+
+Verify from your machine:
+
+```bash
+curl -sSI https://shop.dnols.com | grep -i "HTTP\|server\|x-served"
+openssl s_client -connect shop.dnols.com:443 -servername shop.dnols.com </dev/null 2>/dev/null | openssl x509 -noout -subject -dates
+```
+
+The certificate **subject** must include `shop.dnols.com`.
+
+For seller app DNS:
 
 | Type | Name | Value |
 |------|------|--------|
-| CNAME | `shop` | `(value from Firebase Hosting setup)` |
+| CNAME | `shop` | `(value from Firebase Hosting setup for shop-buyer)` |
+
+---
+
+## Troubleshooting
+
+### dnols.com still shows the old agent landing page
+
+You are likely deploying from the wrong repo or an outdated clone. Use **`dnols_market`** (not `dnols`):
+
+```bash
+cd ~/Desktop/dnols_market   # not ~/Desktop/Dnols
+git fetch origin && git reset --hard origin/main
+firebase target:apply hosting buyer dnols-2a394 --project dnols-2a394
+firebase target:apply hosting shop shop-buyer --project dnols-2a394
+npm run firebase:deploy
+```
+
+### Cover photo "Failed to fetch"
+
+The seller app calls `https://dnols-83jj.onrender.com/photos/process`. If that URL returns 404, Render is running the **wrong app** (old agent server). See [render.md](./render.md) — set root directory to **`api`**, repo **`dnols_market`**, then redeploy. Health check must return:
+
+```json
+{"ok":true,"service":"dnols-api"}
+```
 
 ---
 
