@@ -71,30 +71,68 @@ Already connected on Firebase site `dnols-2a394`. After deploy, buyer app is liv
 - https://dnols.com
 - https://dnols-2a394.web.app
 
-### shop.dnols.com SSL ("site not safe")
+### shop.dnols.com SSL ("site not safe" / "DNS request failed")
 
-If the browser warns that **shop.dnols.com** is not secure, the TLS certificate does not yet cover that hostname. Fix in Firebase Console:
+Firebase shows **"Hosting's DNS request for shop.dnols.com failed"** when it cannot finish SSL certificate minting. The site may load over HTTP but the browser warns it is not secure because the certificate does not yet include `shop.dnols.com`.
 
-1. **Hosting** → site **`shop-buyer`** → **Custom domains**
-2. Open **shop.dnols.com** — status should be **Connected** with a green check
-3. If it shows **Needs setup** or **Pending**, add/update the DNS record your registrar shows (usually a **CNAME** for `shop` → Firebase)
-4. Wait up to 24 hours for SSL provisioning after DNS propagates
-5. Remove any old A/CNAME records pointing `shop` at Render or another host — only Firebase should serve `shop.dnols.com`
+**Registrar:** Spaceship (`launch1.spaceship.net`). Use **Advanced DNS** for `dnols.com`.
 
-Verify from your machine:
+#### Fix (Spaceship Advanced DNS)
+
+**Step 1 — Remove the CNAME (if present)**
+
+Delete any record like:
+
+| Type | Host | Value |
+|------|------|--------|
+| CNAME | `shop` | `shop-buyer.web.app` |
+
+Firebase SSL minting is more reliable with an **A record**, not a CNAME to `.web.app`.
+
+**Step 2 — Add an A record for the subdomain**
+
+| Type | Host | Value | TTL |
+|------|------|--------|-----|
+| A | `shop` | `199.36.158.100` | Automatic / 300 |
+
+- Host must be **`shop`** only — not `shop.dnols.com`
+- Do **not** add both an A record and a CNAME for `shop`
+
+**Step 3 — Add the site ownership TXT record**
+
+On the **shop-buyer** hosting site, Firebase may require a TXT record. Add:
+
+| Type | Host | Value |
+|------|------|--------|
+| TXT | `shop` | `hosting-site=shop-buyer` |
+
+(Your apex already has `hosting-site=dnols-2a394` for the buyer site — that is separate.)
+
+**Step 4 — Add ACME challenge TXT if Firebase shows one**
+
+In Firebase Console → Hosting → **shop-buyer** → Domains → click **shop.dnols.com** → if you see a TXT challenge for certificate verification, add it exactly as shown, e.g.:
+
+| Type | Host | Value |
+|------|------|--------|
+| TXT | `_acme-challenge.shop` | *(paste value from Firebase)* |
+
+**Step 5 — Retry in Firebase**
+
+1. Wait 15–30 minutes for DNS to propagate
+2. In Firebase, open **shop.dnols.com** → click **Finish** or re-open the domain wizard
+3. Status should move from **Minting certificate** → **Connected**
+
+**Step 6 — Verify**
 
 ```bash
-curl -sSI https://shop.dnols.com | grep -i "HTTP\|server\|x-served"
-openssl s_client -connect shop.dnols.com:443 -servername shop.dnols.com </dev/null 2>/dev/null | openssl x509 -noout -subject -dates
+dig shop.dnols.com A +short
+# → 199.36.158.100
+
+curl -sSI https://shop.dnols.com | head -3
+# → HTTP/2 200 (no SSL error)
 ```
 
-The certificate **subject** must include `shop.dnols.com`.
-
-For seller app DNS:
-
-| Type | Name | Value |
-|------|------|--------|
-| CNAME | `shop` | `(value from Firebase Hosting setup for shop-buyer)` |
+If it stays stuck after 24 hours: remove `shop.dnols.com` from Firebase Hosting, wait 10 minutes, add it again, and repeat steps 1–5 with fresh values from the wizard.
 
 ---
 
