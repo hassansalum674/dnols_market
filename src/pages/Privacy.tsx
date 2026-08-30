@@ -12,7 +12,7 @@ export function PrivacyPage() {
         <>
           Dnols (“we”, “us”, “our”) operates the buyer marketplace at{" "}
           <strong>dnols.com</strong> and the seller tools at{" "}
-          <strong>shop.dnols.com</strong>. This Privacy Policy explains what
+          <strong>dnols.com/sell</strong>. This Privacy Policy explains what
           information we collect, how we use it, and the choices you have. By
           using Dnols, you agree to this policy.
         </>
@@ -27,7 +27,7 @@ export function PrivacyPage() {
                 Dnols is a marketplace focused on in-person pickup in Kariakoo,
                 Dar es Salaam, Tanzania. Buyers browse and pay on{" "}
                 <strong>dnols.com</strong>. Sellers list products and manage
-                orders on <strong>shop.dnols.com</strong>.
+                orders on <strong>dnols.com/sell</strong>.
               </p>
               <p>
                 For privacy questions or requests, contact us at{" "}
@@ -102,7 +102,7 @@ export function PrivacyPage() {
               </ul>
               <p>
                 Sellers may use AI-assisted tools (e.g. cover photos and
-                descriptions) on shop.dnols.com. Product text and images you
+                descriptions) on dnols.com/sell. Product text and images you
                 provide may be processed by third-party AI providers to generate
                 or improve listings, as described in our seller terms.
               </p>

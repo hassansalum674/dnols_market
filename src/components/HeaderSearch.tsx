@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchSuggest } from "../api/client";
+import { useAuth } from "../store/auth";
 import {
   clearHistory,
   getHistory,
@@ -17,6 +18,7 @@ export function HeaderSearch({
   onSubmitQuery?: (q: string) => void;
 }) {
   const nav = useNavigate();
+  const { user } = useAuth();
   const [q, setQ] = useState(initial);
   const [open, setOpen] = useState(false);
   const [suggest, setSuggest] = useState<PublicListing[]>([]);
@@ -24,7 +26,7 @@ export function HeaderSearch({
   const box = useRef<HTMLDivElement>(null);
 
   useEffect(() => setQ(initial), [initial]);
-  useEffect(() => setHistory(getHistory()), [open]);
+  useEffect(() => setHistory(getHistory(user?.uid)), [open, user?.uid]);
 
   useEffect(() => {
     if (!q.trim()) {
@@ -48,8 +50,8 @@ export function HeaderSearch({
   const go = (query: string, photoUrl?: string) => {
     const trimmed = query.trim();
     if (!trimmed) return;
-    pushHistory({ q: trimmed, photoUrl, at: Date.now() });
-    setHistory(getHistory());
+    pushHistory({ q: trimmed, photoUrl, at: Date.now() }, user?.uid);
+    setHistory(getHistory(user?.uid));
     setOpen(false);
     if (onSubmitQuery) onSubmitQuery(trimmed);
     else nav(`/search?q=${encodeURIComponent(trimmed)}`);
@@ -97,11 +99,14 @@ export function HeaderSearch({
                   className="suggest-row"
                   key={s.id}
                   onClick={() => {
-                    pushHistory({
-                      q: s.title,
-                      photoUrl: s.photoUrl,
-                      at: Date.now(),
-                    });
+                    pushHistory(
+                      {
+                        q: s.title,
+                        photoUrl: s.photoUrl,
+                        at: Date.now(),
+                      },
+                      user?.uid,
+                    );
                     setOpen(false);
                     nav(`/product/${s.id}`);
                   }}
@@ -134,7 +139,7 @@ export function HeaderSearch({
                 type="button"
                 className="suggest-row muted"
                 onClick={() => {
-                  clearHistory();
+                  clearHistory(user?.uid);
                   setHistory([]);
                 }}
               >

@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { EmptyCart } from "../components/EmptyState";
 import { formatTsh } from "../lib/format";
+import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
 import { markPaid, saveLocalOrder } from "../store/persist";
 
@@ -16,6 +17,7 @@ const METHODS: { id: PayMethod; label: string; hint: string }[] = [
 
 export function CheckoutPage() {
   const { items, totalTzs, clear } = useCart();
+  const { user } = useAuth();
   const nav = useNavigate();
   const [method, setMethod] = useState<PayMethod>("mpesa");
   const [phone, setPhone] = useState("");
@@ -52,6 +54,13 @@ export function CheckoutPage() {
       <p className="section-desc">
         Money is held in escrow until you pick up at the stall in Kariakoo.
       </p>
+
+      {!user && (
+        <p className="checkout-signin-hint">
+          <Link to="/signin">Sign in</Link> to save orders across devices and
+          improve product recommendations from your searches.
+        </p>
+      )}
 
       <section className="checkout-card">
         <h2>Your order</h2>

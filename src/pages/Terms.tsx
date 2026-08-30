@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { LegalDocument } from "../components/LegalDocument";
 import { SELLER_URL } from "../lib/urls";
 
@@ -13,7 +14,7 @@ export function TermsPage() {
         <>
           These Terms of Use (“Terms”) govern your access to and use of Dnols,
           including <strong>dnols.com</strong> (buyer marketplace) and{" "}
-          <strong>shop.dnols.com</strong> (seller tools). Please read them
+          <strong>dnols.com/sell</strong> (seller tools). Please read them
           carefully. By using Dnols, you agree to these Terms and our{" "}
           <a href="/privacy">Privacy Policy</a>.
         </>
@@ -50,9 +51,7 @@ export function TermsPage() {
               <p>
                 Sellers must complete our verification process and maintain valid
                 identification and payout details as described on{" "}
-                <a href={SELLER_URL} target="_blank" rel="noopener noreferrer">
-                  shop.dnols.com
-                </a>
+                <Link to={SELLER_URL}>dnols.com/sell</Link>
                 .
               </p>
             </>
@@ -145,7 +144,7 @@ export function TermsPage() {
           body: (
             <>
               <p>
-                Sellers use <strong>shop.dnols.com</strong> to apply, list
+                Sellers use <strong>dnols.com/sell</strong> to apply, list
                 products, and manage orders. By selling, you additionally agree
                 to:
               </p>
@@ -300,9 +299,7 @@ export function TermsPage() {
                 Web: <a href="https://dnols.com">dnols.com</a>
                 <br />
                 Seller portal:{" "}
-                <a href={SELLER_URL} target="_blank" rel="noopener noreferrer">
-                  shop.dnols.com
-                </a>
+                <Link to={SELLER_URL}>dnols.com/sell</Link>
               </p>
             </>
           ),

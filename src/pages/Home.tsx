@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { fetchListings } from "../api/client";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
@@ -103,14 +103,9 @@ export function HomePage() {
             Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
           </p>
         </div>
-        <a
-          className="btn home-seller-cta"
-          href={SELLER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link className="btn home-seller-cta" to={SELLER_URL}>
           Become a seller
-        </a>
+        </Link>
       </section>
 
       <div className="marketplace-layout">

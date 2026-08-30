@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
+import { useAuth } from "../store/auth";
 import { SELLER_URL } from "../lib/urls";
 import { BrandLogo } from "./BrandLogo";
 
@@ -92,6 +93,9 @@ export function TabBar() {
 
 export function BuyerHeader({ children }: { children?: ReactNode }) {
   const { count } = useCart();
+  const { user, loading } = useAuth();
+  const displayName = user?.displayName || user?.email?.split("@")[0];
+
   return (
     <header className="header">
       <div className="shell-inner header-row">
@@ -100,21 +104,31 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
         </Link>
         {children}
         <nav className="header-utils" aria-label="Account shortcuts">
-          <NavLink to="/signin" className="header-util-link">
-            Sign in
-          </NavLink>
-          <NavLink to="/signin" className="header-util-cta">
-            Create account
-          </NavLink>
+          {!loading && user ? (
+            <NavLink to="/you" className="header-util-signed">
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="" className="header-util-avatar" />
+              ) : (
+                <span className="header-util-avatar header-util-avatar-fallback">
+                  {(displayName || "U").charAt(0).toUpperCase()}
+                </span>
+              )}
+              <span className="header-util-name">{displayName}</span>
+            </NavLink>
+          ) : (
+            <>
+              <NavLink to="/signin" className="header-util-link">
+                Sign in
+              </NavLink>
+              <NavLink to="/signin" className="header-util-cta">
+                Create account
+              </NavLink>
+            </>
+          )}
         </nav>
-        <a
-          className="header-seller"
-          href={SELLER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link className="header-seller" to={SELLER_URL}>
           Become a seller
-        </a>
+        </Link>
         <nav className="header-nav" aria-label="Account">
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Home

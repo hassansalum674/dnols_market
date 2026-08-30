@@ -2,7 +2,10 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+const BASE = (process.env.VITE_BASE_PATH || "/sell/").replace(/\/?$/, "/");
+
 export default defineConfig({
+  base: BASE,
   plugins: [
     react(),
     VitePWA({
@@ -22,8 +25,8 @@ export default defineConfig({
         background_color: "#0D0D0D",
         display: "standalone",
         orientation: "portrait",
-        start_url: "/",
-        scope: "/",
+        start_url: BASE,
+        scope: BASE,
         lang: "en",
         icons: [
           {
@@ -48,7 +51,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,ico}"],
-        navigateFallback: "/index.html",
+        navigateFallback: `${BASE}index.html`,
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/api"),

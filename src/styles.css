@@ -285,6 +285,48 @@ img {
   background: var(--brand-hover);
 }
 
+.header-util-signed {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+  text-decoration: none;
+  color: var(--white);
+  max-width: 180px;
+}
+
+.header-util-signed:hover {
+  border-color: var(--brand);
+}
+
+.header-util-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.header-util-avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.header-util-name {
+  font-size: 14px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .header-wordmark {
   display: block;
   height: 36px;
@@ -1355,6 +1397,21 @@ img {
   margin: 0 0 8px;
   font-size: 24px;
   font-weight: 700;
+}
+
+.checkout-signin-hint {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: rgba(26, 111, 212, 0.1);
+  border: 1px solid rgba(26, 111, 212, 0.25);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.checkout-signin-hint a {
+  color: var(--blue);
+  font-weight: 600;
 }
 
 .checkout-card {

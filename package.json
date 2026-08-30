@@ -7,7 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:prod": "VITE_API_URL=https://dnols-83jj.onrender.com npm run build",
+    "build:prod": "VITE_API_URL=https://dnols-83jj.onrender.com npm run build && npm run build:seller && npm run bundle:seller",
+    "build:seller": "cd shop && npm ci && VITE_API_URL=https://dnols-83jj.onrender.com VITE_BASE_PATH=/sell/ npm run build",
+    "bundle:seller": "rm -rf dist/sell && cp -r shop/dist dist/sell",
     "preview": "vite preview",
     "icons": "node scripts/generate-icons.mjs",
     "firebase:login": "firebase login",

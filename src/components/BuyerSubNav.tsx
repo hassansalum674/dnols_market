@@ -29,14 +29,9 @@ export function BuyerSubNav() {
         <Link to="/orders" className={tabClass(pathname === "/orders")}>
           Orders
         </Link>
-        <a
-          className="subnav-seller"
-          href={SELLER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <Link to={SELLER_URL} className="subnav-seller">
           Become a seller
-        </a>
+        </Link>
       </div>
     </nav>
   );

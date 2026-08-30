@@ -95,14 +95,9 @@ export function YouPage() {
         <Link to="/privacy" className="account-menu-item">
           Privacy Policy
         </Link>
-        <a
-          href={SELLER_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="account-menu-item"
-        >
+        <Link to={SELLER_URL} className="account-menu-item">
           Become a seller
-        </a>
+        </Link>
         <Link to="/orders" className="account-menu-item">
           Order history
         </Link>

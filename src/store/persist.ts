@@ -1,4 +1,4 @@
-const KEY = "dnols.searchHistory.v1";
+const ANON_KEY = "dnols.searchHistory.v1";
 
 export type HistoryEntry = {
   q: string;
@@ -6,28 +6,51 @@ export type HistoryEntry = {
   at: number;
 };
 
-function read(): HistoryEntry[] {
+function userKey(uid: string): string {
+  return `dnols.searchHistory.${uid}`;
+}
+
+function read(key: string): HistoryEntry[] {
   try {
-    return JSON.parse(localStorage.getItem(KEY) || "[]") as HistoryEntry[];
+    return JSON.parse(localStorage.getItem(key) || "[]") as HistoryEntry[];
   } catch {
     return [];
   }
 }
 
-export function getHistory(): HistoryEntry[] {
-  return read().slice(0, 8);
+function write(key: string, entries: HistoryEntry[]): void {
+  localStorage.setItem(key, JSON.stringify(entries.slice(0, 8)));
 }
 
-export function pushHistory(entry: HistoryEntry) {
+export function getHistory(userId?: string | null): HistoryEntry[] {
+  if (userId) return read(userKey(userId)).slice(0, 8);
+  return read(ANON_KEY).slice(0, 8);
+}
+
+export function pushHistory(entry: HistoryEntry, userId?: string | null): void {
+  const key = userId ? userKey(userId) : ANON_KEY;
   const next = [
     entry,
-    ...read().filter((h) => h.q.toLowerCase() !== entry.q.toLowerCase()),
+    ...read(key).filter((h) => h.q.toLowerCase() !== entry.q.toLowerCase()),
   ].slice(0, 8);
-  localStorage.setItem(KEY, JSON.stringify(next));
+  write(key, next);
 }
 
-export function clearHistory() {
-  localStorage.removeItem(KEY);
+export function clearHistory(userId?: string | null): void {
+  localStorage.removeItem(userId ? userKey(userId) : ANON_KEY);
+}
+
+/** Move anonymous searches onto the signed-in account (once per session). */
+export function mergeAnonymousSearchHistory(userId: string): void {
+  const anon = read(ANON_KEY);
+  if (!anon.length) return;
+  const user = read(userKey(userId));
+  const merged = [...anon, ...user].filter(
+    (entry, i, arr) =>
+      arr.findIndex((x) => x.q.toLowerCase() === entry.q.toLowerCase()) === i,
+  );
+  write(userKey(userId), merged.slice(0, 8));
+  localStorage.removeItem(ANON_KEY);
 }
 
 const SAVED = "dnols.saved.v1";

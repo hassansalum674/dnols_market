@@ -18,6 +18,7 @@ import {
   type AuthUser,
 } from "../lib/authActions";
 import { initFirebase } from "../lib/firebase";
+import { mergeAnonymousSearchHistory } from "../store/persist";
 
 type AuthState = {
   user: AuthUser | null;
@@ -41,6 +42,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void initFirebase().then((ok) => setConfigured(ok));
     return subscribeAuth(setUser, () => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (user?.uid) mergeAnonymousSearchHistory(user.uid);
+  }, [user?.uid]);
 
   const doSignOut = useCallback(async () => {
     await authSignOut();
