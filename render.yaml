@@ -24,7 +24,7 @@ services:
   - type: web
     name: dnols-buyer
     runtime: static
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build:prod
     staticPublishPath: dist
     routes:
       - type: rewrite
@@ -41,7 +41,7 @@ services:
     name: dnols-shop
     runtime: static
     rootDir: shop
-    buildCommand: npm install && npm run build
+    buildCommand: npm ci && npm run build
     staticPublishPath: dist
     routes:
       - type: rewrite

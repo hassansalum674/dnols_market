@@ -69,6 +69,11 @@ export function AppLayout() {
           )}
         </main>
         {!hideTabs && <TabBar />}
+        {!shop && (
+          <p className="build-stamp" aria-hidden>
+            build {typeof __BUILD_SHA__ !== "undefined" ? __BUILD_SHA__ : "dev"}
+          </p>
+        )}
       </div>
     </>
   );

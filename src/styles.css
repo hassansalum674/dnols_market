@@ -857,6 +857,17 @@ img {
   margin: 8px 0 0;
 }
 
+.build-stamp {
+  position: fixed;
+  right: 8px;
+  bottom: calc(var(--tabs) + 4px);
+  margin: 0;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  z-index: 5;
+}
+
 .field-input {
   width: 100%;
   background: rgba(255, 255, 255, 0.04);

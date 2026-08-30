@@ -1,10 +1,8 @@
-# Auto-deploy buyer + seller to Firebase Hosting when main is updated.
+# Deploy buyer + seller to Firebase Hosting.
 #
-# One-time setup (run on your machine):
-#   npm install -g firebase-tools
+# REQUIRED: GitHub secret FIREBASE_TOKEN
 #   firebase login:ci
-#   Copy the token, then in GitHub → dnols_market → Settings → Secrets → Actions:
-#   Add secret FIREBASE_TOKEN = (paste token)
+#   GitHub → dnols_market → Settings → Secrets → Actions → FIREBASE_TOKEN
 
 name: Deploy to Firebase
 
@@ -32,6 +30,22 @@ jobs:
 
       - name: Build seller
         run: cd shop && npm ci && VITE_API_URL=https://dnols-83jj.onrender.com npm run build
+
+      - name: Upload buyer dist (backup if deploy fails)
+        uses: actions/upload-artifact@v4
+        with:
+          name: buyer-dist
+          path: dist/
+          retention-days: 7
+
+      - name: Check FIREBASE_TOKEN
+        id: token
+        run: |
+          if [ -z "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "missing=true" >> "$GITHUB_OUTPUT"
+            echo "::error::FIREBASE_TOKEN secret is not set. Run: firebase login:ci then add token to GitHub Secrets."
+            exit 1
+          fi
 
       - name: Deploy to Firebase Hosting
         uses: w9jds/firebase-action@master
