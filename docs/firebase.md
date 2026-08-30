@@ -5,7 +5,7 @@ Firebase project: **`dnols-2a394`**
 | Site | Firebase target | Suggested domain |
 |------|-----------------|------------------|
 | Buyer marketplace | `dnols-2a394` | **https://dnols.com** |
-| Seller PWA | `dnols-shop` | **https://shop.dnols.com** |
+| Seller PWA | `shop-buyer` | **https://shop.dnols.com** |
 
 API stays on Render: **https://dnols-83jj.onrender.com**
 
@@ -19,20 +19,13 @@ firebase login
 firebase use dnols-2a394
 ```
 
-Create the **shop** hosting site (once) in Firebase Console:
-
-1. [Firebase Console](https://console.firebase.google.com) → project **dnols-2a394**
-2. **Hosting** → **Add another site**
-3. Site ID: `dnols-shop`
-4. Connect custom domain: `shop.dnols.com`
-
-`dnols.com` should already be on site `dnols-2a394` from your earlier agent app setup.
+Create the **shop** hosting site (once) in Firebase Console — yours is already **`shop-buyer`** with `shop.dnols.com` connected.
 
 Link deploy targets (once per machine):
 
 ```bash
 firebase target:apply hosting buyer dnols-2a394 --project dnols-2a394
-firebase target:apply hosting shop dnols-shop --project dnols-2a394
+firebase target:apply hosting shop shop-buyer --project dnols-2a394
 ```
 
 ---
