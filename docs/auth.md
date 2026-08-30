@@ -33,6 +33,20 @@ VITE_FIREBASE_PROJECT_ID=dnols-2a394
 
 > The API key is safe to embed in the frontend. Security comes from Firebase **authorized domains** and **sign-in provider** settings, not from hiding the key.
 
+## Kotlin, Groovy, and `google-services.json` (Android only)
+
+If Firebase asks you to choose **Kotlin** or **Groovy**, or to download **`google-services.json`**, you are in the **Android app** setup flow. That is for a native Android app, **not** for dnols.com / shop.dnols.com.
+
+| What you see | What it is | Do you need it? |
+|--------------|------------|-----------------|
+| **Kotlin** vs **Groovy** | How Android `build.gradle` files are written | **No** — only for native Android |
+| **`google-services.json`** | Android config file (project id, api key, etc.) | **No** — do not paste this into `.env` |
+| **Web app** (`</>` icon) → **Config** | `apiKey`, `authDomain`, `projectId` | **Yes** — this is what goes in `VITE_FIREBASE_*` |
+
+`google-services.json` is **not** your API key. It is a whole Android config bundle. Inside it there is an `api_key` field, but for the Dnols **web** apps you should still use the **Web app** config from Project settings, not the JSON file.
+
+**Correct path for Dnols:** Add app → **Web** (`</>`) → copy the three config values into `.env.production`.
+
 ## Enable sign-in providers
 
 In Firebase Console → **Authentication** → **Sign-in method**:
