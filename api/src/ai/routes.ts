@@ -5,14 +5,19 @@ import {
   type DescriptionAction,
   type DescriptionLanguage,
 } from "./description.js";
-import { openAiConfigured } from "./client.js";
+import { imageProviderConfigured, providerStatus, textProviderConfigured } from "./providers.js";
 
 export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
-  app.get("/ai/status", async () => ({
-    openai: openAiConfigured(),
-    covers: true,
-    description: true,
-  }));
+  app.get("/ai/status", async () => {
+    const providers = providerStatus();
+    return {
+      ...providers,
+      covers: Boolean(providers.images),
+      description: Boolean(providers.text),
+      /** @deprecated use providers.gemini / providers.text */
+      openai: providers.openai,
+    };
+  });
 
   app.post("/ai/generate-cover", async (req, reply) => {
     const body = req.body as {
@@ -50,7 +55,7 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
         aiConfigured: result.aiConfigured,
         hint: result.aiConfigured
           ? undefined
-          : "OPENAI_API_KEY not set — using placeholder covers. Add the key on Render for real AI images.",
+          : "No image AI key — set GEMINI_API_KEY on Render for Imagen cover photos.",
       };
     } catch (e) {
       const msg = e instanceof Error ? e.message : "cover_generation_failed";
@@ -101,10 +106,10 @@ export async function registerAiRoutes(app: FastifyInstance): Promise<void> {
 
       return {
         ...result,
-        aiConfigured: openAiConfigured(),
-        hint: openAiConfigured()
+        aiConfigured: textProviderConfigured(),
+        hint: textProviderConfigured()
           ? undefined
-          : "OPENAI_API_KEY not set — using basic text templates.",
+          : "No text AI key — set GROQ_API_KEY, ANTHROPIC_API_KEY, or GEMINI_API_KEY on Render.",
       };
     } catch (e) {
       const msg = e instanceof Error ? e.message : "description_failed";

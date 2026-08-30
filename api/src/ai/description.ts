@@ -1,4 +1,4 @@
-import { openAiConfigured, openAiJson } from "./client.js";
+import { generateJsonText, textProviderConfigured } from "./providers.js";
 
 export type DescriptionLanguage = "en" | "sw";
 
@@ -58,7 +58,7 @@ function templateQuestions(input: DescriptionInput): string[] {
 export async function assistDescription(
   input: DescriptionInput,
 ): Promise<DescriptionResult> {
-  if (!openAiConfigured()) {
+  if (!textProviderConfigured()) {
     if (input.action === "questions") {
       return {
         questions: templateQuestions(input),
@@ -90,27 +90,16 @@ export async function assistDescription(
     .join("\n");
 
   if (input.action === "questions") {
-    const data = await openAiJson<{
-      choices?: { message?: { content?: string } }[];
-    }>("/chat/completions", {
-      model: "gpt-4o-mini",
-      temperature: 0.4,
-      response_format: { type: "json_object" },
-      messages: [
-        {
-          role: "system",
-          content:
-            `You help Tanzanian marketplace sellers list products. Return JSON {"questions":["..."]} with 2-3 short follow-up questions in ${langLabel} to improve a listing description. Questions should ask for material, size, condition details, or unique selling points. No markdown.`,
-        },
-        { role: "user", content: context },
-      ],
-    });
-
-    const raw = data.choices?.[0]?.message?.content ?? "{}";
-    const parsed = JSON.parse(raw) as { questions?: string[] };
+    const { data, provider } = await generateJsonText(
+      `You help Tanzanian marketplace sellers list products. Return JSON {"questions":["..."]} with 2-3 short follow-up questions in ${langLabel} to improve a listing description. Questions should ask for material, size, condition details, or unique selling points. No markdown.`,
+      context,
+    );
+    const questions = Array.isArray(data.questions)
+      ? (data.questions as string[])
+      : templateQuestions(input);
     return {
-      questions: (parsed.questions ?? templateQuestions(input)).slice(0, 3),
-      provider: "openai",
+      questions: questions.slice(0, 3),
+      provider,
       language: input.language,
     };
   }
@@ -120,31 +109,20 @@ export async function assistDescription(
       ? `Improve the seller's draft into a concise marketplace description in ${langLabel}.`
       : `Write a concise marketplace description in ${langLabel} from the seller's notes or voice transcript.`;
 
-  const data = await openAiJson<{
-    choices?: { message?: { content?: string } }[];
-  }>("/chat/completions", {
-    model: "gpt-4o-mini",
-    temperature: 0.5,
-    response_format: { type: "json_object" },
-    messages: [
-      {
-        role: "system",
-        content: `${task} Max ${MAX_CHARS} characters. Plain text only in the description field. Return JSON {"description":"..."}. Mention material, fit, or key selling points when known. Friendly tone for buyers in Dar es Salaam.`,
-      },
-      { role: "user", content: context },
-    ],
-  });
-
-  const raw = data.choices?.[0]?.message?.content ?? "{}";
-  const parsed = JSON.parse(raw) as { description?: string };
-  const description = (parsed.description ?? templateDescription(input)).slice(
-    0,
-    MAX_CHARS,
+  const { data, provider } = await generateJsonText(
+    `${task} Max ${MAX_CHARS} characters. Plain text only in the description field. Return JSON {"description":"..."}. Mention material, fit, or key selling points when known. Friendly tone for buyers in Dar es Salaam.`,
+    context,
   );
+
+  const description = (
+    typeof data.description === "string"
+      ? data.description
+      : templateDescription(input)
+  ).slice(0, MAX_CHARS);
 
   return {
     description,
-    provider: "openai",
+    provider,
     language: input.language,
   };
 }

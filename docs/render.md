@@ -21,7 +21,11 @@ Add these on the **API Web Service** (not the shop/buyer frontends):
 
 | Key | Required | Description |
 |-----|----------|-------------|
-| `OPENAI_API_KEY` | Yes (AI covers + descriptions) | OpenAI key for DALL·E 3 cover photos and GPT description assist |
+| `GEMINI_API_KEY` | Yes (AI covers) | Google AI — Imagen cover photos (`GEMINI_IMAGE_MODEL`, default `imagen-3.0-generate-002`) |
+| `GROQ_API_KEY` | Recommended | Fast description assist (`GROQ_MODEL`, e.g. `llama-3.3-70b-versatile`) |
+| `ANTHROPIC_API_KEY` | Optional | Claude fallback for descriptions |
+| `GEMINI_MODEL` | Optional | Text fallback if Groq/Anthropic unset (default `gemini-2.0-flash`) |
+| `OPENAI_API_KEY` | Optional | Alternative to Gemini/Groq if you prefer OpenAI |
 | `FAPIAPI_API_KEY` | Optional | FAPIhub API key for uploaded cover background removal |
 | `API_PUBLIC_URL` | Yes | `https://dnols-83jj.onrender.com` — used for CDN image URLs |
 | `CORS_ORIGIN` | Recommended | `*` or your frontend origins |

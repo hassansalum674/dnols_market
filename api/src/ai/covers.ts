@@ -1,5 +1,5 @@
 import sharp from "sharp";
-import { downloadUrl, openAiConfigured, openAiJson } from "./client.js";
+import { generateCoverImage, imageProviderConfigured } from "./providers.js";
 import { saveCdnWebp } from "../photos/cdn.js";
 
 const MIN_COVER_PX = 800;
@@ -102,29 +102,11 @@ async function generateOneCover(
   let raw: Buffer;
   let provider: string;
 
-  if (openAiConfigured()) {
+  if (imageProviderConfigured()) {
     const prompt = coverPrompt(name, category, condition, variant, notes);
-    const data = await openAiJson<{
-      data?: { url?: string; b64_json?: string }[];
-    }>("/images/generations", {
-      model: "dall-e-3",
-      prompt,
-      n: 1,
-      size: "1024x1024",
-      response_format: "url",
-      quality: "standard",
-    });
-
-    const item = data.data?.[0];
-    if (item?.url) {
-      raw = await downloadUrl(item.url);
-      provider = "openai-dalle3";
-    } else if (item?.b64_json) {
-      raw = Buffer.from(item.b64_json, "base64");
-      provider = "openai-dalle3";
-    } else {
-      throw new Error("OpenAI returned no image data.");
-    }
+    const generated = await generateCoverImage(prompt);
+    raw = generated.buffer;
+    provider = generated.provider;
   } else {
     raw = await templateCover(name, variant);
     provider = "template";
@@ -154,7 +136,7 @@ export async function generateCoverPair(input: {
   variant?: CoverVariant;
 }): Promise<{ covers: GeneratedCover[]; aiConfigured: boolean }> {
   const publicBase = (process.env.API_PUBLIC_URL ?? "").replace(/\/$/, "");
-  const aiConfigured = openAiConfigured();
+  const aiConfigured = imageProviderConfigured();
 
   if (input.variant) {
     const cover = await generateOneCover(
