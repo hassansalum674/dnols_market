@@ -21,6 +21,9 @@ import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
 import { useCheckoutSheet } from "../store/checkoutSheet";
 import { markPaid, saveLocalOrder } from "../store/persist";
+import { loadProfile, saveProfile } from "../lib/profile";
+import { UserAvatar } from "./UserAvatar";
+import { userDisplayName } from "../lib/userDisplay";
 
 export function CheckoutSheet() {
   const {
@@ -41,7 +44,6 @@ export function CheckoutSheet() {
   const [phone, setPhone] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [useCustomDelivery, setUseCustomDelivery] = useState(false);
-  const [editingContact, setEditingContact] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,13 +51,20 @@ export function CheckoutSheet() {
     setMethod(loadLastPayMethod());
     const savedPay = loadLastPayPhone();
     const savedDelivery = loadLastDeliveryPhone();
-    setPhone(savedPay);
-    setDeliveryPhone(savedDelivery || savedPay);
+    const profile = user?.uid ? loadProfile(user.uid) : {};
+    const payDefault = profile.phone || savedPay;
+    const deliveryDefault = profile.deliveryPhone || savedDelivery || payDefault;
+    setPhone(payDefault);
+    setDeliveryPhone(deliveryDefault);
     setUseCustomDelivery(
-      Boolean(savedDelivery && savedDelivery !== savedPay),
+      Boolean(
+        deliveryDefault &&
+          payDefault &&
+          deliveryDefault.replace(/\D/g, "") !== payDefault.replace(/\D/g, ""),
+      ),
     );
     setErr(null);
-  }, [step, setMethod]);
+  }, [step, setMethod, user?.uid]);
 
   useEffect(() => {
     if (step !== "closed") {
@@ -74,7 +83,7 @@ export function CheckoutSheet() {
     useCustomDelivery ? deliveryPhone : phone,
   );
   const savedPhone = loadLastPayPhone();
-  const contactEmail = user?.email ?? "Add email when you sign in";
+  const contactEmail = user?.email ?? null;
   const primaryDirection = order?.directions?.[0];
 
   const startPayment = async () => {
@@ -103,6 +112,12 @@ export function CheckoutSheet() {
         deliveryPhone: normalizedDelivery,
       });
       saveCheckoutPrefs(normalizedPay, method, normalizedDelivery);
+      if (user?.uid) {
+        saveProfile(user.uid, {
+          phone: normalizedPay,
+          deliveryPhone: normalizedDelivery,
+        });
+      }
       markPaid(paid.listingIds, paid.accessToken || "paid");
       saveLocalOrder(paid);
       clear();
@@ -231,6 +246,9 @@ export function CheckoutSheet() {
 
                 <section className="uc-pay-section" aria-label="Unified checkout">
                   <p className="uc-pay-label">Unified checkout</p>
+                  <p className="uc-pay-hint guest-checkout-banner">
+                    No sign-in required — pay with mobile money as a guest.
+                  </p>
                   <p className="uc-pay-hint">
                     Dnols notifies the seller and coordinates delivery to you.
                     Funds stay in escrow until you receive the item.
@@ -288,52 +306,47 @@ export function CheckoutSheet() {
               </button>
             </div>
 
+            {user && (
+              <div className="checkout-signed-in">
+                <UserAvatar user={user} size="md" />
+                <div>
+                  <p className="uc-panel-strong">{userDisplayName(user)}</p>
+                  {contactEmail && <p className="muted">{contactEmail}</p>}
+                </div>
+              </div>
+            )}
+
+            {!user && (
+              <p className="hint guest-checkout-note">
+                Guest checkout —{" "}
+                <Link to="/signin" onClick={handleClose}>
+                  sign in
+                </Link>{" "}
+                optional to save orders on your account.
+              </p>
+            )}
+
             <section className="uc-panel">
               <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Contact details</h2>
-                <button
-                  type="button"
-                  className="uc-edit"
-                  onClick={() => setEditingContact((v) => !v)}
-                >
-                  {editingContact ? "Done" : "Edit"}
-                </button>
+                <h2 className="uc-panel-label">Mobile money</h2>
               </div>
-              {editingContact || !user ? (
-                <div className="uc-contact-edit">
-                  {!user && (
-                    <p className="hint">
-                      <Link to="/signin" onClick={handleClose}>
-                        Sign in
-                      </Link>{" "}
-                      to save orders across devices.
-                    </p>
-                  )}
-                  <label className="field-label" htmlFor="sheet-pay-phone">
-                    Mobile money number
-                  </label>
-                  <input
-                    id="sheet-pay-phone"
-                    className="sheet-field"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    placeholder="+255 7XX XXX XXX"
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value);
-                      setErr(null);
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="uc-contact">
-                  <p className="uc-panel-strong">{contactEmail}</p>
-                  <p className="muted">
-                    {displayPhone || "Add your mobile money number"}
-                  </p>
-                </div>
-              )}
+              <label className="field-label" htmlFor="sheet-charge-phone">
+                Number to charge
+              </label>
+              <input
+                id="sheet-charge-phone"
+                className="sheet-field"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                placeholder="+255 7XX XXX XXX"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (!useCustomDelivery) setDeliveryPhone(e.target.value);
+                  setErr(null);
+                }}
+              />
             </section>
 
             <section className="uc-panel">
@@ -389,9 +402,9 @@ export function CheckoutSheet() {
 
             <section className="uc-panel">
               <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Payment details</h2>
+                <h2 className="uc-panel-label">Payment wallet</h2>
                 <button type="button" className="uc-edit" onClick={goBack}>
-                  Switch
+                  Change
                 </button>
               </div>
 
@@ -428,22 +441,6 @@ export function CheckoutSheet() {
                 </button>
               )}
 
-              <label className="field-label" htmlFor="sheet-charge-phone">
-                Number to charge
-              </label>
-              <input
-                id="sheet-charge-phone"
-                className="sheet-field"
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="+255 7XX XXX XXX"
-                value={phone}
-                onChange={(e) => {
-                  setPhone(e.target.value);
-                  setErr(null);
-                }}
-              />
               <p className="hint">{selectedMethod.stkHint}</p>
             </section>
 

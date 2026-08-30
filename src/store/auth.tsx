@@ -19,6 +19,7 @@ import {
 } from "../lib/authActions";
 import { initFirebase } from "../lib/firebase";
 import { mergeAnonymousSearchHistory } from "../store/persist";
+import { mergeCheckoutPhonesToProfile } from "../lib/profile";
 
 type AuthState = {
   user: AuthUser | null;
@@ -44,7 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (user?.uid) mergeAnonymousSearchHistory(user.uid);
+    if (user?.uid) {
+      mergeAnonymousSearchHistory(user.uid);
+      mergeCheckoutPhonesToProfile(user.uid);
+    }
   }, [user?.uid]);
 
   const doSignOut = useCallback(async () => {

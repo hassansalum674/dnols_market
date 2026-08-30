@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchOrders } from "../api/client";
+import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
@@ -20,6 +21,7 @@ function payMethodLabel(id?: string): string | null {
 }
 
 export function OrdersPage() {
+  const { user } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -51,7 +53,9 @@ export function OrdersPage() {
     <div className="page">
       <h1 className="product-title">Orders</h1>
       <p className="section-desc">
-        Checkout codes and delivery status appear here after you pay.
+        {user
+          ? "Checkout codes and delivery status appear here after you pay."
+          : "Guest orders are saved on this device. Sign in to sync across phones."}
       </p>
       {orders.map((o) => (
         <article key={o.id} className="order-card">

@@ -6,6 +6,10 @@ import {
   type TextSize,
   type ThemeMode,
 } from "../store/settings";
+import { UserAvatar } from "../components/UserAvatar";
+import { userDisplayName } from "../lib/userDisplay";
+import { loadProfile } from "../lib/profile";
+import { formatTzPhoneDisplay } from "../lib/phone";
 import { useAuth } from "../store/auth";
 
 export function SettingsPage() {
@@ -74,9 +78,17 @@ export function SettingsPage() {
       {user && (
         <section className="account-section">
           <h2>Account</h2>
-          <div className="settings-row">
-            <span className="muted">Signed in as</span>
-            <strong>{user.email}</strong>
+          <div className="settings-profile">
+            <UserAvatar user={user} size="lg" />
+            <div>
+              <p className="account-name">{userDisplayName(user)}</p>
+              {user.email && <p className="muted">{user.email}</p>}
+              {loadProfile(user.uid).phone && (
+                <p className="muted">
+                  {formatTzPhoneDisplay(loadProfile(user.uid).phone!)}
+                </p>
+              )}
+            </div>
           </div>
           <button type="button" className="btn ghost account-menu-btn" onClick={() => void signOut()}>
             Sign out

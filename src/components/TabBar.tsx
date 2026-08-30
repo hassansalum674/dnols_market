@@ -3,8 +3,10 @@ import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
 import { useCheckoutSheet } from "../store/checkoutSheet";
 import { useAuth } from "../store/auth";
-import { SELLER_URL } from "../lib/urls";
+import { UserAvatar } from "./UserAvatar";
+import { userDisplayName } from "../lib/userDisplay";
 import { BrandLogo } from "./BrandLogo";
+import { SELLER_URL } from "../lib/urls";
 
 const buyer = [
   { to: "/", label: "Home", end: true },
@@ -67,6 +69,7 @@ export function TabBar() {
   const shopMode = pathname.startsWith("/shop");
   const tabs = shopMode ? shop : buyer;
   const { count } = useCart();
+  const { user } = useAuth();
   const { openBasket } = useCheckoutSheet();
 
   const openCart = (e: MouseEvent) => {
@@ -99,7 +102,11 @@ export function TabBar() {
               className={({ isActive }) => (isActive ? "active" : "")}
             >
               <span className="tab-ico">
-                <Ico name={t.label} />
+                {t.label === "My Account" && user && !shopMode ? (
+                  <UserAvatar user={user} size="sm" className="tab-user-avatar" />
+                ) : (
+                  <Ico name={t.label} />
+                )}
                 {t.label === "Cart" && count > 0 && (
                   <span className="badge">{count}</span>
                 )}
@@ -117,7 +124,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
   const { count } = useCart();
   const { user, loading } = useAuth();
   const { openBasket } = useCheckoutSheet();
-  const displayName = user?.displayName || user?.email?.split("@")[0];
+  const displayName = userDisplayName(user);
 
   return (
     <header className="header">
@@ -129,13 +136,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
         <nav className="header-utils" aria-label="Account shortcuts">
           {!loading && user ? (
             <NavLink to="/you" className="header-util-signed">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="" className="header-util-avatar" />
-              ) : (
-                <span className="header-util-avatar header-util-avatar-fallback">
-                  {(displayName || "U").charAt(0).toUpperCase()}
-                </span>
-              )}
+              <UserAvatar user={user} size="md" />
               <span className="header-util-name">{displayName}</span>
             </NavLink>
           ) : (

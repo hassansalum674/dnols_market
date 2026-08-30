@@ -4,8 +4,12 @@ import { useCheckoutSheet } from "../store/checkoutSheet";
 import { fetchListingDetail } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { GoogleSignInButton } from "../components/GoogleSignInButton";
+import { UserAvatar } from "../components/UserAvatar";
 import { getSavedIds } from "../store/persist";
 import { useAuth } from "../store/auth";
+import { loadProfile } from "../lib/profile";
+import { providerLabel, userDisplayName } from "../lib/userDisplay";
+import { formatTzPhoneDisplay } from "../lib/phone";
 import { SELLER_URL } from "../lib/urls";
 import type { PublicListing } from "../types";
 
@@ -13,6 +17,10 @@ export function YouPage() {
   const { user, loading, signOut } = useAuth();
   const { openBasket } = useCheckoutSheet();
   const [saved, setSaved] = useState<PublicListing[] | null>(null);
+  const [profilePhone, setProfilePhone] = useState<string | null>(null);
+  const [profileDelivery, setProfileDelivery] = useState<string | null>(null);
+
+  const displayName = userDisplayName(user);
 
   useEffect(() => {
     const ids = getSavedIds();
@@ -29,7 +37,16 @@ export function YouPage() {
     });
   }, []);
 
-  const displayName = user?.displayName || user?.email?.split("@")[0] || "Guest";
+  useEffect(() => {
+    if (!user?.uid) {
+      setProfilePhone(null);
+      setProfileDelivery(null);
+      return;
+    }
+    const p = loadProfile(user.uid);
+    setProfilePhone(p.phone ?? null);
+    setProfileDelivery(p.deliveryPhone ?? null);
+  }, [user?.uid]);
 
   return (
     <div className="page account-page">
@@ -38,23 +55,39 @@ export function YouPage() {
       {loading ? (
         <p className="muted">Loading…</p>
       ) : user ? (
-        <div className="account-profile">
-          {user.photoURL ? (
-            <img className="account-avatar" src={user.photoURL} alt="" />
-          ) : (
-            <div className="account-avatar account-avatar-fallback">
-              {displayName.charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div>
+        <div className="account-profile account-profile--signed-in">
+          <UserAvatar user={user} size="lg" />
+          <div className="account-profile-body">
             <p className="account-name">{displayName}</p>
-            <p className="muted account-email">{user.email}</p>
+            {user.email && (
+              <p className="account-detail">
+                <span className="account-detail-label">Email</span>
+                <span>{user.email}</span>
+              </p>
+            )}
+            {profilePhone && (
+              <p className="account-detail">
+                <span className="account-detail-label">Phone</span>
+                <span>{formatTzPhoneDisplay(profilePhone)}</span>
+              </p>
+            )}
+            {profileDelivery && profileDelivery !== profilePhone && (
+              <p className="account-detail">
+                <span className="account-detail-label">Delivery</span>
+                <span>{formatTzPhoneDisplay(profileDelivery)}</span>
+              </p>
+            )}
+            <p className="account-detail">
+              <span className="account-detail-label">Signed in with</span>
+              <span>{providerLabel(user.provider)}</span>
+            </p>
           </div>
         </div>
       ) : (
         <div className="account-signin-card">
           <p className="section-desc">
-            Sign in with Google or email to save orders and track escrow pickups.
+            You can shop and pay without an account. Sign in to save orders
+            across devices and keep your delivery number on this profile.
           </p>
           <GoogleSignInButton label="Continue with Google" />
           <p className="auth-divider">
@@ -63,13 +96,19 @@ export function YouPage() {
           <Link to="/signin" className="btn signin-email-btn">
             Sign in with email
           </Link>
+          <p className="hint guest-checkout-note">
+            Guest checkout is available — add items to cart and pay with mobile
+            money anytime.
+          </p>
         </div>
       )}
 
       <div className="account-tiles">
         <Link to="/orders" className="account-tile">
           <span className="account-tile-label">Orders</span>
-          <span className="muted">Track pickups & escrow</span>
+          <span className="muted">
+            {user ? "Track delivery & escrow" : "Saved on this device"}
+          </span>
         </Link>
         <button type="button" className="account-tile" onClick={() => openBasket()}>
           <span className="account-tile-label">Cart</span>
@@ -81,9 +120,9 @@ export function YouPage() {
         <h2>How escrow works</h2>
         <ol className="escrow-steps">
           <li>You pay upfront — money is held safely</li>
-          <li>Walk to the stall in Kariakoo</li>
-          <li>Show your pickup code to the seller</li>
-          <li>Seller confirms handover — then they get paid</li>
+          <li>Dnols notifies the seller and coordinates delivery</li>
+          <li>You receive the item at your delivery contact number</li>
+          <li>Seller is paid only after handover is confirmed</li>
         </ol>
       </section>
 
