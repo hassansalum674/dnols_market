@@ -1,6 +1,6 @@
 # Sign-in (Firebase Auth)
 
-Buyer (**dnols.com**) and seller (**dnols.com/sell**) apps use **Firebase Authentication** with:
+Buyer (**dnols.com**) and seller (**seller portal**) apps use **Firebase Authentication** with:
 
 - **Google**
 - **Email / password** (sign up, sign in, forgot password)
@@ -67,9 +67,8 @@ Apple Sign-in is not wired up in the app right now. To enable later: Firebase Co
 **Authentication** → **Settings** → **Authorized domains** — add:
 
 - `dnols.com`
+- `shop.dnols.com` (seller portal — hosting only; not shown in public legal pages)
 - `localhost` (already there for local dev)
-
-> **Note:** Seller tools live at **dnols.com/sell** (same domain). `shop.dnols.com` redirects there.
 
 ## Environment files
 

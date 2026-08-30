@@ -8,10 +8,6 @@
       "trailingSlash": false,
       "rewrites": [
         {
-          "source": "/sell/**",
-          "destination": "/sell/index.html"
-        },
-        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -43,13 +39,6 @@
       "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
       "cleanUrls": true,
       "trailingSlash": false,
-      "redirects": [
-        {
-          "source": "/**",
-          "destination": "https://dnols.com/sell",
-          "type": 301
-        }
-      ],
       "rewrites": [
         {
           "source": "**",

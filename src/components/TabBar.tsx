@@ -126,9 +126,9 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
             </>
           )}
         </nav>
-        <Link className="header-seller" to={SELLER_URL}>
+        <a className="header-seller" href={SELLER_URL} rel="noopener noreferrer">
           Become a seller
-        </Link>
+        </a>
         <nav className="header-nav" aria-label="Account">
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Home

@@ -1,6 +1,4 @@
-import { Link } from "react-router-dom";
 import { LegalDocument } from "../components/LegalDocument";
-import { SELLER_URL } from "../lib/urls";
 
 const EFFECTIVE = "30 August 2026";
 
@@ -13,8 +11,8 @@ export function TermsPage() {
       intro={
         <>
           These Terms of Use (“Terms”) govern your access to and use of Dnols,
-          including <strong>dnols.com</strong> (buyer marketplace) and{" "}
-          <strong>dnols.com/sell</strong> (seller tools). Please read them
+          including <strong>dnols.com</strong> (buyer marketplace) and our{" "}
+          <strong>seller portal</strong> (seller tools). Please read them
           carefully. By using Dnols, you agree to these Terms and our{" "}
           <a href="/privacy">Privacy Policy</a>.
         </>
@@ -28,10 +26,12 @@ export function TermsPage() {
               <p>
                 Dnols is an online marketplace that connects buyers with sellers
                 operating in and around <strong>Kariakoo Market, Dar es Salaam,
-                Tanzania</strong>. Listings are for <strong>in-person pickup</strong>{" "}
-                unless we state otherwise. Dnols facilitates discovery, payment
-                holding (escrow), and pickup coordination — we are not the seller
-                of items listed by third-party shops.
+                Tanzania</strong>. Listings are for <strong>in-person pickup</strong>.
+                Dnols facilitates discovery, payment holding (escrow), and
+                pickup coordination. <strong>Sellers are paid only after the
+                buyer has received the product</strong> and handover is confirmed
+                in the app — we are not the seller of items listed by third-party
+                shops.
               </p>
             </>
           ),
@@ -50,9 +50,7 @@ export function TermsPage() {
               </ul>
               <p>
                 Sellers must complete our verification process and maintain valid
-                identification and payout details as described on{" "}
-                <Link to={SELLER_URL}>dnols.com/sell</Link>
-                .
+                identification and payout details through the Dnols seller portal.
               </p>
             </>
           ),
@@ -101,7 +99,7 @@ export function TermsPage() {
                 methods (e.g. M-Pesa, Mix by Yas, Airtel Money). You authorize
                 us and our payment partners to charge the amount shown at
                 checkout. Payment confirms your order; funds are held in{" "}
-                <strong>escrow</strong> until pickup is completed.
+                <strong>escrow</strong> until you receive the product at pickup.
               </p>
               <p>
                 <strong>Pickup location.</strong> Exact stall address and
@@ -121,13 +119,16 @@ export function TermsPage() {
           title: "5. Escrow and handover",
           body: (
             <>
-              <p>Dnols uses an escrow model to protect buyers and sellers:</p>
+              <p>
+                Dnols holds buyer payments until the product has reached the buyer.
+                Sellers are paid only after handover is confirmed:
+              </p>
               <ol>
-                <li>You pay — funds are held safely, not sent immediately to the seller</li>
+                <li>You pay — funds are held safely, not sent to the seller yet</li>
                 <li>You travel to the stall in Kariakoo</li>
-                <li>You show your pickup code; the seller verifies the order</li>
-                <li>The seller confirms handover in the system</li>
-                <li>Funds are released to the seller after successful handover</li>
+                <li>You inspect the product and show your pickup code</li>
+                <li>The seller hands over the item; you confirm receipt in the app</li>
+                <li>Only then are funds released to the seller</li>
               </ol>
               <p>
                 If there is a dispute (wrong item, seller no-show, etc.), contact{" "}
@@ -144,7 +145,7 @@ export function TermsPage() {
           body: (
             <>
               <p>
-                Sellers use <strong>dnols.com/sell</strong> to apply, list
+                Sellers use the <strong>Dnols seller portal</strong> to apply, list
                 products, and manage orders. By selling, you additionally agree
                 to:
               </p>
@@ -297,9 +298,6 @@ export function TermsPage() {
                 Email: <a href="mailto:support@dnols.com">support@dnols.com</a>
                 <br />
                 Web: <a href="https://dnols.com">dnols.com</a>
-                <br />
-                Seller portal:{" "}
-                <Link to={SELLER_URL}>dnols.com/sell</Link>
               </p>
             </>
           ),

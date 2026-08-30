@@ -10,9 +10,8 @@ export function PrivacyPage() {
       otherPage={{ href: "/terms", label: "Terms of Use" }}
       intro={
         <>
-          Dnols (“we”, “us”, “our”) operates the buyer marketplace at{" "}
-          <strong>dnols.com</strong> and the seller tools at{" "}
-          <strong>dnols.com/sell</strong>. This Privacy Policy explains what
+          Dnols (“we”, “us”, “our”) operates the buyer marketplace and a separate{" "}
+          <strong>seller portal</strong> for stall owners. This Privacy Policy explains what
           information we collect, how we use it, and the choices you have. By
           using Dnols, you agree to this policy.
         </>
@@ -25,9 +24,8 @@ export function PrivacyPage() {
             <>
               <p>
                 Dnols is a marketplace focused on in-person pickup in Kariakoo,
-                Dar es Salaam, Tanzania. Buyers browse and pay on{" "}
-                <strong>dnols.com</strong>. Sellers list products and manage
-                orders on <strong>dnols.com/sell</strong>.
+                Dar es Salaam, Tanzania. Buyers browse and pay through Dnols.
+                Sellers list products and manage orders through our seller portal.
               </p>
               <p>
                 For privacy questions or requests, contact us at{" "}
@@ -92,7 +90,8 @@ export function PrivacyPage() {
               <p>We use your information to:</p>
               <ul>
                 <li>Provide the marketplace, cart, checkout, and order tracking</li>
-                <li>Hold buyer payments in escrow until in-person handover</li>
+                <li>Hold buyer payments in escrow until the buyer receives the product</li>
+                <li>Release seller payouts only after handover is confirmed</li>
                 <li>Release stall addresses and pickup codes after payment</li>
                 <li>Verify sellers and process payouts after successful handover</li>
                 <li>Prevent fraud, abuse, and unauthorized access</li>
@@ -102,7 +101,7 @@ export function PrivacyPage() {
               </ul>
               <p>
                 Sellers may use AI-assisted tools (e.g. cover photos and
-                descriptions) on dnols.com/sell. Product text and images you
+                descriptions) in the seller portal. Product text and images you
                 provide may be processed by third-party AI providers to generate
                 or improve listings, as described in our seller terms.
               </p>
