@@ -68,6 +68,7 @@ export function ProductPhotoUpload({
   }
 
   const isCover = mode === "cover";
+  const isEnhance = mode === "enhance";
 
   if (stage === "processing") {
     return (
@@ -77,7 +78,9 @@ export function ProductPhotoUpload({
         <p className="hint">
           {isCover
             ? "Removing background, white fill, square crop"
-            : "Compressing to WebP"}
+            : isEnhance
+              ? "Polishing your photo — glow, shine, and sharpness"
+              : "Compressing to WebP"}
         </p>
       </div>
     );
@@ -90,7 +93,9 @@ export function ProductPhotoUpload({
         <p className="hint">
           {isCover
             ? "Cover photo: white background, 1:1 crop, min 800×800px. Buyers only see the processed version."
-            : "Detail photo: compressed WebP. No background removal."}
+            : isEnhance
+              ? "Detail photo: enhanced with subtle glow and shine. Your real product — not AI-generated."
+              : "Detail photo: compressed WebP. No background removal."}
         </p>
         <div className="before-after">
           <figure>
@@ -132,7 +137,7 @@ export function ProductPhotoUpload({
         disabled={disabled}
         onClick={() => inputRef.current?.click()}
       >
-        + Add {isCover ? "cover" : "photo"}
+        + Add {isCover ? "cover" : isEnhance ? "detail photo" : "photo"}
       </button>
       {onCancel && (
         <button type="button" className="photo-cancel" onClick={onCancel}>

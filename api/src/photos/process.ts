@@ -5,7 +5,7 @@ const MIN_COVER_PX = 800;
 const MAX_KB = 500;
 const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 
-export type ProcessMode = "cover" | "detail";
+export type ProcessMode = "cover" | "detail" | "enhance";
 
 export type ProcessResult = {
   buffer: Buffer;
@@ -179,4 +179,37 @@ export async function processDetailPhoto(input: Buffer): Promise<ProcessResult> 
   const { buffer, width, height } = await toWebpUnderLimit(pipeline);
 
   return { buffer, width, height, provider: "none", mode: "detail" };
+}
+
+/** Polish real product shots — brighter, sharper, subtle glow (not AI-generated). */
+export async function processEnhancedDetailPhoto(
+  input: Buffer,
+): Promise<ProcessResult> {
+  const meta = await sharp(input).metadata();
+  const maxDim = 1600;
+  let base = sharp(input);
+
+  if ((meta.width ?? 0) > maxDim || (meta.height ?? 0) > maxDim) {
+    base = base.resize(maxDim, maxDim, {
+      fit: "inside",
+      withoutEnlargement: true,
+    });
+  }
+
+  const sized = await base.toBuffer();
+  const glow = await sharp(sized)
+    .modulate({ brightness: 1.08, saturation: 1.12 })
+    .blur(5)
+    .toBuffer();
+
+  const enhanced = await sharp(sized)
+    .composite([{ input: glow, blend: "screen" }])
+    .modulate({ brightness: 1.04, saturation: 1.08 })
+    .sharpen({ sigma: 0.9 })
+    .linear(1.08, -12)
+    .toBuffer();
+
+  const { buffer, width, height } = await toWebpUnderLimit(sharp(enhanced));
+
+  return { buffer, width, height, provider: "enhance", mode: "enhance" };
 }

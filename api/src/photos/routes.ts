@@ -1,7 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import multipart from "@fastify/multipart";
 import { readCdnWebp, saveCdnWebp } from "./cdn.js";
-import { processCoverPhoto, processDetailPhoto } from "./process.js";
+import {
+  processCoverPhoto,
+  processDetailPhoto,
+  processEnhancedDetailPhoto,
+} from "./process.js";
 
 export async function registerPhotoRoutes(app: FastifyInstance): Promise<void> {
   await app.register(multipart, {
@@ -15,13 +19,18 @@ export async function registerPhotoRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const modeField = data.fields.mode;
-    const mode =
-      (typeof modeField === "object" &&
-        modeField !== null &&
-        "value" in modeField &&
-        modeField.value === "detail")
-        ? "detail"
+    const modeValue =
+      typeof modeField === "object" &&
+      modeField !== null &&
+      "value" in modeField
+        ? String(modeField.value)
         : "cover";
+    const mode =
+      modeValue === "detail"
+        ? "detail"
+        : modeValue === "enhance"
+          ? "enhance"
+          : "cover";
 
     const buffer = await data.toBuffer();
     const mime = data.mimetype || "image/jpeg";
@@ -34,7 +43,9 @@ export async function registerPhotoRoutes(app: FastifyInstance): Promise<void> {
       const result =
         mode === "cover"
           ? await processCoverPhoto(buffer, mime)
-          : await processDetailPhoto(buffer);
+          : mode === "enhance"
+            ? await processEnhancedDetailPhoto(buffer)
+            : await processDetailPhoto(buffer);
 
       const id = await saveCdnWebp(result.buffer);
       const publicBase = (process.env.API_PUBLIC_URL ?? "").replace(/\/$/, "");

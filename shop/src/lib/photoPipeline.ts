@@ -1,4 +1,4 @@
-export type PhotoProcessMode = "cover" | "detail";
+export type PhotoProcessMode = "cover" | "detail" | "enhance";
 
 export type ProcessedPhoto = {
   cdnUrl: string;

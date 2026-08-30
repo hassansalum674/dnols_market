@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { registerRoutes } from "./routes.js";
 import { registerPhotoRoutes } from "./photos/routes.js";
+import { registerAiRoutes } from "./ai/routes.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const HOST = process.env.HOST ?? "0.0.0.0";
@@ -17,6 +18,7 @@ await app.register(cors, {
 
 registerRoutes(app, { buyerLat, buyerLng });
 await registerPhotoRoutes(app);
+await registerAiRoutes(app);
 
 app.get("/openapi.json", async (_req, reply) => {
   return reply.send({
@@ -40,6 +42,9 @@ app.get("/openapi.json", async (_req, reply) => {
       "GET /trending",
       "POST /photos/process",
       "GET /cdn/:id",
+      "GET /ai/status",
+      "POST /ai/generate-cover",
+      "POST /ai/description",
     ],
   });
 });

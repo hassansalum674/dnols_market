@@ -21,7 +21,8 @@ Add these on the **API Web Service** (not the shop/buyer frontends):
 
 | Key | Required | Description |
 |-----|----------|-------------|
-| `FAPIAPI_API_KEY` | Yes (cover photos) | FAPIhub API key from [fapihub.com](https://fapihub.com) |
+| `OPENAI_API_KEY` | Yes (AI covers + descriptions) | OpenAI key for DALL·E 3 cover photos and GPT description assist |
+| `FAPIAPI_API_KEY` | Optional | FAPIhub API key for uploaded cover background removal |
 | `API_PUBLIC_URL` | Yes | `https://dnols-83jj.onrender.com` — used for CDN image URLs |
 | `CORS_ORIGIN` | Recommended | `*` or your frontend origins |
 | `RESEND_API_KEY` | Optional | Email (if you add transactional email) |

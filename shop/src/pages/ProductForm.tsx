@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CharCount, RadioGroup, Toggle } from "../components/OnboardingLayout";
+import { ProductCoverGenerator } from "../components/ProductCoverGenerator";
+import { ProductDescriptionAssist } from "../components/ProductDescriptionAssist";
 import { ProductPhotoUpload } from "../components/ProductPhotoUpload";
 import { SellHeader } from "../components/SellHeader";
 import { isCdnPhoto } from "../lib/photoPipeline";
@@ -14,6 +16,7 @@ import {
 
 const FASHION_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 const PHONE_STORAGE = ["64GB", "128GB", "256GB", "512GB"];
+const REQUIRED_AI_COVERS = 2;
 
 function variantPresets(category: ShopCategory): string[] {
   if (category === "fashion_shoes" || category === "fabrics_textiles") {
@@ -30,6 +33,7 @@ function emptyProduct(categories: ShopCategory[]): SellerProduct {
     category: categories[0] ?? "fashion_shoes",
     condition: "new",
     photos: [],
+    photoKinds: [],
     priceTzs: 0,
     negotiable: false,
     stock: 1,
@@ -41,6 +45,19 @@ function emptyProduct(categories: ShopCategory[]): SellerProduct {
   };
 }
 
+function normalizePhotoKinds(product: SellerProduct): ("ai-cover" | "detail")[] {
+  if (product.photoKinds?.length === product.photos.length) {
+    return product.photoKinds;
+  }
+  return product.photos.map((_, i) =>
+    i < REQUIRED_AI_COVERS ? ("ai-cover" as const) : ("detail" as const),
+  );
+}
+
+function aiCoverCount(kinds: ("ai-cover" | "detail")[]): number {
+  return kinds.filter((k) => k === "ai-cover").length;
+}
+
 export function ProductFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -50,7 +67,12 @@ export function ProductFormPage() {
   const [product, setProduct] = useState<SellerProduct>(() => {
     if (id) {
       const existing = loadProducts().find((p) => p.id === id);
-      if (existing) return existing;
+      if (existing) {
+        return {
+          ...existing,
+          photoKinds: normalizePhotoKinds(existing),
+        };
+      }
     }
     return emptyProduct(profile?.step1.categories ?? []);
   });
@@ -60,6 +82,10 @@ export function ProductFormPage() {
   const [customVariant, setCustomVariant] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [addingPhoto, setAddingPhoto] = useState(false);
+
+  const photoKinds = normalizePhotoKinds(product);
+  const aiCovers = aiCoverCount(photoKinds);
+  const canAddDetail = aiCovers >= REQUIRED_AI_COVERS && product.photos.length < 5;
 
   useEffect(() => {
     if (!profile || profile.status !== "active") {
@@ -71,19 +97,43 @@ export function ProductFormPage() {
     setProduct((prev) => ({ ...prev, ...partial }));
   }
 
-  function addPhoto(cdnUrl: string) {
-    if (product.photos.length >= 5) return;
-    const next = [...product.photos, cdnUrl];
+  function setPhotos(
+    photos: string[],
+    kinds: ("ai-cover" | "detail")[],
+  ) {
     patch({
-      photos: next,
-      coverPhoto: next[0],
+      photos,
+      photoKinds: kinds,
+      coverPhoto: photos[0],
     });
+  }
+
+  function addAiCovers(urls: string[]) {
+    const nextPhotos = [...product.photos];
+    const nextKinds: ("ai-cover" | "detail")[] = [...photoKinds];
+    for (const url of urls) {
+      if (nextPhotos.length >= 5) break;
+      if (nextKinds.filter((k) => k === "ai-cover").length >= REQUIRED_AI_COVERS) {
+        break;
+      }
+      nextPhotos.push(url);
+      nextKinds.push("ai-cover");
+    }
+    setPhotos(nextPhotos, nextKinds);
+  }
+
+  function addDetailPhoto(cdnUrl: string) {
+    if (!canAddDetail) return;
+    const nextPhotos = [...product.photos, cdnUrl];
+    const nextKinds: ("ai-cover" | "detail")[] = [...photoKinds, "detail"];
+    setPhotos(nextPhotos, nextKinds);
     setAddingPhoto(false);
   }
 
   function removePhoto(index: number) {
-    const next = product.photos.filter((_, i) => i !== index);
-    patch({ photos: next, coverPhoto: next[0] });
+    const nextPhotos = product.photos.filter((_, i) => i !== index);
+    const nextKinds = photoKinds.filter((_, i) => i !== index);
+    setPhotos(nextPhotos, nextKinds);
   }
 
   function toggleVariant(v: string) {
@@ -106,8 +156,8 @@ export function ProductFormPage() {
       setErr("Product name is required.");
       return;
     }
-    if (product.photos.length < 1) {
-      setErr("At least one cover photo is required.");
+    if (aiCovers < REQUIRED_AI_COVERS) {
+      setErr(`Generate ${REQUIRED_AI_COVERS} AI cover photos before saving.`);
       return;
     }
     if (!product.photos.every(isCdnPhoto)) {
@@ -132,6 +182,7 @@ export function ProductFormPage() {
       ...product,
       name: product.name.trim(),
       priceTzs: price,
+      photoKinds: normalizePhotoKinds(product),
       updatedAt: new Date().toISOString(),
     });
     navigate("/dashboard");
@@ -165,7 +216,7 @@ export function ProductFormPage() {
                 className="field"
                 value={product.name}
                 onChange={(e) => patch({ name: e.target.value })}
-                placeholder="e.g. Kitenge dress — blue floral"
+                placeholder="e.g. USB-C braided cable 2m"
                 required
               />
 
@@ -198,6 +249,14 @@ export function ProductFormPage() {
                 onChange={(v) => patch({ condition: v as ProductCondition })}
               />
 
+              <ProductDescriptionAssist
+                productName={product.name}
+                category={product.category}
+                condition={product.condition}
+                description={product.description}
+                onDescription={(text) => patch({ description: text })}
+              />
+
               <label className="lbl" htmlFor="product-description">
                 Short description{" "}
                 <CharCount current={product.description.length} max={200} />
@@ -227,18 +286,33 @@ export function ProductFormPage() {
             <section className="product-form-panel product-form-commerce">
               <h2 className="product-form-section-title">Photos & pricing</h2>
 
+              <ProductCoverGenerator
+                productName={product.name}
+                category={product.category}
+                condition={product.condition}
+                notes={product.description}
+                existingAiCovers={aiCovers}
+                onCovers={addAiCovers}
+              />
+
               <label className="lbl">
-                Photos ({product.photos.length}/5) * — first is cover
+                Photos ({product.photos.length}/5) *
               </label>
               <p className="hint product-form-hint">
-                Cover: white background, square 1:1, min 800×800. Extra shots help
-                buyers trust your listing.
+                First two slots are AI covers. Add up to three real detail shots —
+                we polish them with glow and shine.
               </p>
               <div className="photo-grid product-form-photos">
                 {product.photos.map((url, i) => (
-                  <div key={url} className="photo-grid-item">
+                  <div key={`${url}-${i}`} className="photo-grid-item">
                     <img src={url} alt="" />
-                    {i === 0 && <span className="cover-badge">Cover</span>}
+                    {photoKinds[i] === "ai-cover" ? (
+                      <span className="cover-badge ai-badge">
+                        AI cover {photoKinds.slice(0, i + 1).filter((k) => k === "ai-cover").length}
+                      </span>
+                    ) : (
+                      <span className="cover-badge detail-badge">Detail</span>
+                    )}
                     <button
                       type="button"
                       className="photo-remove"
@@ -249,20 +323,20 @@ export function ProductFormPage() {
                     </button>
                   </div>
                 ))}
-                {product.photos.length < 5 && !addingPhoto && (
+                {canAddDetail && !addingPhoto && (
                   <button
                     type="button"
                     className="photo-grid-add"
                     onClick={() => setAddingPhoto(true)}
                   >
-                    + Add photo
+                    + Real photo
                   </button>
                 )}
               </div>
-              {addingPhoto && product.photos.length < 5 && (
+              {addingPhoto && canAddDetail && (
                 <ProductPhotoUpload
-                  mode={product.photos.length === 0 ? "cover" : "detail"}
-                  onConfirm={addPhoto}
+                  mode="enhance"
+                  onConfirm={addDetailPhoto}
                   onCancel={() => setAddingPhoto(false)}
                 />
               )}

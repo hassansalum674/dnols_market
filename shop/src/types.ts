@@ -224,6 +224,8 @@ export type SellerProduct = {
   condition: ProductCondition;
   /** CDN URLs only — never raw camera uploads */
   photos: string[];
+  /** Parallel to photos — tracks AI covers vs real detail shots */
+  photoKinds?: ("ai-cover" | "detail")[];
   coverPhoto?: string;
   priceTzs: number;
   negotiable: boolean;
