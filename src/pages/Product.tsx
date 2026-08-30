@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
+import { ReservePayButton } from "../components/ReservePayButton";
 import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
@@ -67,12 +68,13 @@ export function ProductPage() {
             <Link to="/">Back to products</Link>
           </p>
           <div className="product-buy product-buy-desktop">
-            <AddToCartButton listing={detail} label="Pay / Reserve" />
+            <ReservePayButton listing={detail} />
+            <AddToCartButton listing={detail} label="Add to cart" fly={false} />
           </div>
         </div>
       </div>
       <div className="sticky-pay sticky-pay-mobile">
-        <AddToCartButton listing={detail} label="Pay / Reserve" />
+        <ReservePayButton listing={detail} />
       </div>
     </div>
   );

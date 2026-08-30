@@ -63,8 +63,18 @@ export function setQty(id: string, qty: number) {
   emit();
 }
 
+export function removeItem(id: string) {
+  state = { items: state.items.filter((x) => x.listing.id !== id) };
+  emit();
+}
+
 export function clearCart() {
   state = { items: [] };
+  emit();
+}
+
+export function replaceCart(listing: PublicListing, qty = 1) {
+  state = { items: [{ listing, qty }] };
   emit();
 }
 
@@ -78,7 +88,9 @@ const CartCtx = createContext<{
   totalTzs: number;
   add: typeof addItem;
   setQty: typeof setQty;
+  remove: typeof removeItem;
   clear: typeof clearCart;
+  replaceWith: typeof replaceCart;
 } | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -87,7 +99,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const totalTzs = s.items.reduce((n, x) => n + x.listing.priceTzs * x.qty, 0);
   const add = useCallback(addItem, []);
   const value = useMemo(
-    () => ({ items: s.items, count, totalTzs, add, setQty, clear: clearCart }),
+    () => ({
+      items: s.items,
+      count,
+      totalTzs,
+      add,
+      setQty,
+      remove: removeItem,
+      clear: clearCart,
+      replaceWith: replaceCart,
+    }),
     [s.items, count, totalTzs, add],
   );
   return <CartCtx.Provider value={value}>{children}</CartCtx.Provider>;

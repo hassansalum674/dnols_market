@@ -10,7 +10,7 @@ import {
   getRedirectResult,
   type User,
 } from "firebase/auth";
-import { getFirebaseAuth, isFirebaseConfigured } from "./firebase";
+import { getFirebaseAuth, initFirebase, isFirebaseConfigured } from "./firebase";
 
 export type AuthUser = {
   uid: string;
@@ -34,9 +34,10 @@ function isMobile(): boolean {
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
-function requireAuth() {
+async function requireAuth() {
+  const ready = await initFirebase();
   const auth = getFirebaseAuth();
-  if (!auth) {
+  if (!ready || !auth) {
     throw new Error(
       "Sign-in is not configured. Add Firebase keys to .env — see docs/auth.md",
     );
@@ -45,7 +46,7 @@ function requireAuth() {
 }
 
 async function oauthSignIn(provider: GoogleAuthProvider) {
-  const auth = requireAuth();
+  const auth = await requireAuth();
   if (isMobile()) {
     await signInWithRedirect(auth, provider);
   } else {
@@ -60,7 +61,7 @@ export async function signInWithGoogle(): Promise<void> {
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<void> {
-  const auth = requireAuth();
+  const auth = await requireAuth();
   await signInWithEmailAndPassword(auth, email.trim(), password);
 }
 
@@ -69,7 +70,7 @@ export async function signUpWithEmail(
   password: string,
   displayName?: string,
 ): Promise<void> {
-  const auth = requireAuth();
+  const auth = await requireAuth();
   const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
   if (displayName?.trim()) {
     const { updateProfile } = await import("firebase/auth");
@@ -78,7 +79,7 @@ export async function signUpWithEmail(
 }
 
 export async function resetPassword(email: string): Promise<void> {
-  const auth = requireAuth();
+  const auth = await requireAuth();
   await sendPasswordResetEmail(auth, email.trim());
 }
 
@@ -91,24 +92,30 @@ export function subscribeAuth(
   onUser: (user: AuthUser | null) => void,
   onReady?: () => void,
 ): () => void {
-  if (!isFirebaseConfigured()) {
-    onReady?.();
-    onUser(null);
-    return () => {};
-  }
-  const auth = getFirebaseAuth();
-  if (!auth) {
-    onReady?.();
-    onUser(null);
-    return () => {};
-  }
-  void getRedirectResult(auth).then((cred) => {
-    if (cred?.user) onUser(mapUser(cred.user));
+  let unsub = () => {};
+
+  void initFirebase().then((ready) => {
+    if (!ready) {
+      onReady?.();
+      onUser(null);
+      return;
+    }
+    const auth = getFirebaseAuth();
+    if (!auth) {
+      onReady?.();
+      onUser(null);
+      return;
+    }
+    void getRedirectResult(auth).then((cred) => {
+      if (cred?.user) onUser(mapUser(cred.user));
+    });
+    unsub = onAuthStateChanged(auth, (u) => {
+      onUser(u ? mapUser(u) : null);
+      onReady?.();
+    });
   });
-  return onAuthStateChanged(auth, (u) => {
-    onUser(u ? mapUser(u) : null);
-    onReady?.();
-  });
+
+  return () => unsub();
 }
 
 export { isFirebaseConfigured };

@@ -46,7 +46,7 @@ export function OnboardingLayout({
 
   return (
     <div className="onboarding-shell">
-      <SellHeader becomeSellerTo={`/onboarding/${step}`} />
+      <SellHeader hideSellerCta />
       <div className="onboarding-body">
         <button type="button" className="back-link" onClick={handleBack}>
           ← Back

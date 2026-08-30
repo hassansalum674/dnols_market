@@ -16,6 +16,7 @@ export function SignInPanel({
 }: Props) {
   const {
     configured,
+    loading,
     signInWithGoogle,
     signInWithEmail,
     signUpWithEmail,
@@ -74,17 +75,16 @@ export function SignInPanel({
       <h2 className="signin-title">{title}</h2>
       <p className="section-desc">{subtitle}</p>
 
-      {!configured && (
+      {!loading && !configured && (
         <p className="hint auth-setup-hint">
-          Sign-in needs Firebase keys. See <strong>docs/auth.md</strong> in the repo for
-          how to get your API key.
+          Sign-in could not start. Check Firebase setup in <strong>docs/auth.md</strong>.
         </p>
       )}
 
       <button
         type="button"
         className="btn-oauth btn-google"
-        disabled={!configured || Boolean(busy)}
+        disabled={!configured || Boolean(busy) || loading}
         onClick={() => void run("google", signInWithGoogle)}
       >
         <GoogleIcon />

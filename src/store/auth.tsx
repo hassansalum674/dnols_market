@@ -17,6 +17,7 @@ import {
   subscribeAuth,
   type AuthUser,
 } from "../lib/authActions";
+import { initFirebase } from "../lib/firebase";
 
 type AuthState = {
   user: AuthUser | null;
@@ -34,9 +35,10 @@ const Ctx = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
-  const configured = isFirebaseConfigured();
+  const [configured, setConfigured] = useState(isFirebaseConfigured());
 
   useEffect(() => {
+    void initFirebase().then((ok) => setConfigured(ok));
     return subscribeAuth(setUser, () => setLoading(false));
   }, []);
 

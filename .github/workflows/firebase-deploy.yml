@@ -26,9 +26,17 @@ jobs:
         run: npm ci
 
       - name: Build buyer
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: dnols-2a394.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: dnols-2a394
         run: npm run build:prod
 
       - name: Build seller
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: dnols-2a394.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: dnols-2a394
         run: cd shop && npm ci && VITE_API_URL=https://dnols-83jj.onrender.com npm run build
 
       - name: Upload buyer dist (backup if deploy fails)

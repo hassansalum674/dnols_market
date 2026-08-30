@@ -696,6 +696,26 @@ label.lbl {
   line-height: 1.45;
 }
 
+.sell-brief {
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--faint);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin: 0 0 24px;
+  max-width: 480px;
+}
+
+.sell-brief p {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.sell-brief p:last-child {
+  margin-bottom: 0;
+}
+
 .sell-cta {
   margin-bottom: 16px;
 }

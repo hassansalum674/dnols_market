@@ -8,7 +8,7 @@ export function SellLandingPage() {
   const signedIn = isSignedIn();
 
   let ctaPath = "/onboarding";
-  let ctaLabel = "Become a seller";
+  let ctaLabel = "Start";
 
   if (profile?.status === "active") {
     ctaPath = "/dashboard";
@@ -18,15 +18,15 @@ export function SellLandingPage() {
     ctaLabel = "View application";
   } else if (profile?.status === "rejected") {
     ctaPath = "/rejected";
-    ctaLabel = "Resubmit application";
+    ctaLabel = "Resubmit";
   } else if (draft) {
     ctaPath = `/onboarding/${draft.currentStep}`;
-    ctaLabel = "Resume onboarding";
+    ctaLabel = "Continue";
   }
 
   return (
     <div className="sell-landing">
-      <SellHeader becomeSellerTo={ctaPath} />
+      <SellHeader becomeSellerTo={ctaPath} hideSellerCta />
       <main className="sell-hero">
         <img
           className="sell-hero-mark"
@@ -37,23 +37,20 @@ export function SellLandingPage() {
         />
         <h1>Sell from Kariakoo</h1>
         <p className="sell-hero-sub">
-          List your stall on Dnols. Buyers pay upfront, pick up in person, and
-          you get paid after handover.
+          List your stall on Dnols. Buyers pay upfront, pick up in person, and you
+          get paid after handover.
         </p>
 
-        <div className="sell-features">
-          <div className="sell-feature">
-            <strong>6-step setup</strong>
-            <span>Shop identity, location, ID verification & payout</span>
-          </div>
-          <div className="sell-feature">
-            <strong>Auto-save drafts</strong>
-            <span>Exit anytime — your progress is never lost</span>
-          </div>
-          <div className="sell-feature">
-            <strong>Manual review</strong>
-            <span>We verify every shop within 24 hours</span>
-          </div>
+        <div className="sell-brief">
+          <p>
+            We verify every shop — you will need your <strong>NIDA or passport</strong>,
+            stall location in Kariakoo, and a <strong>mobile money payout</strong> number.
+            Review usually takes up to 24 hours.
+          </p>
+          <p className="muted">
+            Your draft saves automatically if you leave. Sign in with Google or email
+            to continue later on any device.
+          </p>
         </div>
 
         <Link to={ctaPath} className="btn sell-cta">
@@ -66,12 +63,6 @@ export function SellLandingPage() {
             <Link to="/signin" className="text-link">
               Sign in
             </Link>
-          </p>
-        )}
-
-        {signedIn && (
-          <p className="sell-signin-hint muted">
-            Signed in as seller
           </p>
         )}
       </main>
