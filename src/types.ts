@@ -57,6 +57,8 @@ export type Order = {
   directions?: DirectionsPayload[];
   payMethod?: string;
   payPhone?: string;
+  /** Number Dnols uses to reach the buyer for delivery. */
+  deliveryPhone?: string;
 };
 
 export type CartLine = {

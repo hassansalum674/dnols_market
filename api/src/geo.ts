@@ -15,6 +15,6 @@ export function haversineMeters(
   return Math.round(2 * EARTH_M * Math.asin(Math.min(1, Math.sqrt(a))));
 }
 
-export function mapsHint(lat: number, lng: number, shopName: string): string {
-  return `After payment: open Google Maps and search "${shopName}" or pin ${lat.toFixed(5)}, ${lng.toFixed(5)}. Pickup is in Kariakoo — ask for the stall by shop name, not street number.`;
+export function sellerStallHint(shopName: string, streetAddress: string): string {
+  return `${shopName} · ${streetAddress}. Dnols notifies the seller and coordinates delivery to you — you do not travel here or use outside map apps.`;
 }

@@ -55,7 +55,7 @@ export function ProductPage() {
               <p className="hint">{detail.directions.mapsHint}</p>
             </div>
           ) : (
-            <p className="hint">Pay, then we show the way. Address stays hidden until then.</p>
+            <p className="hint">Pay, then Dnols coordinates delivery to you.</p>
           )}
           <button
             type="button"

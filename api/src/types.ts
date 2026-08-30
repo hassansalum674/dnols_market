@@ -78,4 +78,5 @@ export type Order = {
   handedOverAt: string | null;
   payMethod?: PayMethod;
   payPhone?: string;
+  deliveryPhone?: string;
 };

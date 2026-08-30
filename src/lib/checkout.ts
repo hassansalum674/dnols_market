@@ -1,14 +1,30 @@
 const LAST_PHONE = "dnols.checkout.lastPhone";
+const LAST_DELIVERY_PHONE = "dnols.checkout.lastDeliveryPhone";
 const LAST_METHOD = "dnols.checkout.lastMethod";
 
 export type PayMethod = "mpesa" | "tigo" | "airtel";
 
-export function saveCheckoutPrefs(phone: string, method: PayMethod): void {
+export function saveCheckoutPrefs(
+  phone: string,
+  method: PayMethod,
+  deliveryPhone?: string,
+): void {
   try {
     localStorage.setItem(LAST_PHONE, phone);
     localStorage.setItem(LAST_METHOD, method);
+    if (deliveryPhone) {
+      localStorage.setItem(LAST_DELIVERY_PHONE, deliveryPhone);
+    }
   } catch {
     /* ignore */
+  }
+}
+
+export function loadLastDeliveryPhone(): string {
+  try {
+    return localStorage.getItem(LAST_DELIVERY_PHONE) ?? "";
+  } catch {
+    return "";
   }
 }
 

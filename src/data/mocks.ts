@@ -535,7 +535,7 @@ export function mockDetail(
       lat: s.lat,
       lng: s.lng,
       streetAddress: s.streetAddress,
-      mapsHint: `After payment: open Maps and search “${s.shopName}”. Pickup in Kariakoo.`,
+      mapsHint: `${s.shopName} · ${s.streetAddress}. Dnols coordinates delivery — you do not travel here.`,
     };
   }
   return base;
@@ -568,7 +568,7 @@ export function mockDirectionsForListingIds(ids: string[]): DirectionsPayload[] 
       lat: s.lat,
       lng: s.lng,
       streetAddress: s.streetAddress,
-      mapsHint: `After payment: open Google Maps and search “${s.shopName}” or pin ${s.lat.toFixed(5)}, ${s.lng.toFixed(5)}. Pickup is in Kariakoo — ask for the stall by shop name.`,
+      mapsHint: `${s.shopName} · ${s.streetAddress}. Dnols coordinates delivery — you do not travel here.`,
     });
   }
   return out;

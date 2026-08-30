@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
-import { PickupMap } from "./PickupMap";
+import { SellerStallPreview } from "./SellerStallPreview";
 import { IconTrash } from "./IconTrash";
 import { formatTsh } from "../lib/format";
+import { isValidPickupCode } from "../lib/pickupCode";
 import {
+  loadLastDeliveryPhone,
   loadLastPayMethod,
   loadLastPayPhone,
   PAY_METHODS,
@@ -37,13 +39,21 @@ export function CheckoutSheet() {
   const nav = useNavigate();
 
   const [phone, setPhone] = useState("");
+  const [deliveryPhone, setDeliveryPhone] = useState("");
+  const [useCustomDelivery, setUseCustomDelivery] = useState(false);
   const [editingContact, setEditingContact] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
     if (step === "closed") return;
     setMethod(loadLastPayMethod());
-    setPhone(loadLastPayPhone());
+    const savedPay = loadLastPayPhone();
+    const savedDelivery = loadLastDeliveryPhone();
+    setPhone(savedPay);
+    setDeliveryPhone(savedDelivery || savedPay);
+    setUseCustomDelivery(
+      Boolean(savedDelivery && savedDelivery !== savedPay),
+    );
     setErr(null);
   }, [step, setMethod]);
 
@@ -60,6 +70,9 @@ export function CheckoutSheet() {
 
   const selectedMethod = PAY_METHODS.find((m) => m.id === method)!;
   const displayPhone = formatTzPhoneDisplay(phone);
+  const displayDeliveryPhone = formatTzPhoneDisplay(
+    useCustomDelivery ? deliveryPhone : phone,
+  );
   const savedPhone = loadLastPayPhone();
   const contactEmail = user?.email ?? "Add email when you sign in";
   const primaryDirection = order?.directions?.[0];
@@ -70,7 +83,15 @@ export function CheckoutSheet() {
       setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
       return;
     }
-    const normalized = normalizeTzPhone(phone);
+    const normalizedPay = normalizeTzPhone(phone);
+    const deliveryRaw = useCustomDelivery ? deliveryPhone : phone;
+    if (!isValidTzPhone(deliveryRaw)) {
+      setErr(
+        "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+      );
+      return;
+    }
+    const normalizedDelivery = normalizeTzPhone(deliveryRaw);
     setStep("waiting");
     const listingIds = [...new Set(items.map((i) => i.listing.id))];
     try {
@@ -78,9 +99,10 @@ export function CheckoutSheet() {
       const paid = await payOrder({
         listingIds,
         payMethod: method,
-        phone: normalized,
+        phone: normalizedPay,
+        deliveryPhone: normalizedDelivery,
       });
-      saveCheckoutPrefs(normalized, method);
+      saveCheckoutPrefs(normalizedPay, method, normalizedDelivery);
       markPaid(paid.listingIds, paid.accessToken || "paid");
       saveLocalOrder(paid);
       clear();
@@ -198,7 +220,7 @@ export function CheckoutSheet() {
                     <span>{formatTsh(totalTzs)}</span>
                   </div>
                   <div className="uc-totals-row">
-                    <span>Pickup in Kariakoo</span>
+                    <span>Delivery to you</span>
                     <span className="uc-free">FREE</span>
                   </div>
                   <div className="uc-totals-row uc-totals-total">
@@ -210,8 +232,8 @@ export function CheckoutSheet() {
                 <section className="uc-pay-section" aria-label="Unified checkout">
                   <p className="uc-pay-label">Unified checkout</p>
                   <p className="uc-pay-hint">
-                    Funds held in escrow until you pick up. Seller paid only
-                    after handover.
+                    Dnols notifies the seller and coordinates delivery to you.
+                    Funds stay in escrow until you receive the item.
                   </p>
                   <div className="uc-pay-buttons">
                     {PAY_METHODS.map((m, i) => (
@@ -311,6 +333,57 @@ export function CheckoutSheet() {
                     {displayPhone || "Add your mobile money number"}
                   </p>
                 </div>
+              )}
+            </section>
+
+            <section className="uc-panel">
+              <div className="uc-panel-head">
+                <h2 className="uc-panel-label">Delivery contact</h2>
+              </div>
+              <p className="hint delivery-contact-note">
+                Dnols will call this number when your order is ready. We share
+                it with the seller through Dnols only — not for direct personal
+                contact between you and the seller.
+              </p>
+
+              <label className="checkout-toggle">
+                <input
+                  type="checkbox"
+                  checked={useCustomDelivery}
+                  onChange={(e) => {
+                    setUseCustomDelivery(e.target.checked);
+                    if (!e.target.checked) {
+                      setDeliveryPhone(phone);
+                    }
+                    setErr(null);
+                  }}
+                />
+                <span>Use a different number to receive delivery</span>
+              </label>
+
+              {useCustomDelivery ? (
+                <>
+                  <label className="field-label" htmlFor="sheet-delivery-phone">
+                    Delivery phone number
+                  </label>
+                  <input
+                    id="sheet-delivery-phone"
+                    className="sheet-field"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    placeholder="+255 7XX XXX XXX"
+                    value={deliveryPhone}
+                    onChange={(e) => {
+                      setDeliveryPhone(e.target.value);
+                      setErr(null);
+                    }}
+                  />
+                </>
+              ) : (
+                <p className="uc-panel-strong">
+                  {displayPhone || "Same as mobile money number above"}
+                </p>
               )}
             </section>
 
@@ -419,42 +492,57 @@ export function CheckoutSheet() {
               <p className="uc-panel-label">Checkout code</p>
               <p className="checkout-code-value">{order.pickupCode}</p>
               <p className="hint">
-                Show this 6-character code at the stall in Kariakoo.
+                {isValidPickupCode(order.pickupCode)
+                  ? "Keep this 6-character code — Dnols may ask for it when coordinating delivery."
+                  : "Your checkout code for this order."}
+              </p>
+            </section>
+
+            <section className="uc-panel">
+              <h2 className="uc-panel-label">Delivery to you</h2>
+              <p className="uc-panel-strong">
+                {order.deliveryPhone
+                  ? formatTzPhoneDisplay(order.deliveryPhone)
+                  : displayDeliveryPhone}
+              </p>
+              <p className="hint">
+                Dnols will contact you on this number. The seller is notified
+                through Dnols — you do not need to call them directly.
               </p>
             </section>
 
             {primaryDirection ? (
               <section className="uc-panel">
-                <h2 className="uc-panel-label">Pickup at</h2>
+                <h2 className="uc-panel-label">Seller stall</h2>
                 <p className="uc-panel-strong">{primaryDirection.shopName}</p>
                 <p className="muted">{primaryDirection.streetAddress}</p>
-                <PickupMap location={primaryDirection} />
+                <SellerStallPreview location={primaryDirection} />
                 <p className="hint">{primaryDirection.mapsHint}</p>
               </section>
             ) : (
               <section className="uc-panel">
                 <p className="hint">
-                  Stall location will appear when the seller has registered their
-                  shop on Dnols.
+                  Seller stall location appears once the shop is registered on
+                  Dnols.
                 </p>
               </section>
             )}
 
             {order.directions && order.directions.length > 1 && (
               <section className="uc-panel">
-                <h2 className="uc-panel-label">Other stalls</h2>
+                <h2 className="uc-panel-label">Other sellers</h2>
                 {order.directions.slice(1).map((d) => (
                   <div key={d.shopName} className="checkout-direction">
                     <p className="checkout-direction-name">{d.shopName}</p>
                     <p className="muted">{d.streetAddress}</p>
-                    <PickupMap location={d} />
+                    <SellerStallPreview location={d} />
                   </div>
                 ))}
               </section>
             )}
 
             <section className="uc-panel">
-              <h2 className="uc-panel-label">Payment method</h2>
+              <h2 className="uc-panel-label">Payment</h2>
               <div className="uc-paid-with">
                 <span
                   className="uc-pay-mark"
@@ -473,7 +561,8 @@ export function CheckoutSheet() {
                 </div>
               </div>
               <p className="hint">
-                {formatTsh(order.totalTzs)} held in escrow until handover.
+                {formatTsh(order.totalTzs)} held in escrow until you confirm
+                delivery.
               </p>
             </section>
 

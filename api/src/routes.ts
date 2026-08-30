@@ -24,6 +24,21 @@ function num(v: unknown): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
+function normalizeTzPhone(raw: string): string | null {
+  const phoneDigits = raw.replace(/\D/g, "");
+  const normalized =
+    phoneDigits.startsWith("255")
+      ? `+${phoneDigits}`
+      : phoneDigits.startsWith("0")
+        ? `+255${phoneDigits.slice(1)}`
+        : phoneDigits.length === 9
+          ? `+255${phoneDigits}`
+          : raw.trim();
+  const phoneCheck = normalized.replace(/\D/g, "");
+  if (!/^2557\d{8}$/.test(phoneCheck)) return null;
+  return normalized;
+}
+
 function sessionId(req: { headers: Record<string, unknown> }): string {
   const h = req.headers["x-session-id"] ?? req.headers["x-cart-id"];
   return typeof h === "string" && h.trim() ? h.trim() : "anon";
@@ -214,6 +229,7 @@ export function registerRoutes(
       listingIds?: string[];
       payMethod?: string;
       phone?: string;
+      deliveryPhone?: string;
     };
     const listingIds = body.listingIds;
     if (!Array.isArray(listingIds) || listingIds.length === 0) {
@@ -230,26 +246,27 @@ export function registerRoutes(
       });
     }
     const phoneRaw = String(body.phone ?? "").trim();
-    const phoneDigits = phoneRaw.replace(/\D/g, "");
-    const normalized =
-      phoneDigits.startsWith("255")
-        ? `+${phoneDigits}`
-        : phoneDigits.startsWith("0")
-          ? `+255${phoneDigits.slice(1)}`
-          : phoneDigits.length === 9
-            ? `+255${phoneDigits}`
-            : phoneRaw;
-    const phoneCheck = normalized.replace(/\D/g, "");
-    if (!/^2557\d{8}$/.test(phoneCheck)) {
+    const normalized = normalizeTzPhone(phoneRaw);
+    if (!normalized) {
       return reply.code(400).send({
         error: "bad_phone",
         message: "Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).",
+      });
+    }
+    const deliveryRaw = String(body.deliveryPhone ?? body.phone ?? "").trim();
+    const deliveryNormalized = normalizeTzPhone(deliveryRaw);
+    if (!deliveryNormalized) {
+      return reply.code(400).send({
+        error: "bad_delivery_phone",
+        message:
+          "Enter a valid delivery contact number (+255 7XX XXX XXX).",
       });
     }
     try {
       const order = store.createPaidOrder(listingIds, {
         payMethod,
         payPhone: normalized,
+        deliveryPhone: deliveryNormalized,
       });
       const directions = order.shopIds.map((sid) =>
         toDirections(store.shop(sid)!),
@@ -274,7 +291,13 @@ export function registerRoutes(
         accessToken: order.accessToken,
         totalTzs: order.totalTzs,
         listingIds: order.listingIds,
-        // Location is released only after successful pay:
+        deliveryPhone: order.deliveryPhone,
+        sellerNotification: {
+          status: "queued",
+          note: "Dnols notified the seller. Your delivery number was shared with the seller through Dnols only — not for direct personal contact.",
+          deliveryPhone: deliveryNormalized,
+        },
+        // Seller stall coords for buyer preview only — Dnols handles delivery.
         shops: directions,
         mapsHint:
           directions.length === 1

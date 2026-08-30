@@ -8,3 +8,14 @@ export function generatePickupCode(): string {
   }
   return code;
 }
+
+export function isValidPickupCode(code: string | undefined): boolean {
+  if (!code || code.length !== 6) return false;
+  return [...code].every((c) => CHARS.includes(c));
+}
+
+/** Ensure display code is 6 chars — regenerates only for local mock fallbacks. */
+export function ensurePickupCode(code: string | undefined): string {
+  if (isValidPickupCode(code)) return code!;
+  return generatePickupCode();
+}

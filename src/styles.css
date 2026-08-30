@@ -1219,6 +1219,56 @@ img {
   border: 1px solid var(--faint);
 }
 
+.seller-stall-preview {
+  margin: 12px 0 8px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--faint);
+  background: var(--black);
+}
+
+.seller-stall-map-img {
+  display: block;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.seller-stall-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+  background: rgba(26, 111, 212, 0.08);
+}
+
+.seller-stall-pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 6px rgba(26, 111, 212, 0.25);
+}
+
+.checkout-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.checkout-toggle input {
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+
+.delivery-contact-note {
+  margin-bottom: 8px;
+}
+
 .pickup-map iframe {
   display: block;
   width: 100%;

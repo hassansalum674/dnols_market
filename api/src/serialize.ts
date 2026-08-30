@@ -1,4 +1,4 @@
-import { haversineMeters, mapsHint } from "./geo.js";
+import { haversineMeters, sellerStallHint } from "./geo.js";
 import { store } from "./store.js";
 import type {
   DirectionsPayload,
@@ -52,6 +52,6 @@ export function toDirections(shop: Shop): DirectionsPayload {
     lat: shop.lat,
     lng: shop.lng,
     streetAddress: shop.streetAddress,
-    mapsHint: mapsHint(shop.lat, shop.lng, shop.shopName),
+    mapsHint: sellerStallHint(shop.shopName, shop.streetAddress),
   };
 }

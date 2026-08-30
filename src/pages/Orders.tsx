@@ -8,9 +8,9 @@ import { getLocalOrders } from "../store/persist";
 import type { Order } from "../types";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
-  reserved: "Reserved — pay to unlock pickup",
-  paid_held: "Paid · funds in escrow",
-  handed_over: "Completed",
+  reserved: "Reserved — pay to confirm",
+  paid_held: "Paid · Dnols coordinating delivery",
+  handed_over: "Delivered",
   rejected_refund: "Refunded",
 };
 
@@ -39,7 +39,7 @@ export function OrdersPage() {
   if (orders.length === 0) {
     return (
       <div className="center-state">
-        <p>No orders yet. Pay nearby, then walk.</p>
+        <p>No orders yet. Browse Kariakoo deals and pay when ready.</p>
         <Link className="btn" to="/">
           Start shopping
         </Link>
@@ -51,7 +51,7 @@ export function OrdersPage() {
     <div className="page">
       <h1 className="product-title">Orders</h1>
       <p className="section-desc">
-        Pickup codes and stall directions appear here after you pay.
+        Checkout codes and delivery status appear here after you pay.
       </p>
       {orders.map((o) => (
         <article key={o.id} className="order-card">
@@ -67,6 +67,12 @@ export function OrdersPage() {
               <span className="muted">Checkout code</span>
               <span className="order-pickup-code">{o.pickupCode}</span>
             </div>
+          )}
+
+          {o.deliveryPhone && (
+            <p className="hint">
+              Delivery contact · {formatTzPhoneDisplay(o.deliveryPhone)}
+            </p>
           )}
 
           {(o.payMethod || o.payPhone) && (

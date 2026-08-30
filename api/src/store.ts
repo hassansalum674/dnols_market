@@ -11,11 +11,6 @@ function id(prefix: string): string {
   return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function pin4(): string {
-  return String(Math.floor(1000 + Math.random() * 9000));
-}
-
-/** 6-char mixed-case checkout code for buyer pickup. */
 function pickupCode6(): string {
   const chars =
     "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
@@ -67,7 +62,7 @@ export class Store {
 
   createPaidOrder(
     listingIds: string[],
-    opts?: { payMethod?: string; payPhone?: string },
+    opts?: { payMethod?: string; payPhone?: string; deliveryPhone?: string },
   ): Order {
     const unique = [...new Set(listingIds)];
     const shopIds = [
@@ -104,6 +99,7 @@ export class Store {
           ? opts.payMethod
           : undefined,
       payPhone: opts?.payPhone,
+      deliveryPhone: opts?.deliveryPhone ?? opts?.payPhone,
     };
     this.orders.set(order.id, order);
     this.tokens.set(order.accessToken, order.id);
