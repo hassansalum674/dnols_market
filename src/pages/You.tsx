@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import { useCheckoutSheet } from "../store/checkoutSheet";
 import { fetchListingDetail } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { BillingCardTile } from "../components/BillingCardTile";
 import { GoogleSignInButton } from "../components/GoogleSignInButton";
 import { UserAvatar } from "../components/UserAvatar";
+import { deleteBillingCard, loadBillingCards } from "../lib/billingCards";
 import { getSavedIds } from "../store/persist";
 import { useAuth } from "../store/auth";
 import { loadProfile } from "../lib/profile";
@@ -19,6 +21,9 @@ export function YouPage() {
   const [saved, setSaved] = useState<PublicListing[] | null>(null);
   const [profilePhone, setProfilePhone] = useState<string | null>(null);
   const [profileDelivery, setProfileDelivery] = useState<string | null>(null);
+  const [billingCards, setBillingCards] = useState(() =>
+    user?.uid ? loadBillingCards(user.uid) : [],
+  );
 
   const displayName = userDisplayName(user);
 
@@ -41,11 +46,13 @@ export function YouPage() {
     if (!user?.uid) {
       setProfilePhone(null);
       setProfileDelivery(null);
+      setBillingCards([]);
       return;
     }
     const p = loadProfile(user.uid);
     setProfilePhone(p.phone ?? null);
     setProfileDelivery(p.deliveryPhone ?? null);
+    setBillingCards(loadBillingCards(user.uid));
   }, [user?.uid]);
 
   return (
@@ -86,8 +93,8 @@ export function YouPage() {
       ) : (
         <div className="account-signin-card">
           <p className="section-desc">
-            You can shop and pay without an account. Sign in to save orders
-            across devices and keep your delivery number on this profile.
+            Sign in to place orders, save billing cards, and track delivery across
+            devices.
           </p>
           <GoogleSignInButton label="Continue with Google" />
           <p className="auth-divider">
@@ -96,10 +103,6 @@ export function YouPage() {
           <Link to="/signin" className="btn signin-email-btn">
             Sign in with email
           </Link>
-          <p className="hint guest-checkout-note">
-            Guest checkout is available — add items to cart and pay with mobile
-            money anytime.
-          </p>
         </div>
       )}
 
@@ -107,7 +110,7 @@ export function YouPage() {
         <Link to="/orders" className="account-tile">
           <span className="account-tile-label">Orders</span>
           <span className="muted">
-            {user ? "Track delivery & escrow" : "Saved on this device"}
+            {user ? "Track delivery & escrow" : "Sign in to view orders"}
           </span>
         </Link>
         <button type="button" className="account-tile" onClick={() => openBasket()}>
@@ -115,6 +118,32 @@ export function YouPage() {
           <span className="muted">Items to pay for</span>
         </button>
       </div>
+
+      {user && (
+        <section className="account-section billing-cards-section">
+          <h2>Billing cards</h2>
+          <p className="hint">
+            Saved mobile money wallets for faster checkout. Cards are added when
+            you pay, or remove them below.
+          </p>
+          {billingCards.length === 0 ? (
+            <p className="muted">No billing cards yet — one saves after your first order.</p>
+          ) : (
+            <div className="billing-cards-grid">
+              {billingCards.map((card) => (
+                <BillingCardTile
+                  key={card.id}
+                  card={card}
+                  onRemove={() => {
+                    deleteBillingCard(user.uid, card.id);
+                    setBillingCards(loadBillingCards(user.uid));
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
 
       <section className="account-section escrow-card">
         <h2>How escrow works</h2>

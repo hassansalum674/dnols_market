@@ -2711,6 +2711,129 @@ img {
   border: 1px solid rgba(26, 111, 212, 0.2);
 }
 
+.checkout-signin-gate {
+  padding: 8px 0 24px;
+}
+
+.checkout-signin-gate h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.checkout-auth-loading {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+.billing-cards-hint {
+  margin: 0 0 10px;
+}
+
+.billing-cards-row {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scroll-snap-type: x mandatory;
+}
+
+.billing-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.billing-card {
+  position: relative;
+  border: 2px solid var(--faint);
+  border-radius: var(--radius);
+  background: var(--surface);
+  min-width: 148px;
+  scroll-snap-align: start;
+}
+
+.billing-card.on {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 1px var(--brand);
+}
+
+.billing-card-body {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.billing-card-body:disabled {
+  cursor: default;
+}
+
+.billing-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.billing-card-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.billing-card-brand {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.billing-card-phone {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.billing-card-network,
+.billing-card-label {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.billing-card-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.billing-card--compact .billing-card-body {
+  padding: 10px;
+}
+
+.billing-cards-section h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
 .settings-profile {
   display: flex;
   align-items: center;

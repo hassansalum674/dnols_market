@@ -3,8 +3,15 @@ import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { SellerStallPreview } from "./SellerStallPreview";
 import { IconTrash } from "./IconTrash";
+import { BillingCardTile } from "./BillingCardTile";
+import { CheckoutSignInGate } from "./CheckoutSignInGate";
 import { formatTsh } from "../lib/format";
 import { isValidPickupCode } from "../lib/pickupCode";
+import {
+  loadBillingCards,
+  upsertBillingCardFromCheckout,
+  type BillingCard,
+} from "../lib/billingCards";
 import {
   loadLastDeliveryPhone,
   loadLastPayMethod,
@@ -38,12 +45,14 @@ export function CheckoutSheet() {
     setOrder,
   } = useCheckoutSheet();
   const { items, totalTzs, remove, setQty, clear } = useCart();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const nav = useNavigate();
 
   const [phone, setPhone] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [useCustomDelivery, setUseCustomDelivery] = useState(false);
+  const [billingCards, setBillingCards] = useState<BillingCard[]>([]);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -63,8 +72,17 @@ export function CheckoutSheet() {
           deliveryDefault.replace(/\D/g, "") !== payDefault.replace(/\D/g, ""),
       ),
     );
+    setSelectedCardId(null);
     setErr(null);
   }, [step, setMethod, user?.uid]);
+
+  useEffect(() => {
+    if (!user?.uid || step !== "pay") {
+      setBillingCards([]);
+      return;
+    }
+    setBillingCards(loadBillingCards(user.uid));
+  }, [user?.uid, step]);
 
   useEffect(() => {
     if (step !== "closed") {
@@ -85,9 +103,30 @@ export function CheckoutSheet() {
   const savedPhone = loadLastPayPhone();
   const contactEmail = user?.email ?? null;
   const primaryDirection = order?.directions?.[0];
+  const needsSignIn =
+    !authLoading &&
+    !user &&
+    (step === "basket" || step === "pay") &&
+    items.length > 0;
+
+  const applyBillingCard = (card: BillingCard) => {
+    setSelectedCardId(card.id);
+    setMethod(card.method);
+    setPhone(card.phone);
+    const delivery = card.deliveryPhone || card.phone;
+    setDeliveryPhone(delivery);
+    setUseCustomDelivery(
+      delivery.replace(/\D/g, "") !== card.phone.replace(/\D/g, ""),
+    );
+    setErr(null);
+  };
 
   const startPayment = async () => {
     setErr(null);
+    if (!user?.uid) {
+      setErr("Sign in to place an order.");
+      return;
+    }
     if (!isValidTzPhone(phone)) {
       setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
       return;
@@ -112,12 +151,17 @@ export function CheckoutSheet() {
         deliveryPhone: normalizedDelivery,
       });
       saveCheckoutPrefs(normalizedPay, method, normalizedDelivery);
-      if (user?.uid) {
-        saveProfile(user.uid, {
-          phone: normalizedPay,
-          deliveryPhone: normalizedDelivery,
-        });
-      }
+      saveProfile(user.uid, {
+        phone: normalizedPay,
+        deliveryPhone: normalizedDelivery,
+      });
+      upsertBillingCardFromCheckout(
+        user.uid,
+        method,
+        normalizedPay,
+        normalizedDelivery,
+      );
+      setBillingCards(loadBillingCards(user.uid));
       markPaid(paid.listingIds, paid.accessToken || "paid");
       saveLocalOrder(paid);
       clear();
@@ -157,7 +201,30 @@ export function CheckoutSheet() {
                 : "Order confirmed"
         }
       >
-        {step === "basket" && (
+        {needsSignIn && (
+          <>
+            <div className="sheet-head">
+              <h3>Checkout</h3>
+              <button
+                type="button"
+                className="sheet-close"
+                onClick={handleClose}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            <CheckoutSignInGate onClose={handleClose} />
+          </>
+        )}
+
+        {authLoading && (step === "basket" || step === "pay") && items.length > 0 && (
+          <div className="checkout-auth-loading">
+            <p className="muted">Loading your account…</p>
+          </div>
+        )}
+
+        {!needsSignIn && !authLoading && step === "basket" && (
           <>
             <div className="sheet-head">
               <h3>Your basket</h3>
@@ -246,12 +313,10 @@ export function CheckoutSheet() {
 
                 <section className="uc-pay-section" aria-label="Unified checkout">
                   <p className="uc-pay-label">Unified checkout</p>
-                  <p className="uc-pay-hint guest-checkout-banner">
-                    No sign-in required — pay with mobile money as a guest.
-                  </p>
                   <p className="uc-pay-hint">
                     Dnols notifies the seller and coordinates delivery to you.
-                    Funds stay in escrow until you receive the item.
+                    Funds stay in escrow until you receive the item. Saved billing
+                    cards make repeat checkout faster.
                   </p>
                   <div className="uc-pay-buttons">
                     {PAY_METHODS.map((m, i) => (
@@ -284,7 +349,7 @@ export function CheckoutSheet() {
           </>
         )}
 
-        {step === "pay" && (
+        {!needsSignIn && !authLoading && step === "pay" && (
           <>
             <div className="sheet-head">
               <button
@@ -316,14 +381,38 @@ export function CheckoutSheet() {
               </div>
             )}
 
-            {!user && (
-              <p className="hint guest-checkout-note">
-                Guest checkout —{" "}
-                <Link to="/signin" onClick={handleClose}>
-                  sign in
-                </Link>{" "}
-                optional to save orders on your account.
-              </p>
+            {billingCards.length > 0 && (
+              <section className="uc-panel" aria-label="Saved billing cards">
+                <div className="uc-panel-head">
+                  <h2 className="uc-panel-label">Saved wallets</h2>
+                </div>
+                <p className="hint billing-cards-hint">
+                  Tap a card to charge that number — no need to retype it each time.
+                </p>
+                <div className="billing-cards-row">
+                  {billingCards.map((card) => (
+                    <BillingCardTile
+                      key={card.id}
+                      card={card}
+                      selected={selectedCardId === card.id}
+                      compact
+                      onSelect={() => applyBillingCard(card)}
+                    />
+                  ))}
+                </div>
+                {selectedCardId && (
+                  <button
+                    type="button"
+                    className="uc-use-saved"
+                    onClick={() => {
+                      setSelectedCardId(null);
+                      setErr(null);
+                    }}
+                  >
+                    Enter a different number
+                  </button>
+                )}
+              </section>
             )}
 
             <section className="uc-panel">
@@ -342,6 +431,7 @@ export function CheckoutSheet() {
                 placeholder="+255 7XX XXX XXX"
                 value={phone}
                 onChange={(e) => {
+                  setSelectedCardId(null);
                   setPhone(e.target.value);
                   if (!useCustomDelivery) setDeliveryPhone(e.target.value);
                   setErr(null);
@@ -414,7 +504,10 @@ export function CheckoutSheet() {
                     key={m.id}
                     type="button"
                     className={`uc-wallet ${method === m.id ? "on" : ""}`}
-                    onClick={() => setMethod(m.id)}
+                    onClick={() => {
+                      setSelectedCardId(null);
+                      setMethod(m.id);
+                    }}
                   >
                     <span
                       className="uc-pay-mark"

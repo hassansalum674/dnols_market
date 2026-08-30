@@ -38,6 +38,20 @@ export function OrdersPage() {
     });
   }, []);
 
+  if (!user) {
+    return (
+      <div className="center-state">
+        <p>Sign in to place orders and see your delivery history here.</p>
+        <Link className="btn" to="/signin">
+          Sign in
+        </Link>
+        <Link className="btn ghost" to="/">
+          Continue shopping
+        </Link>
+      </div>
+    );
+  }
+
   if (orders.length === 0) {
     return (
       <div className="center-state">
@@ -53,9 +67,7 @@ export function OrdersPage() {
     <div className="page">
       <h1 className="product-title">Orders</h1>
       <p className="section-desc">
-        {user
-          ? "Checkout codes and delivery status appear here after you pay."
-          : "Guest orders are saved on this device. Sign in to sync across phones."}
+        Checkout codes and delivery status appear here after you pay.
       </p>
       {orders.map((o) => (
         <article key={o.id} className="order-card">
