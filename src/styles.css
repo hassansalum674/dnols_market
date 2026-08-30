@@ -1,8 +1,8 @@
 :root,
 [data-theme="dark"] {
-  --brand: #ff6600;
-  --brand-hover: #e85d00;
-  --brand-soft: rgba(255, 102, 0, 0.14);
+  --brand: #1a6fd4;
+  --brand-hover: #2b82e8;
+  --brand-soft: rgba(26, 111, 212, 0.14);
   --blue: #1a6fd4;
   --black: #0d0d0d;
   --white: #ffffff;
@@ -25,7 +25,7 @@
   --surface: #f7f7f8;
   --muted: rgba(34, 34, 34, 0.58);
   --faint: rgba(34, 34, 34, 0.12);
-  --brand-soft: rgba(255, 102, 0, 0.1);
+  --brand-soft: rgba(26, 111, 212, 0.1);
 }
 
 [data-text-size="large"] {

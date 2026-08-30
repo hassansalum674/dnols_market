@@ -1,6 +1,6 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
-import { BrandWordmark } from "./BrandWordmark";
+import { BrandLogo } from "./BrandLogo";
 import { BuyerSubNav } from "./BuyerSubNav";
 import { HeaderSearch } from "./HeaderSearch";
 import { RoutePulse, Splash } from "./Splash";
@@ -57,8 +57,8 @@ export function AppLayout() {
         {shop && (
           <header className="header">
             <div className="shell-inner header-row">
-              <BrandWordmark className="header-shop-wordmark" />
-              <span className="header-shop-label">Seller</span>
+              <BrandLogo variant="dark" className="header-wordmark" height={32} />
+              <span className="header-shop-label">Shop</span>
             </div>
           </header>
         )}

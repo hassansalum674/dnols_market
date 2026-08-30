@@ -23,8 +23,8 @@ export function Splash({ onDone }: { onDone: () => void }) {
   }, [onDone]);
 
   return (
-    <div className="splash" role="dialog" aria-label="Welcome to dnols.com">
-      <p className="splash-brand">dnols.com</p>
+    <div className="splash" role="dialog" aria-label="Welcome to Dnols">
+      <img className="splash-logo" src="/brand/logo6_dark.svg" alt="Dnols" />
       <p className="splash-line" key={i}>
         {LINES[i]}
       </p>
