@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { ServerErrorPage } from "./pages/errors";
 import { ShopProvider } from "./shopData";
+import { AuthProvider } from "./store/auth";
 
 const SellLandingPage = lazy(() =>
   import("./pages/SellLanding").then((m) => ({ default: m.SellLandingPage })),
@@ -99,8 +100,10 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <ShopProvider>
-      <RouterProvider router={router} />
-    </ShopProvider>
+    <AuthProvider>
+      <ShopProvider>
+        <RouterProvider router={router} />
+      </ShopProvider>
+    </AuthProvider>
   );
 }

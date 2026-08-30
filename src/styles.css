@@ -1478,6 +1478,119 @@ img {
   opacity: 0.5;
 }
 
+.signin-panel {
+  max-width: 420px;
+}
+
+.signin-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.signin-oauth {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.btn-oauth {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px;
+  border-radius: var(--radius);
+  font-size: 17px;
+  font-weight: 700;
+  border: 2px solid var(--faint);
+}
+
+.btn-oauth:disabled {
+  opacity: 0.5;
+}
+
+.btn-oauth.btn-google {
+  background: var(--surface);
+  color: var(--white);
+}
+
+.btn-oauth.btn-apple {
+  background: #000;
+  color: #fff;
+  border-color: #333;
+}
+
+.auth-divider {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+.signin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.signin-tabs button {
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid var(--faint);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.signin-tabs button.on {
+  background: rgba(26, 111, 212, 0.15);
+  border-color: var(--blue);
+  color: var(--white);
+}
+
+.signin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.signin-submit {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.text-link-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--blue);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.signin-more {
+  margin: 12px 0 0;
+  text-align: center;
+}
+
+.auth-setup-hint {
+  margin-bottom: 12px;
+}
+
+.ok {
+  color: #8fd4a8;
+  font-size: 14px;
+  margin: 0;
+}
+
 .google-hint {
   margin-top: 10px;
   font-size: 14px;

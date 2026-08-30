@@ -29,6 +29,9 @@ const YouPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import("./pages/Settings").then((m) => ({ default: m.SettingsPage })),
 );
+const SignInPage = lazy(() =>
+  import("./pages/SignIn").then((m) => ({ default: m.SignInPage })),
+);
 const NotFoundPage = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFoundPage })),
 );
@@ -62,6 +65,7 @@ const router = createBrowserRouter([
       { path: "orders", element: <OrdersPage /> },
       { path: "you", element: <YouPage /> },
       { path: "you/settings", element: <SettingsPage /> },
+      { path: "signin", element: <SignInPage /> },
       {
         path: "shop",
         element: <ShopLayout />,

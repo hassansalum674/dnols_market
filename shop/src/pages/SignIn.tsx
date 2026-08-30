@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { GoogleSignInButton } from "../components/GoogleSignInButton";
+import { SignInPanel } from "../components/SignInPanel";
 import { SellHeader } from "../components/SellHeader";
 import { isValidTzPhone, normalizeTzPhone } from "../lib/validation";
+import { useAuth } from "../store/auth";
 import { loadDraft, loadProfile, saveSession } from "../storage";
 
 export function SignInPage() {
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [phone, setPhone] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
@@ -32,6 +34,12 @@ export function SignInPage() {
     }
   }
 
+  useEffect(() => {
+    if (loading || !user) return;
+    const identifier = user.email ?? user.uid;
+    afterAuth(identifier);
+  }, [user, loading]);
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValidTzPhone(phone)) {
@@ -45,12 +53,9 @@ export function SignInPage() {
     <div className="sell-landing">
       <SellHeader />
       <main className="page auth-page">
-        <h1>Sign in</h1>
-        <p className="muted">Use Google or the phone number you registered with.</p>
-
-        <GoogleSignInButton
-          label="Sign in with Google"
-          onSuccess={(email) => afterAuth(email)}
+        <SignInPanel
+          title="Seller sign in"
+          subtitle="Use Google, Apple, or email. You can also continue with the phone number you registered with."
         />
 
         <p className="auth-divider">or use phone</p>

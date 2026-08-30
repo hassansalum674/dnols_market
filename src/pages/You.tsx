@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
-import { GoogleSignInButton } from "../components/GoogleSignInButton";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { SignInPanel } from "../components/SignInPanel";
 import { getSavedIds } from "../store/persist";
 import { useAuth } from "../store/auth";
 import { SELLER_URL } from "../lib/urls";
@@ -51,11 +51,15 @@ export function YouPage() {
         </div>
       ) : (
         <div className="account-signin-card">
-          <p className="section-desc">
-            Sign in with Google to save orders, track escrow payments, and pick up
-            faster at Kariakoo stalls.
+          <SignInPanel
+            title="Sign in"
+            subtitle="Use Google, Apple, or email to save orders and track escrow pickups."
+          />
+          <p className="signin-more">
+            <Link to="/signin" className="text-link-btn">
+              Open full sign-in page
+            </Link>
           </p>
-          <GoogleSignInButton label="Sign in with Google" />
         </div>
       )}
 
