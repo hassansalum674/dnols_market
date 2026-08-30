@@ -89,6 +89,12 @@ export function YouPage() {
         <Link to="/you/settings" className="account-menu-item">
           Settings & appearance
         </Link>
+        <Link to="/terms" className="account-menu-item">
+          Terms of Use
+        </Link>
+        <Link to="/privacy" className="account-menu-item">
+          Privacy Policy
+        </Link>
         <a
           href={SELLER_URL}
           target="_blank"

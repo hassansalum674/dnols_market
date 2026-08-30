@@ -32,6 +32,12 @@ const SettingsPage = lazy(() =>
 const SignInPage = lazy(() =>
   import("./pages/SignIn").then((m) => ({ default: m.SignInPage })),
 );
+const TermsPage = lazy(() =>
+  import("./pages/Terms").then((m) => ({ default: m.TermsPage })),
+);
+const PrivacyPage = lazy(() =>
+  import("./pages/Privacy").then((m) => ({ default: m.PrivacyPage })),
+);
 const NotFoundPage = lazy(() =>
   import("./pages/NotFound").then((m) => ({ default: m.NotFoundPage })),
 );
@@ -66,6 +72,8 @@ const router = createBrowserRouter([
       { path: "you", element: <YouPage /> },
       { path: "you/settings", element: <SettingsPage /> },
       { path: "signin", element: <SignInPage /> },
+      { path: "terms", element: <TermsPage /> },
+      { path: "privacy", element: <PrivacyPage /> },
       {
         path: "shop",
         element: <ShopLayout />,

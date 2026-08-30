@@ -85,6 +85,18 @@ export function SettingsPage() {
       )}
 
       <section className="account-section">
+        <h2>Legal</h2>
+        <nav className="account-menu" aria-label="Legal">
+          <Link to="/terms" className="account-menu-item">
+            Terms of Use
+          </Link>
+          <Link to="/privacy" className="account-menu-item">
+            Privacy Policy
+          </Link>
+        </nav>
+      </section>
+
+      <section className="account-section">
         <h2>Privacy & escrow</h2>
         <p className="section-desc">
           Dnols holds buyer payments in escrow until in-person handover at Kariakoo.
