@@ -56,27 +56,36 @@ export function HeaderSearch({
   };
 
   return (
-    <div className="search-wrap" ref={box}>
-      <span className="search-icon" aria-hidden>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <circle cx="11" cy="11" r="7" />
-          <path d="M20 20l-3-3" />
-        </svg>
-      </span>
-      <input
-        className="search-input"
-        placeholder="Search products in Kariakoo"
-        value={q}
-        onChange={(e) => {
-          setQ(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") go(q, suggest[0]?.photoUrl);
-        }}
-        aria-label="Search"
-      />
+    <div className="search-bar" ref={box}>
+      <div className="search-wrap">
+        <span className="search-icon" aria-hidden>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3-3" />
+          </svg>
+        </span>
+        <input
+          className="search-input"
+          placeholder="Search products in Kariakoo"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") go(q, suggest[0]?.photoUrl);
+          }}
+          aria-label="Search"
+        />
+        <button
+          type="button"
+          className="search-btn"
+          onClick={() => go(q, suggest[0]?.photoUrl)}
+        >
+          Search
+        </button>
+      </div>
       {open && (
         <div className="search-panel">
           {suggest.length > 0 && (

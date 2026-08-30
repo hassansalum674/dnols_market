@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
 import { SELLER_URL } from "../lib/urls";
-import { BrandLogo } from "./BrandLogo";
+import { BrandWordmark } from "./BrandWordmark";
 
 const buyer = [
   { to: "/", label: "Home", end: true },
@@ -95,10 +95,18 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
   return (
     <header className="header">
       <div className="shell-inner header-row">
-        <Link to="/" className="header-logo" aria-label="Dnols home">
-          <BrandLogo variant="dark" className="header-wordmark" height={36} />
+        <Link to="/" className="header-logo" aria-label="dnols.com home">
+          <BrandWordmark />
         </Link>
         {children}
+        <nav className="header-utils" aria-label="Account shortcuts">
+          <NavLink to="/signin" className="header-util-link">
+            Sign in
+          </NavLink>
+          <NavLink to="/signin" className="header-util-cta">
+            Create account
+          </NavLink>
+        </nav>
         <a
           className="header-seller"
           href={SELLER_URL}

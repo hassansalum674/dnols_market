@@ -98,7 +98,7 @@ export function HomePage() {
     <div className="page marketplace-page">
       <section className="home-hero">
         <div className="home-hero-text">
-          <h1>Shop Kariakoo on foot</h1>
+          <h1>Welcome to dnols.com</h1>
           <p>
             Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
           </p>
