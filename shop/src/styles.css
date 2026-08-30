@@ -557,9 +557,15 @@ label.lbl {
 .sell-logo {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  font-size: 17px;
+}
+
+.sell-wordmark {
+  display: block;
+  height: 34px;
+  width: auto;
+  max-width: min(50vw, 150px);
+  object-fit: contain;
+  object-position: left center;
 }
 
 .sell-nav {

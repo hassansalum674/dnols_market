@@ -1,5 +1,6 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
+import { BrandLogo } from "./BrandLogo";
 import { HeaderSearch } from "./HeaderSearch";
 import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
@@ -51,9 +52,9 @@ export function AppLayout() {
         )}
         {shop && (
           <header className="header">
-            <div className="header-row">
-              <img className="header-mark" src="/brand/logo4_submark.svg" alt="Dnols" />
-              <span style={{ fontWeight: 700 }}>Shop</span>
+            <div className="shell-inner header-row">
+              <BrandLogo variant="dark" className="header-wordmark" height={32} />
+              <span className="header-shop-label">Shop</span>
             </div>
           </header>
         )}

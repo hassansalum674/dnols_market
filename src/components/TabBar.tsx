@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
+import { BrandLogo } from "./BrandLogo";
 
 const buyer = [
   { to: "/", label: "Home", end: true },
@@ -93,8 +94,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
     <header className="header">
       <div className="shell-inner header-row">
         <Link to="/" className="header-logo" aria-label="Dnols home">
-          <span className="header-logo-d">D</span>
-          <span className="header-logo-nols">NOLS</span>
+          <BrandLogo variant="dark" className="header-wordmark" height={36} />
         </Link>
         {children}
       </div>

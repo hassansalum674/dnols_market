@@ -16,8 +16,8 @@ echo "==> Building buyer..."
 npm run build:prod
 
 BUYER_JS=$(ls dist/assets/index-*.js | head -1)
-if ! grep -q 'header-logo' "$BUYER_JS" 2>/dev/null; then
-  echo "WARNING: Build may be old — header-logo not found in $BUYER_JS"
+if ! grep -q 'logo6_dark' "$BUYER_JS" 2>/dev/null; then
+  echo "WARNING: Build may be old — logo6_dark not found in $BUYER_JS"
   echo "         Run: git pull origin main"
 fi
 

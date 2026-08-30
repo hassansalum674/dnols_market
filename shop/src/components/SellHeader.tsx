@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BrandLogo } from "./BrandLogo";
 
 type Props = {
   signInTo?: string;
@@ -10,8 +11,7 @@ export function SellHeader({ signInTo = "/signin", becomeSellerTo = "/onboarding
     <header className="sell-header">
       <div className="sell-header-row">
         <Link to="/" className="sell-logo">
-          <img src="/brand/logo4_submark.svg" alt="Dnols" width={32} height={32} />
-          <span>Dnols</span>
+          <BrandLogo variant="dark" className="sell-wordmark" height={34} />
         </Link>
         <nav className="sell-nav">
           <Link to={signInTo} className="sell-nav-link">
