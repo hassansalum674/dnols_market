@@ -1,55 +1,119 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EmptyCart } from "../components/EmptyState";
+import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
 import { useCart } from "../store/cart";
 
 export function CartPage() {
-  const { items, remove, clear, totalTzs } = useCart();
+  const { items, remove, setQty, totalTzs } = useCart();
+  const nav = useNavigate();
+
   if (items.length === 0) return <EmptyCart />;
 
-  return (
-    <div className="page cart-page">
-      <div className="cart-header">
-        <h1 className="cart-title">Your cart</h1>
-        <button type="button" className="cart-clear-btn" onClick={clear}>
-          Clear cart
-        </button>
-      </div>
+  const subtotal = totalTzs;
 
-      <ul className="cart-list">
+  return (
+    <div className="unified-checkout">
+      <header className="uc-topbar">
+        <h1 className="uc-topbar-title">Your basket</h1>
+        <button
+          type="button"
+          className="uc-close"
+          aria-label="Close basket"
+          onClick={() => nav(-1)}
+        >
+          ×
+        </button>
+      </header>
+
+      <ul className="uc-items">
         {items.map((line) => (
-          <li key={line.listing.id} className="cart-line">
-            <img className="cart-line-photo" src={line.listing.photoUrl} alt="" />
-            <div className="cart-line-body">
-              <p className="cart-line-title">{line.listing.title}</p>
-              <p className="price cart-line-price">
-                {formatTsh(line.listing.priceTzs)}
-                {line.qty > 1 && (
-                  <span className="muted"> × {line.qty}</span>
-                )}
-              </p>
-              <button
-                type="button"
-                className="cart-remove-btn"
-                onClick={() => remove(line.listing.id)}
-              >
-                Remove
-              </button>
+          <li key={line.listing.id} className="uc-item">
+            <img
+              className="uc-item-photo"
+              src={line.listing.photoUrl}
+              alt=""
+            />
+            <div className="uc-item-body">
+              <p className="uc-item-title">{line.listing.title}</p>
+              <p className="uc-item-price">{formatTsh(line.listing.priceTzs)}</p>
+              <div className="uc-item-actions">
+                <div className="uc-qty">
+                  <button
+                    type="button"
+                    aria-label="Decrease quantity"
+                    onClick={() => setQty(line.listing.id, line.qty - 1)}
+                  >
+                    −
+                  </button>
+                  <span>{line.qty}</span>
+                  <button
+                    type="button"
+                    aria-label="Increase quantity"
+                    onClick={() => setQty(line.listing.id, line.qty + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="uc-trash"
+                  aria-label="Remove item"
+                  onClick={() => remove(line.listing.id)}
+                >
+                  🗑
+                </button>
+              </div>
             </div>
           </li>
         ))}
       </ul>
 
-      <div className="cart-summary">
-        <p className="cart-total-label">Total</p>
-        <p className="price cart-total">{formatTsh(totalTzs)}</p>
-      </div>
+      <section className="uc-totals" aria-label="Order totals">
+        <div className="uc-totals-row">
+          <span>Subtotal</span>
+          <span>{formatTsh(subtotal)}</span>
+        </div>
+        <div className="uc-totals-row">
+          <span>Pickup in Kariakoo</span>
+          <span className="uc-free">FREE</span>
+        </div>
+        <div className="uc-totals-row uc-totals-total">
+          <span>Total</span>
+          <span>{formatTsh(subtotal)}</span>
+        </div>
+      </section>
 
-      <div className="sticky-pay">
-        <Link className="btn" to="/checkout">
-          Continue to payment
-        </Link>
-      </div>
+      <section className="uc-pay-section" aria-label="Unified checkout">
+        <p className="uc-pay-label">Unified checkout</p>
+        <p className="uc-pay-hint">
+          Funds held in escrow until you pick up. Seller paid only after
+          handover.
+        </p>
+        <div className="uc-pay-buttons">
+          {PAY_METHODS.map((m, i) => (
+            <button
+              key={m.id}
+              type="button"
+              className={`uc-pay-btn ${i === PAY_METHODS.length - 1 ? "uc-pay-btn--dark" : ""}`}
+              onClick={() => nav(`/checkout?method=${m.id}`)}
+            >
+              <span
+                className="uc-pay-mark"
+                style={{ background: m.accent }}
+                aria-hidden
+              >
+                {m.label.charAt(0)}
+              </span>
+              {m.checkoutLabel}
+            </button>
+          ))}
+        </div>
+        <p className="uc-pay-foot">
+          M-Pesa · Mix by Yas · Airtel Money ·{" "}
+          <Link to="/terms">escrow terms</Link>
+        </p>
+      </section>
     </div>
   );
 }

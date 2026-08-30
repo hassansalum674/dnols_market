@@ -15,7 +15,7 @@ export function ReservePayButton({ listing, label = "Reserve & pay" }: Props) {
   function reserve() {
     if (!listing.inStock) return;
     replaceWith(listing);
-    navigate("/checkout");
+    navigate("/cart");
   }
 
   return (

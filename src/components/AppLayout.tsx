@@ -12,7 +12,8 @@ const SPLASH_KEY = "dnols.splash.session";
 export function AppLayout() {
   const loc = useLocation();
   const nav = useNavigation();
-  const hideTabs = loc.pathname.startsWith("/checkout");
+  const hideTabs =
+    loc.pathname.startsWith("/checkout") || loc.pathname.startsWith("/cart");
   const legal =
     loc.pathname === "/terms" || loc.pathname === "/privacy";
   const shop = loc.pathname.startsWith("/shop");
@@ -49,7 +50,7 @@ export function AppLayout() {
     <>
       {splash && <Splash onDone={done} />}
       <div className={`app-shell ${hideTabs || legal ? "no-tabs" : ""}`}>
-        {!shop && (
+        {!hideTabs && !legal && !shop && (
           <>
             <BuyerHeader>
               <HeaderSearch />
@@ -77,7 +78,7 @@ export function AppLayout() {
           )}
         </main>
         {!hideTabs && !legal && <TabBar />}
-        {!shop && <SiteFooter />}
+        {!shop && !hideTabs && <SiteFooter />}
         {!shop && (
           <p className="build-stamp" aria-hidden>
             build {typeof __BUILD_SHA__ !== "undefined" ? __BUILD_SHA__ : "dev"}

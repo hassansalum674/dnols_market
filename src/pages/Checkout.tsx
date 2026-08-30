@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { EmptyCart } from "../components/EmptyState";
 import { formatTsh } from "../lib/format";
@@ -18,41 +18,59 @@ import {
 import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
 import { markPaid, saveLocalOrder } from "../store/persist";
-import type { Order } from "../types";
+import type { DirectionsPayload, Order } from "../types";
 
-type Step = "review" | "pay" | "waiting" | "success";
+type Step = "details" | "waiting" | "success";
 
-const STEPS: { id: Step; label: string }[] = [
-  { id: "review", label: "Review" },
-  { id: "pay", label: "Pay" },
-  { id: "waiting", label: "Confirm" },
-  { id: "success", label: "Done" },
-];
+const KARIAKOO = { lat: -6.8224, lng: 39.2739 };
 
-function stepIndex(step: Step): number {
-  return STEPS.findIndex((s) => s.id === step);
+function mapUrl(d?: DirectionsPayload): string {
+  const lat = d?.lat ?? KARIAKOO.lat;
+  const lng = d?.lng ?? KARIAKOO.lng;
+  return `https://staticmap.openstreetmap.de/staticmap.php?center=${lat},${lng}&zoom=16&size=640x280&markers=${lat},${lng},red`;
+}
+
+function orderDisplayId(id: string): string {
+  const tail = id.replace(/^ord_/, "").slice(-4).toUpperCase();
+  return tail || id.slice(-4).toUpperCase();
 }
 
 export function CheckoutPage() {
   const { items, totalTzs, clear } = useCart();
   const { user } = useAuth();
   const nav = useNavigate();
-  const [step, setStep] = useState<Step>("review");
+  const [params] = useSearchParams();
+  const methodParam = params.get("method") as PayMethod | null;
+
+  const [step, setStep] = useState<Step>("details");
   const [method, setMethod] = useState<PayMethod>("mpesa");
   const [phone, setPhone] = useState("");
+  const [editingContact, setEditingContact] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [order, setOrder] = useState<Order | null>(null);
 
   useEffect(() => {
-    setMethod(loadLastPayMethod());
-    setPhone(loadLastPayPhone());
-  }, []);
+    const savedMethod = loadLastPayMethod();
+    const savedPhone = loadLastPayPhone();
+    if (
+      methodParam === "mpesa" ||
+      methodParam === "tigo" ||
+      methodParam === "airtel"
+    ) {
+      setMethod(methodParam);
+    } else {
+      setMethod(savedMethod);
+    }
+    setPhone(savedPhone);
+  }, [methodParam]);
 
   if (items.length === 0 && step !== "success") return <EmptyCart />;
 
   const selectedMethod = PAY_METHODS.find((m) => m.id === method)!;
   const displayPhone = formatTzPhoneDisplay(phone);
-  const current = stepIndex(step);
+  const savedPhone = loadLastPayPhone();
+  const contactEmail = user?.email ?? "Add email when you sign in";
+  const primaryDirection = order?.directions?.[0];
 
   const startPayment = async () => {
     setErr(null);
@@ -77,124 +95,159 @@ export function CheckoutPage() {
       setOrder(paid);
       setStep("success");
     } catch (e) {
-      setStep("pay");
+      setStep("details");
       setErr(e instanceof Error ? e.message : "Payment failed. Try again.");
     }
   };
 
-  return (
-    <div className="page checkout-flow">
-      <nav className="checkout-progress" aria-label="Checkout steps">
-        {STEPS.map((s, i) => (
-          <span
-            key={s.id}
-            className={`checkout-progress-step ${i <= current ? "on" : ""} ${i === current ? "current" : ""}`}
+  if (step === "waiting") {
+    return (
+      <div className="unified-checkout">
+        <header className="uc-topbar">
+          <span className="uc-topbar-spacer" />
+          <h1 className="uc-topbar-title">Confirm payment</h1>
+          <span className="uc-topbar-spacer" />
+        </header>
+        <div className="checkout-waiting">
+          <div className="stk-pulse" aria-hidden />
+          <h2 className="checkout-title">Check your phone</h2>
+          <p className="section-desc">
+            We sent a request to <strong>{displayPhone || phone}</strong> on{" "}
+            {selectedMethod.label}.
+          </p>
+          <p className="hint">{selectedMethod.stkHint}</p>
+          <p className="checkout-waiting-note">
+            Do not close this screen until payment completes.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "success" && order) {
+    const mapTarget = primaryDirection ?? {
+      shopName: "Kariakoo Market",
+      streetAddress: "Kariakoo, Dar es Salaam",
+      lat: KARIAKOO.lat,
+      lng: KARIAKOO.lng,
+      mapsHint: "Show your pickup code at the stall",
+    };
+
+    return (
+      <div className="unified-checkout unified-checkout--success">
+        <header className="uc-success-header">
+          <button
+            type="button"
+            className="uc-back"
+            aria-label="Menu"
+            onClick={() => nav("/")}
           >
-            {s.label}
-          </span>
-        ))}
-      </nav>
+            ☰
+          </button>
+          <span className="uc-brand">DNOLS</span>
+          <Link to="/orders" className="uc-bag" aria-label="Orders">
+            🛍
+          </Link>
+        </header>
 
-      {step === "review" && (
-        <>
-          <h1 className="checkout-title">Review order</h1>
-          <p className="section-desc">
-            Your payment is held in escrow until you pick up in Kariakoo and
-            confirm you received the item. The seller is paid only after
-            handover.
-          </p>
-
-          {!user && (
-            <p className="checkout-signin-hint">
-              <Link to="/signin">Sign in</Link> to save orders across devices.
-            </p>
-          )}
-
-          <section className="checkout-card">
-            <h2>Items</h2>
-            <ul className="checkout-items">
-              {items.map((i) => (
-                <li key={i.listing.id}>
-                  <img src={i.listing.photoUrl} alt="" />
-                  <div>
-                    <p>{i.listing.title}</p>
-                    <p className="muted">
-                      {formatTsh(i.listing.priceTzs)}
-                      {i.qty > 1 ? ` × ${i.qty}` : ""}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <p className="checkout-total">
-              Total <span className="price">{formatTsh(totalTzs)}</span>
-            </p>
-          </section>
-
-          <section className="checkout-card checkout-escrow">
-            <h2>How escrow works</h2>
-            <ol className="checkout-escrow-steps">
-              <li>You pay with M-Pesa, Mix by Yas, or Airtel Money.</li>
-              <li>Funds are held safely until pickup.</li>
-              <li>You walk to the stall and show your pickup code.</li>
-              <li>After you confirm receipt, the seller gets paid.</li>
-            </ol>
-          </section>
-
-          <p className="hint checkout-back">
-            <Link to="/cart">← Back to cart</Link>
-          </p>
-
-          <div className="sticky-buy">
-            <button
-              type="button"
-              className="btn"
-              onClick={() => {
-                setErr(null);
-                setStep("pay");
-              }}
-            >
-              Continue to pay
-            </button>
+        <div className="uc-success-body">
+          <div className="checkout-success-badge" aria-hidden>
+            ✓
           </div>
-        </>
-      )}
-
-      {step === "pay" && (
-        <>
-          <h1 className="checkout-title">Pay with mobile money</h1>
-          <p className="section-desc">
-            Choose your wallet. We send a payment prompt to your phone — you
-            confirm with your PIN on the {selectedMethod.network} screen.
+          <h1 className="uc-success-title">Thank you for shopping with us!</h1>
+          <p className="uc-order-id">
+            YOUR ORDER #{order.pickupCode ?? orderDisplayId(order.id)}
           </p>
 
-          <section className="checkout-card">
-            <p className="checkout-total">
-              Amount <span className="price">{formatTsh(totalTzs)}</span>
+          <section className="uc-panel">
+            <h2 className="uc-panel-label">Pickup at</h2>
+            <p className="uc-panel-strong">{mapTarget.shopName}</p>
+            <p className="muted">{mapTarget.streetAddress}</p>
+            <a
+              className="uc-map"
+              href={`https://www.google.com/maps?q=${mapTarget.lat},${mapTarget.lng}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img src={mapUrl(mapTarget)} alt="Pickup location map" />
+            </a>
+            <p className="hint">{mapTarget.mapsHint}</p>
+          </section>
+
+          <section className="uc-panel">
+            <h2 className="uc-panel-label">Payment method</h2>
+            <div className="uc-paid-with">
+              <span
+                className="uc-pay-mark"
+                style={{ background: selectedMethod.accent }}
+                aria-hidden
+              >
+                {selectedMethod.label.charAt(0)}
+              </span>
+              <div>
+                <p className="uc-panel-strong">{selectedMethod.label}</p>
+                <p className="muted">
+                  {order.payPhone
+                    ? formatTzPhoneDisplay(order.payPhone)
+                    : displayPhone}
+                </p>
+              </div>
+            </div>
+            <p className="hint">
+              {formatTsh(order.totalTzs)} held in escrow until handover.
             </p>
           </section>
 
-          <section className="checkout-card">
-            <h2>Wallet</h2>
-            <div className="pay-methods">
-              {PAY_METHODS.map((m) => (
-                <button
-                  key={m.id}
-                  type="button"
-                  className={`pay-method ${method === m.id ? "on" : ""}`}
-                  onClick={() => setMethod(m.id)}
-                >
-                  <span className="pay-method-label">{m.label}</span>
-                  <span className="pay-method-hint">{m.network}</span>
-                </button>
-              ))}
-            </div>
+          <button
+            type="button"
+            className="uc-continue-link"
+            onClick={() => nav("/")}
+          >
+            Continue shopping
+          </button>
+        </div>
+      </div>
+    );
+  }
 
-            <label className="field-label" htmlFor="pay-phone">
-              Number to charge
+  return (
+    <div className="unified-checkout">
+      <header className="uc-topbar">
+        <button
+          type="button"
+          className="uc-back"
+          aria-label="Back to basket"
+          onClick={() => nav("/cart")}
+        >
+          ←
+        </button>
+        <h1 className="uc-topbar-title uc-topbar-title--caps">Checkout</h1>
+        <span className="uc-topbar-spacer" />
+      </header>
+
+      <section className="uc-panel">
+        <div className="uc-panel-head">
+          <h2 className="uc-panel-label">Contact details</h2>
+          <button
+            type="button"
+            className="uc-edit"
+            onClick={() => setEditingContact((v) => !v)}
+          >
+            {editingContact ? "Done" : "Edit"}
+          </button>
+        </div>
+        {editingContact || !user ? (
+          <div className="uc-contact-edit">
+            {!user && (
+              <p className="hint">
+                <Link to="/signin">Sign in</Link> to save orders across devices.
+              </p>
+            )}
+            <label className="field-label" htmlFor="checkout-phone">
+              Mobile money number
             </label>
             <input
-              id="pay-phone"
+              id="checkout-phone"
               className="sheet-field"
               type="tel"
               inputMode="tel"
@@ -206,106 +259,95 @@ export function CheckoutPage() {
                 setErr(null);
               }}
             />
-            <p className="hint">{selectedMethod.stkHint}</p>
-          </section>
-
-          {err && <p className="err">{err}</p>}
-
-          <p className="hint checkout-back">
-            <button
-              type="button"
-              className="text-link-btn"
-              onClick={() => {
-                setErr(null);
-                setStep("review");
-              }}
-            >
-              ← Back
-            </button>
-          </p>
-
-          <div className="sticky-buy">
-            <button
-              type="button"
-              className="btn"
-              onClick={() => void startPayment()}
-            >
-              Send payment request
-            </button>
           </div>
-        </>
-      )}
+        ) : (
+          <div className="uc-contact">
+            <p className="uc-panel-strong">{contactEmail}</p>
+            <p className="muted">
+              {displayPhone || "Add your mobile money number"}
+            </p>
+          </div>
+        )}
+      </section>
 
-      {step === "waiting" && (
-        <div className="checkout-waiting">
-          <div className="stk-pulse" aria-hidden />
-          <h1 className="checkout-title">Check your phone</h1>
-          <p className="section-desc">
-            We sent a payment request to{" "}
-            <strong>{displayPhone || phone}</strong> on {selectedMethod.label}.
-          </p>
-          <p className="hint">{selectedMethod.stkHint}</p>
-          <p className="checkout-waiting-note">
-            Do not close this screen until payment completes.
-          </p>
+      <section className="uc-panel">
+        <div className="uc-panel-head">
+          <h2 className="uc-panel-label">Payment details</h2>
+          <button
+            type="button"
+            className="uc-edit"
+            onClick={() => nav("/cart")}
+          >
+            Switch
+          </button>
         </div>
-      )}
 
-      {step === "success" && order && (
-        <div className="checkout-success">
-          <div className="checkout-success-badge" aria-hidden>
-            ✓
-          </div>
-          <h1 className="checkout-title">Payment received</h1>
-          <p className="section-desc">
-            {formatTsh(order.totalTzs)} is held in escrow. Walk to Kariakoo and
-            show this code at the stall.
-          </p>
-
-          <section className="checkout-card checkout-pickup-code">
-            <p className="muted">Pickup code</p>
-            <p className="pickup-code-value">{order.pickupCode}</p>
-            {order.payMethod && (
-              <p className="hint">
-                Paid via{" "}
-                {PAY_METHODS.find((m) => m.id === order.payMethod)?.label ??
-                  order.payMethod}
-                {order.payPhone ? ` · ${formatTzPhoneDisplay(order.payPhone)}` : ""}
-              </p>
-            )}
-          </section>
-
-          {order.directions && order.directions.length > 0 && (
-            <section className="checkout-card">
-              <h2>Where to go</h2>
-              {order.directions.map((d) => (
-                <div key={d.shopName} className="checkout-direction">
-                  <p className="checkout-direction-name">{d.shopName}</p>
-                  <p className="muted">{d.streetAddress}</p>
-                  <p className="hint">{d.mapsHint}</p>
-                </div>
-              ))}
-            </section>
-          )}
-
-          <div className="sticky-buy">
+        <div className="uc-wallets">
+          {PAY_METHODS.map((m) => (
             <button
+              key={m.id}
               type="button"
-              className="btn"
-              onClick={() => nav("/orders")}
+              className={`uc-wallet ${method === m.id ? "on" : ""}`}
+              onClick={() => setMethod(m.id)}
             >
-              View my orders
+              <span
+                className="uc-pay-mark"
+                style={{ background: m.accent }}
+                aria-hidden
+              >
+                {m.label.charAt(0)}
+              </span>
+              <div className="uc-wallet-text">
+                <p className="uc-panel-strong">{m.label}</p>
+                <p className="muted">{m.network}</p>
+              </div>
             </button>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => nav("/")}
-            >
-              Keep shopping
-            </button>
-          </div>
+          ))}
         </div>
-      )}
+
+        {savedPhone && savedPhone !== phone && (
+          <button
+            type="button"
+            className="uc-use-saved"
+            onClick={() => setPhone(savedPhone)}
+          >
+            Use saved number · {formatTzPhoneDisplay(savedPhone)}
+          </button>
+        )}
+
+        <label className="field-label" htmlFor="pay-phone">
+          Number to charge
+        </label>
+        <input
+          id="pay-phone"
+          className="sheet-field"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="+255 7XX XXX XXX"
+          value={phone}
+          onChange={(e) => {
+            setPhone(e.target.value);
+            setErr(null);
+          }}
+        />
+        <p className="hint">{selectedMethod.stkHint}</p>
+      </section>
+
+      <section className="uc-panel uc-panel--compact">
+        <div className="uc-totals-row">
+          <span>Total</span>
+          <span className="price">{formatTsh(totalTzs)}</span>
+        </div>
+      </section>
+
+      {err && <p className="err uc-err">{err}</p>}
+
+      <div className="uc-sticky">
+        <button type="button" className="btn" onClick={() => void startPayment()}>
+          Continue
+        </button>
+      </div>
     </div>
   );
 }
