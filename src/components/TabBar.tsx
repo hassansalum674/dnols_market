@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
+import { SELLER_URL } from "../lib/urls";
 import { BrandLogo } from "./BrandLogo";
 
 const buyer = [
@@ -90,6 +91,7 @@ export function TabBar() {
 }
 
 export function BuyerHeader({ children }: { children?: ReactNode }) {
+  const { count } = useCart();
   return (
     <header className="header">
       <div className="shell-inner header-row">
@@ -97,6 +99,29 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
           <BrandLogo variant="dark" className="header-wordmark" height={36} />
         </Link>
         {children}
+        <a
+          className="header-seller"
+          href={SELLER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Become a seller
+        </a>
+        <nav className="header-nav" aria-label="Account">
+          <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
+            Home
+          </NavLink>
+          <NavLink to="/cart" className={({ isActive }) => (isActive ? "active" : "")}>
+            Cart
+            {count > 0 && <span className="header-badge">{count}</span>}
+          </NavLink>
+          <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
+            Orders
+          </NavLink>
+          <NavLink to="/you" className={({ isActive }) => (isActive ? "active" : "")}>
+            My Account
+          </NavLink>
+        </nav>
       </div>
     </header>
   );

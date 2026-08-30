@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
+import { BuyerSubNav } from "./BuyerSubNav";
 import { HeaderSearch } from "./HeaderSearch";
 import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
@@ -46,9 +47,12 @@ export function AppLayout() {
       {splash && <Splash onDone={done} />}
       <div className={`app-shell ${hideTabs ? "no-tabs" : ""}`}>
         {!shop && (
-          <BuyerHeader>
-            <HeaderSearch />
-          </BuyerHeader>
+          <>
+            <BuyerHeader>
+              <HeaderSearch />
+            </BuyerHeader>
+            <BuyerSubNav />
+          </>
         )}
         {shop && (
           <header className="header">

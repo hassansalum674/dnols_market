@@ -5,6 +5,7 @@ import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { StatusScreen } from "../components/EmptyState";
 import { PLACE_LABEL } from "../lib/format";
+import { SELLER_URL } from "../lib/urls";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
 
 function fromParams(sp: URLSearchParams): ListingFilters {
@@ -41,6 +42,12 @@ function toParams(f: ListingFilters, sp: URLSearchParams) {
   return next;
 }
 
+const SIDEBAR_CATS: { id: Category | ""; label: string }[] = [
+  { id: "", label: "All products" },
+  { id: "fashion", label: "Fashion" },
+  { id: "electronics", label: "Electronics" },
+];
+
 export function HomePage() {
   const [sp, setSp] = useSearchParams();
   const filters = useMemo(() => fromParams(sp), [sp]);
@@ -73,39 +80,9 @@ export function HomePage() {
     setSp(toParams(next, sp), { replace: true });
   };
 
-  const chips: { key: string; label: string; on: boolean; clear: () => void }[] =
-    [];
-  if (filters.category)
-    chips.push({
-      key: "cat",
-      label: filters.category === "fashion" ? "Fashion" : "Electronics",
-      on: true,
-      clear: () => setFilters({ ...filters, category: "" }),
-    });
-  if (filters.maxDistance)
-    chips.push({
-      key: "max",
-      label:
-        Number(filters.maxDistance) >= 1000
-          ? "1km"
-          : `${filters.maxDistance}m`,
-      on: true,
-      clear: () => setFilters({ ...filters, maxDistance: "" }),
-    });
-  if (filters.inStock)
-    chips.push({
-      key: "stock",
-      label: "In stock",
-      on: true,
-      clear: () => setFilters({ ...filters, inStock: false }),
-    });
-  if (filters.minPrice !== "" && filters.minPrice != null)
-    chips.push({
-      key: "min",
-      label: `From TSh ${filters.minPrice}`,
-      on: true,
-      clear: () => setFilters({ ...filters, minPrice: "" }),
-    });
+  const setCategory = (cat: Category | "") => {
+    setFilters({ ...filters, category: cat });
+  };
 
   if (err === "offline") {
     return (
@@ -118,84 +95,135 @@ export function HomePage() {
   }
 
   return (
-    <div className="page">
-      <p className="place-line">Delivering from shops near {PLACE_LABEL()}</p>
-      <div className="filter-groups">
-        <div className="filter-group">
-          <span className="filter-label">Categories</span>
-          <div className="chips">
-            {(["fashion", "electronics"] as const).map((c) => (
-              <button
-                key={c}
-                type="button"
-                className={`chip ${filters.category === c ? "on" : ""}`}
-                onClick={() =>
-                  setFilters({
-                    ...filters,
-                    category: filters.category === c ? "" : c,
-                  })
-                }
-              >
-                {c === "fashion" ? "Fashion" : "Electronics"}
-              </button>
-            ))}
-          </div>
+    <div className="page marketplace-page">
+      <section className="home-hero">
+        <div className="home-hero-text">
+          <h1>Shop Kariakoo on foot</h1>
+          <p>
+            Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
+          </p>
         </div>
-        <div className="filter-group">
-          <span className="filter-label">Nearby</span>
-          <div className="chips">
-            {[200, 500, 1000].map((m) => (
-              <button
-                key={m}
-                type="button"
-                className={`chip ${filters.maxDistance === m ? "on" : ""}`}
-                onClick={() =>
-                  setFilters({
-                    ...filters,
-                    maxDistance: filters.maxDistance === m ? "" : m,
-                  })
-                }
-              >
-                {m === 1000 ? "1km" : `${m}m`}
-              </button>
+        <a
+          className="btn home-seller-cta"
+          href={SELLER_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Become a seller
+        </a>
+      </section>
+
+      <div className="marketplace-layout">
+        <aside className="market-sidebar" aria-label="Categories">
+          <h2 className="sidebar-title">Categories</h2>
+          <ul className="sidebar-list">
+            {SIDEBAR_CATS.map((c) => (
+              <li key={c.id || "all"}>
+                <button
+                  type="button"
+                  className={filters.category === c.id ? "active" : ""}
+                  onClick={() => setCategory(c.id)}
+                >
+                  {c.label}
+                </button>
+              </li>
             ))}
-            <button
-              type="button"
-              className={`chip ${filters.inStock ? "on" : ""}`}
-              onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
-            >
-              In stock
-            </button>
-            <button type="button" className="chip chip-action" onClick={() => setOpen(true)}>
-              All filters
-            </button>
+          </ul>
+          <h2 className="sidebar-title">Walk distance</h2>
+          <ul className="sidebar-list">
+            {[200, 500, 1000].map((m) => (
+              <li key={m}>
+                <button
+                  type="button"
+                  className={filters.maxDistance === m ? "active" : ""}
+                  onClick={() =>
+                    setFilters({
+                      ...filters,
+                      maxDistance: filters.maxDistance === m ? "" : m,
+                    })
+                  }
+                >
+                  {m === 1000 ? "Within 1 km" : `Within ${m}m`}
+                </button>
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                className={filters.inStock ? "active" : ""}
+                onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
+              >
+                In stock only
+              </button>
+            </li>
+          </ul>
+          <button type="button" className="sidebar-filters" onClick={() => setOpen(true)}>
+            More filters
+          </button>
+        </aside>
+
+        <div className="market-main">
+          <div className="filter-groups filter-groups-mobile">
+            <div className="filter-group">
+              <span className="filter-label">Categories</span>
+              <div className="chips">
+                {(["fashion", "electronics"] as const).map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    className={`chip ${filters.category === c ? "on" : ""}`}
+                    onClick={() => setCategory(filters.category === c ? "" : c)}
+                  >
+                    {c === "fashion" ? "Fashion" : "Electronics"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="filter-group">
+              <span className="filter-label">Nearby</span>
+              <div className="chips">
+                {[200, 500, 1000].map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    className={`chip ${filters.maxDistance === m ? "on" : ""}`}
+                    onClick={() =>
+                      setFilters({
+                        ...filters,
+                        maxDistance: filters.maxDistance === m ? "" : m,
+                      })
+                    }
+                  >
+                    {m === 1000 ? "1km" : `${m}m`}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={`chip ${filters.inStock ? "on" : ""}`}
+                  onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
+                >
+                  In stock
+                </button>
+                <button type="button" className="chip chip-action" onClick={() => setOpen(true)}>
+                  All filters
+                </button>
+              </div>
+            </div>
           </div>
+
+          {source === "mock" && listings && (
+            <p className="hint">Showing sample listings — reconnecting to live shops…</p>
+          )}
+          {listings === null ? (
+            <SkeletonGrid />
+          ) : listings.length === 0 ? (
+            <p className="muted">Nothing in this range. Widen the walk or try another category.</p>
+          ) : (
+            <ProductGrid listings={listings} />
+          )}
         </div>
       </div>
-      {chips.length > 0 && (
-        <div className="chips">
-          {chips.map((c) => (
-            <button
-              key={c.key}
-              type="button"
-              className="chip on removable"
-              onClick={c.clear}
-            >
-              {c.label} ×
-            </button>
-          ))}
-        </div>
-      )}
-      {source === "mock" && listings && (
-        <p className="hint">Showing sample listings — reconnecting to live shops…</p>
-      )}
-      {listings === null ? (
-        <SkeletonGrid />
-      ) : listings.length === 0 ? (
-        <p className="muted">Nothing in this range. Widen the walk.</p>
-      ) : (
-        <ProductGrid listings={listings} />
-      )}
+
       <FilterSheet
         open={open}
         filters={draft}

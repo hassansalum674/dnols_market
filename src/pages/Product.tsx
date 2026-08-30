@@ -30,41 +30,48 @@ export function ProductPage() {
   if (detail === null) return <NotFoundPage soldOut />;
 
   return (
-    <div>
-      <img className="hero" src={detail.photoUrl} alt={detail.title} />
-      <div className="product-body">
-        <h1 className="product-title">{detail.title}</h1>
-        <div className="product-row">
-          <span className="price">{formatTsh(detail.priceTzs)}</span>
-          <span className="muted">{formatDistance(detail.distanceMeters)}</span>
+    <div className="product-page">
+      <div className="product-layout">
+        <div className="product-gallery">
+          <img className="product-hero" src={detail.photoUrl} alt={detail.title} />
         </div>
-        {detail.brand && <p className="muted">{detail.brand}</p>}
-        <p>{detail.description}</p>
-        {detail.sizes && (
-          <p className="muted">Sizes · {detail.sizes.join(" · ")}</p>
-        )}
-        {detail.paid && detail.directions ? (
-          <div className="you-block">
-            <h2>Pickup</h2>
-            <p>{detail.directions.shopName}</p>
-            <p>{detail.directions.streetAddress}</p>
-            <p className="hint">{detail.directions.mapsHint}</p>
+        <div className="product-info">
+          <h1 className="product-title">{detail.title}</h1>
+          <div className="product-row">
+            <span className="price">{formatTsh(detail.priceTzs)}</span>
+            <span className="muted">{formatDistance(detail.distanceMeters)}</span>
           </div>
-        ) : (
-          <p className="hint">Pay, then we show the way. Address stays hidden until then.</p>
-        )}
-        <button
-          type="button"
-          className="chip on"
-          onClick={() => setSaved(toggleSaved(id).includes(id))}
-        >
-          {saved ? "Saved" : "Save for later"}
-        </button>
-        <p className="hint">
-          <Link to="/">Back to nearby</Link>
-        </p>
+          {detail.brand && <p className="muted">{detail.brand}</p>}
+          <p className="product-desc">{detail.description}</p>
+          {detail.sizes && (
+            <p className="muted">Sizes · {detail.sizes.join(" · ")}</p>
+          )}
+          {detail.paid && detail.directions ? (
+            <div className="you-block">
+              <h2>Pickup</h2>
+              <p>{detail.directions.shopName}</p>
+              <p>{detail.directions.streetAddress}</p>
+              <p className="hint">{detail.directions.mapsHint}</p>
+            </div>
+          ) : (
+            <p className="hint">Pay, then we show the way. Address stays hidden until then.</p>
+          )}
+          <button
+            type="button"
+            className="chip on"
+            onClick={() => setSaved(toggleSaved(id).includes(id))}
+          >
+            {saved ? "Saved" : "Save for later"}
+          </button>
+          <p className="hint">
+            <Link to="/">Back to products</Link>
+          </p>
+          <div className="product-buy product-buy-desktop">
+            <AddToCartButton listing={detail} label="Pay / Reserve" />
+          </div>
+        </div>
       </div>
-      <div className="sticky-pay">
+      <div className="sticky-pay sticky-pay-mobile">
         <AddToCartButton listing={detail} label="Pay / Reserve" />
       </div>
     </div>
