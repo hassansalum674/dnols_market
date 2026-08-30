@@ -62,6 +62,8 @@ export type CartItem = {
   qty: number;
 };
 
+export type PayMethod = "mpesa" | "tigo" | "airtel";
+
 export type Order = {
   id: string;
   listingIds: string[];
@@ -74,4 +76,6 @@ export type Order = {
   createdAt: string;
   paidAt: string | null;
   handedOverAt: string | null;
+  payMethod?: PayMethod;
+  payPhone?: string;
 };

@@ -54,7 +54,10 @@ export class Store {
     return items;
   }
 
-  createPaidOrder(listingIds: string[]): Order {
+  createPaidOrder(
+    listingIds: string[],
+    opts?: { payMethod?: string; payPhone?: string },
+  ): Order {
     const unique = [...new Set(listingIds)];
     const shopIds = [
       ...new Set(
@@ -83,6 +86,13 @@ export class Store {
       createdAt: now,
       paidAt: now,
       handedOverAt: null,
+      payMethod:
+        opts?.payMethod === "mpesa" ||
+        opts?.payMethod === "tigo" ||
+        opts?.payMethod === "airtel"
+          ? opts.payMethod
+          : undefined,
+      payPhone: opts?.payPhone,
     };
     this.orders.set(order.id, order);
     this.tokens.set(order.accessToken, order.id);

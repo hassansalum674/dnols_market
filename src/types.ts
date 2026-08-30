@@ -49,11 +49,14 @@ export type Order = {
   listingIds: string[];
   status: EscrowStatus;
   pickupCode?: string;
+  handoverPin?: string;
   totalTzs: number;
   createdAt: string;
   paidAt: string | null;
   accessToken?: string;
   directions?: DirectionsPayload[];
+  payMethod?: string;
+  payPhone?: string;
 };
 
 export type CartLine = {

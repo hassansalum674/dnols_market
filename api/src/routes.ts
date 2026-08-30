@@ -210,7 +210,11 @@ export function registerRoutes(
   });
 
   app.post("/orders/pay", async (req, reply) => {
-    const body = (req.body ?? {}) as { listingIds?: string[] };
+    const body = (req.body ?? {}) as {
+      listingIds?: string[];
+      payMethod?: string;
+      phone?: string;
+    };
     const listingIds = body.listingIds;
     if (!Array.isArray(listingIds) || listingIds.length === 0) {
       return reply.code(400).send({
@@ -218,16 +222,50 @@ export function registerRoutes(
         message: "listingIds must be a non-empty string array.",
       });
     }
+    const payMethod = body.payMethod ?? "mpesa";
+    if (payMethod !== "mpesa" && payMethod !== "tigo" && payMethod !== "airtel") {
+      return reply.code(400).send({
+        error: "bad_pay_method",
+        message: "payMethod must be mpesa, tigo, or airtel.",
+      });
+    }
+    const phoneRaw = String(body.phone ?? "").trim();
+    const phoneDigits = phoneRaw.replace(/\D/g, "");
+    const normalized =
+      phoneDigits.startsWith("255")
+        ? `+${phoneDigits}`
+        : phoneDigits.startsWith("0")
+          ? `+255${phoneDigits.slice(1)}`
+          : phoneDigits.length === 9
+            ? `+255${phoneDigits}`
+            : phoneRaw;
+    const phoneCheck = normalized.replace(/\D/g, "");
+    if (!/^2557\d{8}$/.test(phoneCheck)) {
+      return reply.code(400).send({
+        error: "bad_phone",
+        message: "Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).",
+      });
+    }
     try {
-      const order = store.createPaidOrder(listingIds);
+      const order = store.createPaidOrder(listingIds, {
+        payMethod,
+        payPhone: normalized,
+      });
       const directions = order.shopIds.map((sid) =>
         toDirections(store.shop(sid)!),
       );
+      const providerLabel =
+        payMethod === "mpesa"
+          ? "M-Pesa"
+          : payMethod === "tigo"
+            ? "Mix by Yas"
+            : "Airtel Money";
       return {
         mockPayment: {
-          provider: "mobile_money",
+          provider: providerLabel,
+          phone: normalized,
           status: "success",
-          note: "Stub: M-Pesa / Mixx / Airtel Money always succeeds.",
+          note: `Stub STK push to ${normalized} — always succeeds in dev.`,
         },
         orderId: order.id,
         escrow: order.status,

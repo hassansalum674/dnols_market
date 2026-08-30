@@ -6,6 +6,8 @@ import {
   mockTrending,
 } from "../data/mocks";
 import type {
+  DirectionsPayload,
+  EscrowStatus,
   ListingFilters,
   Order,
   PublicListing,
@@ -117,25 +119,59 @@ export async function fetchTrending(): Promise<PublicListing[]> {
   }
 }
 
-export async function payOrder(listingIds: string[]): Promise<Order> {
+export async function payOrder(input: {
+  listingIds: string[];
+  payMethod: string;
+  phone: string;
+}): Promise<Order> {
   try {
-    const res = await fetch(`${BASE}/orders`, {
+    const res = await fetch(`${BASE}/orders/pay`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ listingIds, pay: true }),
+      body: JSON.stringify(input),
     });
-    if (!res.ok) throw new Error("pay_fail");
-    return res.json() as Promise<Order>;
-  } catch {
+    const data = (await res.json().catch(() => ({}))) as {
+      orderId?: string;
+      listingIds?: string[];
+      escrow?: EscrowStatus;
+      pickupCode?: string;
+      handoverPin?: string;
+      totalTzs?: number;
+      accessToken?: string;
+      shops?: DirectionsPayload[];
+      message?: string;
+      error?: string;
+    };
+    if (!res.ok) {
+      throw new Error(data.message || data.error || "Payment failed");
+    }
+    return {
+      id: data.orderId ?? `ord_${Date.now().toString(36)}`,
+      listingIds: data.listingIds ?? input.listingIds,
+      status: data.escrow ?? "paid_held",
+      pickupCode: data.pickupCode,
+      handoverPin: data.handoverPin,
+      totalTzs: data.totalTzs ?? 0,
+      accessToken: data.accessToken,
+      directions: data.shops,
+      payMethod: input.payMethod,
+      payPhone: input.phone,
+      createdAt: new Date().toISOString(),
+      paidAt: new Date().toISOString(),
+    };
+  } catch (e) {
+    if (e instanceof Error && e.message !== "pay_fail") throw e;
     return {
       id: `ord_mock_${Date.now().toString(36)}`,
-      listingIds,
+      listingIds: input.listingIds,
       status: "paid_held",
       pickupCode: String(1000 + Math.floor(Math.random() * 9000)),
-      totalTzs: mockByIds(listingIds).reduce((s, l) => s + l.priceTzs, 0),
+      totalTzs: mockByIds(input.listingIds).reduce((s, l) => s + l.priceTzs, 0),
       createdAt: new Date().toISOString(),
       paidAt: new Date().toISOString(),
       accessToken: `tok_mock_${Math.random().toString(36).slice(2)}`,
+      payMethod: input.payMethod,
+      payPhone: input.phone,
     };
   }
 }
