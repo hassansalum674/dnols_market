@@ -52,10 +52,10 @@ export function SignInPage() {
   return (
     <div className="sell-landing">
       <SellHeader />
-      <main className="page auth-page">
+      <main className="page auth-page signin-page">
         <SignInPanel
           title="Seller sign in"
-          subtitle="Use Google, Apple, or email. You can also continue with the phone number you registered with."
+          subtitle="Use Google or email. You can also continue with the phone number you registered with."
         />
 
         <p className="auth-divider">or use phone</p>

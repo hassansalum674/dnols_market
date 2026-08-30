@@ -11,7 +11,6 @@ import {
   authSignOut,
   isFirebaseConfigured,
   resetPassword,
-  signInWithApple,
   signInWithEmail,
   signInWithGoogle,
   signUpWithEmail,
@@ -24,7 +23,6 @@ type AuthState = {
   loading: boolean;
   configured: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithApple: () => Promise<void>;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -53,7 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       configured,
       signInWithGoogle,
-      signInWithApple,
       signInWithEmail,
       signUpWithEmail,
       resetPassword,

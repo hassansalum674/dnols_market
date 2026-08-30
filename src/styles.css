@@ -1479,7 +1479,19 @@ img {
 }
 
 .signin-panel {
+  width: 100%;
   max-width: 420px;
+}
+
+.signin-page {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-bottom: calc(var(--tabs) + 24px);
+}
+
+.signin-page .signin-panel {
+  margin: 0 auto;
 }
 
 .signin-title {
@@ -1518,17 +1530,25 @@ img {
   color: var(--white);
 }
 
-.btn-oauth.btn-apple {
-  background: #000;
-  color: #fff;
-  border-color: #333;
-}
-
 .auth-divider {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   color: var(--muted);
   font-size: 14px;
   margin: 16px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--faint);
+}
+
+.auth-divider span {
+  flex-shrink: 0;
 }
 
 .signin-tabs {
@@ -1539,7 +1559,7 @@ img {
 
 .signin-tabs button {
   flex: 1;
-  min-height: 44px;
+  min-height: 48px;
   border: 1px solid var(--faint);
   border-radius: var(--radius);
   background: transparent;
@@ -1557,12 +1577,44 @@ img {
 .signin-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+}
+
+.signin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signin-form .sheet-field {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .signin-submit {
-  margin-top: 8px;
+  margin-top: 4px;
   width: 100%;
+  min-height: 52px;
+  font-size: 17px;
+}
+
+.signin-forgot {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 14px;
+  min-height: 44px;
+}
+
+.signin-email-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  font-size: 17px;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .text-link-btn {
@@ -1579,6 +1631,14 @@ img {
 .signin-more {
   margin: 12px 0 0;
   text-align: center;
+}
+
+.account-signin-card .google-signin-wrap {
+  margin-bottom: 0;
+}
+
+.account-signin-card .btn-google {
+  width: 100%;
 }
 
 .auth-setup-hint {
@@ -1661,5 +1721,58 @@ img {
 
   .product-hero {
     max-height: 55vw;
+  }
+
+  .account-title {
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  .account-signin-card {
+    padding: 16px 14px;
+  }
+
+  .signin-page {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .signin-title {
+    font-size: 22px;
+  }
+
+  .section-desc {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  .btn-oauth,
+  .btn-google,
+  .signin-email-btn,
+  .signin-submit {
+    min-height: 56px;
+    font-size: 18px;
+  }
+
+  .signin-tabs button {
+    min-height: 52px;
+    font-size: 16px;
+  }
+
+  .signin-form .sheet-field {
+    min-height: 52px;
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+
+  .field-label {
+    font-size: 15px;
+  }
+
+  .back-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 16px;
   }
 }

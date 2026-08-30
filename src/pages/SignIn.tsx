@@ -3,9 +3,9 @@ import { SignInPanel } from "../components/SignInPanel";
 
 export function SignInPage() {
   return (
-    <div className="page account-page">
+    <div className="page signin-page">
       <Link to="/you" className="back-link">
-        ← Back
+        ← Back to account
       </Link>
       <SignInPanel />
     </div>

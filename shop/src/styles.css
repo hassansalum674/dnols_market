@@ -1004,7 +1004,17 @@ label.lbl {
 .auth-page {
   max-width: 400px;
   margin: 0 auto;
-  padding-top: 24px;
+  padding-top: 16px;
+  padding-bottom: 32px;
+}
+
+.signin-page {
+  width: 100%;
+}
+
+.signin-page .signin-panel {
+  max-width: none;
+  width: 100%;
 }
 
 .auth-page h1 {
@@ -1207,13 +1217,6 @@ select.field {
   background: rgba(26, 111, 212, 0.15);
 }
 
-.auth-divider {
-  text-align: center;
-  color: var(--muted);
-  font-size: 14px;
-  margin: 20px 0;
-}
-
 .btn-google {
   display: inline-flex;
   align-items: center;
@@ -1240,6 +1243,7 @@ select.field {
 }
 
 .signin-panel {
+  width: 100%;
   max-width: 420px;
 }
 
@@ -1254,13 +1258,6 @@ select.field {
   font-size: 16px;
   line-height: 1.5;
   color: var(--muted);
-}
-
-.signin-oauth {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 4px;
 }
 
 .btn-oauth {
@@ -1286,10 +1283,25 @@ select.field {
   color: var(--white);
 }
 
-.btn-oauth.btn-apple {
-  background: #000;
-  color: #fff;
-  border-color: #333;
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 20px 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--faint);
+}
+
+.auth-divider span {
+  flex-shrink: 0;
 }
 
 .signin-tabs {
@@ -1300,7 +1312,7 @@ select.field {
 
 .signin-tabs button {
   flex: 1;
-  min-height: 44px;
+  min-height: 48px;
   border: 1px solid var(--faint);
   border-radius: var(--btn-radius);
   background: transparent;
@@ -1318,12 +1330,33 @@ select.field {
 .signin-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+}
+
+.signin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.signin-form .field {
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .signin-submit {
-  margin-top: 8px;
+  margin-top: 4px;
   width: 100%;
+  min-height: 52px;
+  font-size: 17px;
+}
+
+.signin-forgot {
+  display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 14px;
+  min-height: 44px;
 }
 
 .text-link-btn {
@@ -1345,4 +1378,44 @@ select.field {
   color: #8fd4a8;
   font-size: 14px;
   margin: 0;
+}
+
+@media (max-width: 767px) {
+  .auth-page {
+    padding-top: 12px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .signin-title {
+    font-size: 24px;
+  }
+
+  .section-desc {
+    font-size: 15px;
+    margin-bottom: 14px;
+  }
+
+  .btn-oauth,
+  .btn-google,
+  .signin-submit,
+  .auth-page .btn {
+    min-height: 56px;
+    font-size: 18px;
+  }
+
+  .signin-tabs button {
+    min-height: 52px;
+    font-size: 16px;
+  }
+
+  .signin-form .field {
+    min-height: 52px;
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+
+  label.lbl {
+    font-size: 15px;
+  }
 }

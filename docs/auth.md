@@ -3,8 +3,9 @@
 Buyer (**dnols.com**) and seller (**shop.dnols.com**) apps use **Firebase Authentication** with:
 
 - **Google**
-- **Apple**
 - **Email / password** (sign up, sign in, forgot password)
+
+> Apple Sign-in can be added later if needed.
 
 ## How to get your Firebase keys
 
@@ -54,18 +55,12 @@ In Firebase Console → **Authentication** → **Sign-in method**:
 ### Google
 1. Click **Google** → **Enable** → choose a support email → **Save**
 
-### Apple
-1. Click **Apple** → **Enable**
-2. You need an [Apple Developer](https://developer.apple.com) account
-3. In Apple Developer → **Certificates, Identifiers & Profiles** → **Identifiers** → your app / Services ID:
-   - Enable **Sign in with Apple**
-   - Add return URL: `https://dnols-2a394.firebaseapp.com/__/auth/handler`
-4. Create a **Sign in with Apple** key in Apple Developer and note **Key ID** and **Team ID**
-5. Paste **Services ID**, **Team ID**, **Key ID**, and upload the **private key** in Firebase Apple provider settings → **Save**
-
 ### Email / password
 1. Click **Email/Password** → enable **Email/Password** (first toggle) → **Save**
 2. Optional: enable **Email link** later; the app uses email + password for now
+
+### Apple (optional, not enabled in app yet)
+Apple Sign-in is not wired up in the app right now. To enable later: Firebase Console → **Apple** → follow Apple Developer setup (Services ID, Team ID, Key ID, private key). Return URL: `https://dnols-2a394.firebaseapp.com/__/auth/handler`
 
 ## Authorized domains
 
@@ -115,7 +110,7 @@ Without Firebase keys, the apps still work as a guest; sign-in buttons show a se
 
 - Signed-in buyers are identified for order history and pickup codes
 - Payment details stay server-side; escrow status is shown in **Orders**
-- Sellers sign in on **shop.dnols.com** with the same Google / Apple / email account
+- Sellers sign in on **shop.dnols.com** with the same Google or email account
 - Do not store card numbers in the PWA — use your payment provider on the API
 
 ## Local dev

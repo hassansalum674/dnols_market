@@ -1,7 +1,6 @@
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
-  OAuthProvider,
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
@@ -45,7 +44,7 @@ function requireAuth() {
   return auth;
 }
 
-async function oauthSignIn(provider: GoogleAuthProvider | OAuthProvider) {
+async function oauthSignIn(provider: GoogleAuthProvider) {
   const auth = requireAuth();
   if (isMobile()) {
     await signInWithRedirect(auth, provider);
@@ -57,13 +56,6 @@ async function oauthSignIn(provider: GoogleAuthProvider | OAuthProvider) {
 export async function signInWithGoogle(): Promise<void> {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
-  await oauthSignIn(provider);
-}
-
-export async function signInWithApple(): Promise<void> {
-  const provider = new OAuthProvider("apple.com");
-  provider.addScope("email");
-  provider.addScope("name");
   await oauthSignIn(provider);
 }
 
