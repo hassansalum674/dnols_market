@@ -29,14 +29,14 @@ export function YouPage() {
   return (
     <div className="page">
       <div className="you-block">
-        <h2>You</h2>
-        <p className="muted">Same tabs whether you sign in or browse as a guest.</p>
+        <h2>My Account</h2>
+        <p className="muted">Browse as a guest or save your name for faster checkout.</p>
         <label className="muted" htmlFor="name">
           Name
         </label>
         <input
           id="name"
-          className="search-input"
+          className="field-input"
           value={name}
           placeholder="Optional"
           onChange={(e) => {

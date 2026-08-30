@@ -17,6 +17,7 @@ export function ProductCard({
         alt={listing.title}
         loading="lazy"
       />
+      <p className="card-title">{listing.title}</p>
       <div className="card-meta">
         <span className="price">{formatTsh(listing.priceTzs)}</span>
         <span className="dist">{formatDistance(listing.distanceMeters)}</span>

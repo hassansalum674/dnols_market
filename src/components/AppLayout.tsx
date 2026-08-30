@@ -57,12 +57,14 @@ export function AppLayout() {
             </div>
           </header>
         )}
-        <main>
+        <main className="shell-main">
           {nav.state === "loading" ? (
             <RoutePulse />
           ) : (
             <Suspense fallback={<RoutePulse />}>
-              <Outlet />
+              <div className="shell-inner">
+                <Outlet />
+              </div>
             </Suspense>
           )}
         </main>

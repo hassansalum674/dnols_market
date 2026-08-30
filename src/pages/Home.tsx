@@ -119,50 +119,58 @@ export function HomePage() {
 
   return (
     <div className="page">
-      <p className="place-line">Near {PLACE_LABEL()}</p>
-      <div className="filters-bar">
-        <div className="chips">
-          {(["fashion", "electronics"] as const).map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={`chip ${filters.category === c ? "on" : ""}`}
-              onClick={() =>
-                setFilters({
-                  ...filters,
-                  category: filters.category === c ? "" : c,
-                })
-              }
-            >
-              {c === "fashion" ? "Fashion" : "Electronics"}
-            </button>
-          ))}
-          {[200, 500, 1000].map((m) => (
-            <button
-              key={m}
-              type="button"
-              className={`chip ${filters.maxDistance === m ? "on" : ""}`}
-              onClick={() =>
-                setFilters({
-                  ...filters,
-                  maxDistance: filters.maxDistance === m ? "" : m,
-                })
-              }
-            >
-              {m === 1000 ? "1km" : `${m}m`}
-            </button>
-          ))}
-          <button
-            type="button"
-            className={`chip ${filters.inStock ? "on" : ""}`}
-            onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
-          >
-            In stock
-          </button>
+      <p className="place-line">Delivering from shops near {PLACE_LABEL()}</p>
+      <div className="filter-groups">
+        <div className="filter-group">
+          <span className="filter-label">Categories</span>
+          <div className="chips">
+            {(["fashion", "electronics"] as const).map((c) => (
+              <button
+                key={c}
+                type="button"
+                className={`chip ${filters.category === c ? "on" : ""}`}
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    category: filters.category === c ? "" : c,
+                  })
+                }
+              >
+                {c === "fashion" ? "Fashion" : "Electronics"}
+              </button>
+            ))}
+          </div>
         </div>
-        <button type="button" className="chip on" onClick={() => setOpen(true)}>
-          Filters
-        </button>
+        <div className="filter-group">
+          <span className="filter-label">Nearby</span>
+          <div className="chips">
+            {[200, 500, 1000].map((m) => (
+              <button
+                key={m}
+                type="button"
+                className={`chip ${filters.maxDistance === m ? "on" : ""}`}
+                onClick={() =>
+                  setFilters({
+                    ...filters,
+                    maxDistance: filters.maxDistance === m ? "" : m,
+                  })
+                }
+              >
+                {m === 1000 ? "1km" : `${m}m`}
+              </button>
+            ))}
+            <button
+              type="button"
+              className={`chip ${filters.inStock ? "on" : ""}`}
+              onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
+            >
+              In stock
+            </button>
+            <button type="button" className="chip chip-action" onClick={() => setOpen(true)}>
+              All filters
+            </button>
+          </div>
+        </div>
       </div>
       {chips.length > 0 && (
         <div className="chips">
@@ -179,7 +187,7 @@ export function HomePage() {
         </div>
       )}
       {source === "mock" && listings && (
-        <p className="hint">Showing nearby mock listings — API at :8787 is optional.</p>
+        <p className="hint">Showing sample listings — reconnecting to live shops…</p>
       )}
       {listings === null ? (
         <SkeletonGrid />

@@ -1,12 +1,12 @@
 import type { ReactNode } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useCart } from "../store/cart";
 
 const buyer = [
   { to: "/", label: "Home", end: true },
   { to: "/cart", label: "Cart", end: false },
   { to: "/orders", label: "Orders", end: false },
-  { to: "/you", label: "You", end: false },
+  { to: "/you", label: "My Account", end: false },
 ];
 
 const shop = [
@@ -43,6 +43,13 @@ function Ico({ name }: { name: string }) {
         <path d="M4 7h16v12H4zM4 7l2-3h12l2 3" />
       </svg>
     );
+  if (name === "My Account")
+    return (
+      <svg {...s} viewBox="0 0 24 24">
+        <circle cx="12" cy="9" r="3" />
+        <path d="M6 19c1.2-3 3.2-4 6-4s4.8 1 6 4" />
+      </svg>
+    );
   return (
     <svg {...s} viewBox="0 0 24 24">
       <circle cx="12" cy="9" r="3" />
@@ -59,22 +66,24 @@ export function TabBar() {
 
   return (
     <nav className="tabbar" aria-label="Primary">
-      {tabs.map((t) => (
-        <NavLink
-          key={t.to}
-          to={t.to}
-          end={t.end}
-          className={({ isActive }) => (isActive ? "active" : "")}
-        >
-          <span className="tab-ico">
-            <Ico name={t.label} />
-            {t.label === "Cart" && count > 0 && (
-              <span className="badge">{count}</span>
-            )}
-          </span>
-          {t.label}
-        </NavLink>
-      ))}
+      <div className="tabbar-inner">
+        {tabs.map((t) => (
+          <NavLink
+            key={t.to}
+            to={t.to}
+            end={t.end}
+            className={({ isActive }) => (isActive ? "active" : "")}
+          >
+            <span className="tab-ico">
+              <Ico name={t.label} />
+              {t.label === "Cart" && count > 0 && (
+                <span className="badge">{count}</span>
+              )}
+            </span>
+            <span className="tab-label">{t.label}</span>
+          </NavLink>
+        ))}
+      </div>
     </nav>
   );
 }
@@ -82,8 +91,11 @@ export function TabBar() {
 export function BuyerHeader({ children }: { children?: ReactNode }) {
   return (
     <header className="header">
-      <div className="header-row">
-        <img className="header-mark" src="/brand/logo4_submark.svg" alt="" />
+      <div className="shell-inner header-row">
+        <Link to="/" className="header-logo" aria-label="Dnols home">
+          <span className="header-logo-d">D</span>
+          <span className="header-logo-nols">NOLS</span>
+        </Link>
         {children}
       </div>
     </header>
