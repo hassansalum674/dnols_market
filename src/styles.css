@@ -2594,6 +2594,26 @@ img {
   padding-bottom: 32px;
 }
 
+.account-page--hub {
+  max-width: 520px;
+}
+
+.account-top {
+  margin-bottom: 8px;
+}
+
+.account-top .account-title {
+  margin-top: 8px;
+}
+
+.account-saved-desc {
+  margin-bottom: 16px;
+}
+
+.account-empty {
+  padding: 24px 0;
+}
+
 .account-title {
   font-size: 26px;
   font-weight: 700;
@@ -2874,6 +2894,16 @@ img {
   margin-bottom: 20px;
 }
 
+.account-tiles--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 480px) {
+  .account-tiles--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
 .account-tile {
   padding: 16px;
   background: var(--surface);
@@ -2902,6 +2932,57 @@ img {
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 10px;
+}
+
+.account-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+
+.account-section-head h2 {
+  margin: 0;
+}
+
+.account-links {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--faint);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--surface);
+}
+
+.account-links-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  color: inherit;
+  border-bottom: 1px solid var(--faint);
+}
+
+.account-links-item:last-child {
+  border-bottom: none;
+}
+
+.account-links-chevron {
+  color: var(--muted);
+  font-size: 20px;
+  line-height: 1;
+}
+
+.account-signout-btn {
+  width: 100%;
+  margin-top: 4px;
 }
 
 .escrow-card {
