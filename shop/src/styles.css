@@ -390,6 +390,17 @@ img {
   padding: 0 28px;
 }
 
+.app-error-page {
+  min-height: 100dvh;
+  padding: 32px 20px;
+}
+
+.app-error-title {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
 .card {
   padding: 16px 0;
   border-bottom: 1px solid var(--faint);

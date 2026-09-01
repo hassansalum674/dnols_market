@@ -1,7 +1,7 @@
 import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
-import { ServerErrorPage } from "./pages/errors";
+import { AppErrorPage, ServerErrorPage } from "./pages/errors";
 import {
   RedirectLegacyProductEdit,
   RedirectLegacyProductNew,
@@ -55,8 +55,12 @@ const NotFoundPage = lazy(() =>
 );
 
 const router = createBrowserRouter([
-  { path: "/", element: <SellLandingPage /> },
-  { path: "/signin", element: <SignInPage /> },
+  {
+    path: "/",
+    element: <SellLandingPage />,
+    errorElement: <AppErrorPage />,
+  },
+  { path: "/signin", element: <SignInPage />, errorElement: <AppErrorPage /> },
   { path: "/onboarding", element: <OnboardingPage /> },
   { path: "/onboarding/:step", element: <OnboardingPage /> },
   { path: "/pending", element: <PendingReviewPage /> },
