@@ -1,6 +1,7 @@
 import { useCart } from "../store/cart";
 import { useCheckoutSheet } from "../store/checkoutSheet";
 import type { PublicListing } from "../types";
+import { useI18n } from "../store/i18n";
 
 type Props = {
   listing: PublicListing;
@@ -8,9 +9,10 @@ type Props = {
 };
 
 /** Reserve a single item and open checkout sheet from the bottom. */
-export function ReservePayButton({ listing, label = "Reserve & pay" }: Props) {
+export function ReservePayButton({ listing, label }: Props) {
   const { replaceWith } = useCart();
   const { openBasket } = useCheckoutSheet();
+  const { t } = useI18n();
 
   function reserve() {
     if (!listing.inStock) return;
@@ -25,7 +27,7 @@ export function ReservePayButton({ listing, label = "Reserve & pay" }: Props) {
       disabled={!listing.inStock}
       onClick={reserve}
     >
-      {listing.inStock ? label : "Sold out"}
+      {listing.inStock ? (label ?? t.reservePay) : t.soldOut}
     </button>
   );
 }

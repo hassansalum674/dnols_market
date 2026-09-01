@@ -6,23 +6,20 @@ import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
 import { getLocalOrders } from "../store/persist";
+import { useI18n } from "../store/i18n";
 import type { Order } from "../types";
-
-const STATUS_LABEL: Record<Order["status"], string> = {
-  reserved: "Reserved — pay to confirm",
-  paid_held: "Paid · Dnols coordinating delivery",
-  handed_over: "Delivered",
-  rejected_refund: "Refunded",
-};
-
-function payMethodLabel(id?: string): string | null {
-  if (!id) return null;
-  return PAY_METHODS.find((m) => m.id === id)?.label ?? id;
-}
 
 export function OrdersPage() {
   const { user } = useAuth();
+  const { t, language } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
+
+  const statusLabel: Record<Order["status"], string> = {
+    reserved: t.statusReserved,
+    paid_held: t.statusPaid,
+    handed_over: t.statusDelivered,
+    rejected_refund: t.statusRefunded,
+  };
 
   useEffect(() => {
     const local = getLocalOrders<Order>();
@@ -38,15 +35,20 @@ export function OrdersPage() {
     });
   }, []);
 
+  function payMethodLabel(id?: string): string | null {
+    if (!id) return null;
+    return PAY_METHODS.find((m) => m.id === id)?.label ?? id;
+  }
+
   if (!user) {
     return (
       <div className="center-state">
-        <p>Sign in to place orders and see your delivery history here.</p>
+        <p>{t.signInForOrders}</p>
         <Link className="btn" to="/signin">
-          Sign in
+          {t.signIn}
         </Link>
         <Link className="btn ghost" to="/">
-          Continue shopping
+          {t.continueShopping}
         </Link>
       </div>
     );
@@ -55,39 +57,39 @@ export function OrdersPage() {
   if (orders.length === 0) {
     return (
       <div className="center-state">
-        <p>No orders yet. Browse Kariakoo deals and pay when ready.</p>
+        <p>{t.noOrders}</p>
         <Link className="btn" to="/">
-          Start shopping
+          {t.startShopping}
         </Link>
       </div>
     );
   }
 
+  const locale = language === "swahili" ? "sw-TZ" : "en-TZ";
+
   return (
     <div className="page">
-      <h1 className="product-title">Orders</h1>
-      <p className="section-desc">
-        Checkout codes and delivery status appear here after you pay.
-      </p>
+      <h1 className="product-title">{t.ordersTitle}</h1>
+      <p className="section-desc">{t.ordersDesc}</p>
       {orders.map((o) => (
         <article key={o.id} className="order-card">
           <div className="order-card-head">
             <p className="price">{formatTsh(o.totalTzs)}</p>
             <span className={`order-status order-status--${o.status}`}>
-              {STATUS_LABEL[o.status] ?? o.status}
+              {statusLabel[o.status] ?? o.status}
             </span>
           </div>
 
           {o.pickupCode && o.status === "paid_held" && (
             <div className="order-pickup">
-              <span className="muted">Checkout code</span>
+              <span className="muted">{t.checkoutCode}</span>
               <span className="order-pickup-code">{o.pickupCode}</span>
             </div>
           )}
 
           {o.deliveryPhone && (
             <p className="hint">
-              Delivery contact · {formatTzPhoneDisplay(o.deliveryPhone)}
+              {t.deliveryContact} · {formatTzPhoneDisplay(o.deliveryPhone)}
             </p>
           )}
 
@@ -108,16 +110,16 @@ export function OrdersPage() {
           {o.listingIds.length === 1 && (
             <p className="order-items-hint">
               <Link to={`/product/${o.listingIds[0]}`} className="order-item-link">
-                View item
+                {t.viewItem}
               </Link>
             </p>
           )}
           {o.listingIds.length > 1 && (
-            <p className="order-items-hint muted">{o.listingIds.length} items</p>
+            <p className="order-items-hint muted">{t.itemsCount(o.listingIds.length)}</p>
           )}
 
           <p className="hint">
-            {new Date(o.paidAt ?? o.createdAt).toLocaleString()}
+            {new Date(o.paidAt ?? o.createdAt).toLocaleString(locale)}
           </p>
         </article>
       ))}

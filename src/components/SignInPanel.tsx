@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
 
 type Mode = "signin" | "signup" | "reset";
 
@@ -10,8 +11,8 @@ type Props = {
 };
 
 export function SignInPanel({
-  title = "Sign in to Dnols",
-  subtitle = "Use Google or email. Your orders and escrow pickups are tied to your account.",
+  title,
+  subtitle,
   onSuccess,
 }: Props) {
   const {
@@ -22,6 +23,9 @@ export function SignInPanel({
     signUpWithEmail,
     resetPassword,
   } = useAuth();
+  const { t } = useI18n();
+  const heading = title ?? t.signInTitle;
+  const sub = subtitle ?? t.signInSubtitle;
 
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
@@ -39,7 +43,7 @@ export function SignInPanel({
       await fn();
       onSuccess?.();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Sign-in failed");
+      setErr(e instanceof Error ? e.message : t.signInFailed);
     } finally {
       setBusy(null);
     }
@@ -72,8 +76,8 @@ export function SignInPanel({
 
   return (
     <div className="signin-panel">
-      <h2 className="signin-title">{title}</h2>
-      <p className="section-desc">{subtitle}</p>
+      <h2 className="signin-title">{heading}</h2>
+      <p className="section-desc">{sub}</p>
 
       {!loading && !configured && (
         <p className="hint auth-setup-hint">
@@ -88,11 +92,11 @@ export function SignInPanel({
         onClick={() => void run("google", signInWithGoogle)}
       >
         <GoogleIcon />
-        {busy === "google" ? "Signing in…" : "Continue with Google"}
+        {busy === "google" ? t.signingIn : t.continueGoogle}
       </button>
 
       <p className="auth-divider">
-        <span>or use email</span>
+        <span>{t.or}</span>
       </p>
 
       <div className="signin-tabs" role="tablist" aria-label="Sign-in mode">
@@ -107,7 +111,7 @@ export function SignInPanel({
             setMsg(null);
           }}
         >
-          Sign in
+          {t.signIn}
         </button>
         <button
           type="button"
@@ -120,7 +124,7 @@ export function SignInPanel({
             setMsg(null);
           }}
         >
-          Create account
+          {t.createAccount}
         </button>
       </div>
 
@@ -178,12 +182,12 @@ export function SignInPanel({
         {msg && <p className="ok">{msg}</p>}
         <button type="submit" className="btn signin-submit" disabled={Boolean(busy)}>
           {busy === "email"
-            ? "Please wait…"
+            ? t.loading
             : mode === "signup"
-              ? "Create account"
+              ? t.createAccount
               : mode === "reset"
-                ? "Send reset link"
-                : "Sign in with email"}
+                ? t.continue
+                : t.signInEmail}
         </button>
       </form>
 

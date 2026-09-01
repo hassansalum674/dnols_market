@@ -7,12 +7,13 @@ import { UserAvatar } from "./UserAvatar";
 import { userDisplayName } from "../lib/userDisplay";
 import { BrandLogo } from "./BrandLogo";
 import { SELLER_URL } from "../lib/urls";
+import { useI18n } from "../store/i18n";
 
 const buyer = [
-  { to: "/", label: "Home", end: true },
-  { to: "/cart", label: "Cart", end: false },
-  { to: "/orders", label: "Orders", end: false },
-  { to: "/you", label: "My Account", end: false },
+  { to: "/", end: true, key: "home" as const },
+  { to: "/cart", end: false, key: "cart" as const },
+  { to: "/orders", end: false, key: "orders" as const },
+  { to: "/you", end: false, key: "myAccount" as const },
 ];
 
 const shop = [
@@ -71,50 +72,70 @@ export function TabBar() {
   const { count } = useCart();
   const { user } = useAuth();
   const { openBasket } = useCheckoutSheet();
+  const { t } = useI18n();
 
   const openCart = (e: MouseEvent) => {
     e.preventDefault();
     openBasket();
   };
 
+  function labelFor(tab: (typeof buyer)[number] | (typeof shop)[number]) {
+    if ("label" in tab) return tab.label;
+    return t[tab.key];
+  }
+
+  function icoName(tab: (typeof buyer)[number] | (typeof shop)[number]) {
+    if ("label" in tab) return tab.label;
+    if (tab.key === "home") return "Home";
+    if (tab.key === "cart") return "Cart";
+    if (tab.key === "orders") return "Orders";
+    return "My Account";
+  }
+
   return (
-    <nav className="tabbar" aria-label="Primary">
+    <nav className="tabbar" aria-label={t.primaryNav}>
       <div className="tabbar-inner">
-        {tabs.map((t) =>
-          t.label === "Cart" && !shopMode ? (
-            <button
-              key={t.to}
-              type="button"
-              className="tabbar-cart-btn"
-              onClick={openCart}
-            >
-              <span className="tab-ico">
-                <Ico name={t.label} />
-                {count > 0 && <span className="badge">{count}</span>}
-              </span>
-              <span className="tab-label">{t.label}</span>
-            </button>
-          ) : (
+        {tabs.map((tab) => {
+          const label = labelFor(tab);
+          const isCart = !shopMode && "key" in tab && tab.key === "cart";
+          const isAccount = !shopMode && "key" in tab && tab.key === "myAccount";
+          if (isCart) {
+            return (
+              <button
+                key={tab.to}
+                type="button"
+                className="tabbar-cart-btn"
+                onClick={openCart}
+              >
+                <span className="tab-ico">
+                  <Ico name="Cart" />
+                  {count > 0 && <span className="badge">{count}</span>}
+                </span>
+                <span className="tab-label">{label}</span>
+              </button>
+            );
+          }
+          return (
             <NavLink
-              key={t.to}
-              to={t.to}
-              end={t.end}
+              key={tab.to}
+              to={tab.to}
+              end={tab.end}
               className={({ isActive }) => (isActive ? "active" : "")}
             >
               <span className="tab-ico">
-                {t.label === "My Account" && user && !shopMode ? (
+                {isAccount && user ? (
                   <UserAvatar user={user} size="sm" className="tab-user-avatar" />
                 ) : (
-                  <Ico name={t.label} />
+                  <Ico name={icoName(tab)} />
                 )}
-                {t.label === "Cart" && count > 0 && (
+                {"label" in tab && tab.label === "Cart" && count > 0 && (
                   <span className="badge">{count}</span>
                 )}
               </span>
-              <span className="tab-label">{t.label}</span>
+              <span className="tab-label">{label}</span>
             </NavLink>
-          ),
-        )}
+          );
+        })}
       </div>
     </nav>
   );
@@ -124,6 +145,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
   const { count } = useCart();
   const { user, loading } = useAuth();
   const { openBasket } = useCheckoutSheet();
+  const { t } = useI18n();
   const displayName = userDisplayName(user);
 
   return (
@@ -133,7 +155,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
           <BrandLogo variant="dark" className="header-wordmark" height={36} />
         </Link>
         {children}
-        <nav className="header-utils" aria-label="Account shortcuts">
+        <nav className="header-utils" aria-label={t.accountShortcuts}>
           {!loading && user ? (
             <NavLink to="/you" className="header-util-signed">
               <UserAvatar user={user} size="md" />
@@ -142,34 +164,34 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
           ) : (
             <>
               <NavLink to="/signin" className="header-util-link">
-                Sign in
+                {t.signIn}
               </NavLink>
               <NavLink to="/signin" className="header-util-cta">
-                Create account
+                {t.createAccount}
               </NavLink>
             </>
           )}
         </nav>
         <a className="header-seller" href={SELLER_URL} rel="noopener noreferrer">
-          Become a seller
+          {t.becomeSeller}
         </a>
-        <nav className="header-nav" aria-label="Account">
+        <nav className="header-nav" aria-label={t.account}>
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
-            Home
+            {t.home}
           </NavLink>
           <button
             type="button"
             className="header-nav-cart"
             onClick={() => openBasket()}
           >
-            Cart
+            {t.cart}
             {count > 0 && <span className="header-badge">{count}</span>}
           </button>
           <NavLink to="/orders" className={({ isActive }) => (isActive ? "active" : "")}>
-            Orders
+            {t.orders}
           </NavLink>
           <NavLink to="/you" className={({ isActive }) => (isActive ? "active" : "")}>
-            My Account
+            {t.myAccount}
           </NavLink>
         </nav>
       </div>

@@ -6,12 +6,14 @@ import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
 import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
+import { useI18n } from "../store/i18n";
 import type { PublicListingDetail } from "../types";
 import { ServerErrorPage } from "./errors";
 import { NotFoundPage } from "./NotFound";
 
 export function ProductPage() {
   const { id = "" } = useParams();
+  const { t } = useI18n();
   const [detail, setDetail] = useState<PublicListingDetail | null | undefined>(
     undefined,
   );
@@ -49,30 +51,30 @@ export function ProductPage() {
           )}
           {detail.paid && detail.directions ? (
             <div className="you-block">
-              <h2>Pickup</h2>
+              <h2>{t.pickup}</h2>
               <p>{detail.directions.shopName}</p>
               <p>{detail.directions.streetAddress}</p>
               <p className="hint">{detail.directions.mapsHint}</p>
             </div>
           ) : (
-            <p className="hint">Pay, then Dnols coordinates delivery to you.</p>
+            <p className="hint">{t.payThenDelivery}</p>
           )}
           <button
             type="button"
             className="chip on"
             onClick={() => setSaved(toggleSaved(id).includes(id))}
           >
-            {saved ? "Saved" : "Save for later"}
+            {saved ? t.saved : t.saveForLater}
           </button>
           <p className="hint">
-            <Link to="/">Back to products</Link>
+            <Link to="/">{t.backToProducts}</Link>
           </p>
         </div>
       </div>
 
-      <div className="product-actions" aria-label="Purchase options">
-        <ReservePayButton listing={detail} />
-        <AddToCartButton listing={detail} label="Add to cart" fly={false} />
+      <div className="product-actions" aria-label={t.purchaseOptions}>
+        <ReservePayButton listing={detail} label={t.reservePay} />
+        <AddToCartButton listing={detail} label={t.addToCart} fly={false} />
       </div>
     </div>
   );

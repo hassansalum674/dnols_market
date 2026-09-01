@@ -9,6 +9,7 @@ import {
   type HistoryEntry,
 } from "../store/persist";
 import type { PublicListing } from "../types";
+import { useI18n } from "../store/i18n";
 
 export function HeaderSearch({
   initial = "",
@@ -19,6 +20,7 @@ export function HeaderSearch({
 }) {
   const nav = useNavigate();
   const { user } = useAuth();
+  const { t } = useI18n();
   const [q, setQ] = useState(initial);
   const [open, setOpen] = useState(false);
   const [suggest, setSuggest] = useState<PublicListing[]>([]);
@@ -68,7 +70,7 @@ export function HeaderSearch({
         </span>
         <input
           className="search-input"
-          placeholder="Search products in Kariakoo"
+          placeholder={t.searchPlaceholder}
           value={q}
           onChange={(e) => {
             setQ(e.target.value);
@@ -78,21 +80,21 @@ export function HeaderSearch({
           onKeyDown={(e) => {
             if (e.key === "Enter") go(q, suggest[0]?.photoUrl);
           }}
-          aria-label="Search"
+          aria-label={t.searchAria}
         />
         <button
           type="button"
           className="search-btn"
           onClick={() => go(q, suggest[0]?.photoUrl)}
         >
-          Search
+          {t.search}
         </button>
       </div>
       {open && (
         <div className="search-panel">
           {suggest.length > 0 && (
             <>
-              <h4>Suggestions</h4>
+              <h4>{t.suggestions}</h4>
               {suggest.map((s) => (
                 <button
                   type="button"
@@ -119,7 +121,7 @@ export function HeaderSearch({
           )}
           {history.length > 0 && (
             <>
-              <h4>Recent</h4>
+              <h4>{t.recent}</h4>
               {history.map((h) => (
                 <button
                   type="button"
@@ -143,13 +145,13 @@ export function HeaderSearch({
                   setHistory([]);
                 }}
               >
-                Clear recent
+                {t.clearRecent}
               </button>
             </>
           )}
           {!suggest.length && !history.length && q.trim() === "" && (
             <p className="hint" style={{ padding: "8px 16px" }}>
-              Try kitenge, sneakers, earbuds
+              {t.searchHint}
             </p>
           )}
         </div>

@@ -1,121 +1,78 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
 import {
-  loadSettings,
   PREFERRED_LANGUAGES,
-  saveSettings,
-  type PreferredLanguage,
   type TextSize,
   type ThemeMode,
 } from "../store/settings";
+import { useI18n } from "../store/i18n";
 import { UserAvatar } from "../components/UserAvatar";
-import { userDisplayName } from "../lib/userDisplay";
+import { userDisplayName, providerLabel } from "../lib/userDisplay";
 import { loadProfile } from "../lib/profile";
 import { formatTzPhoneDisplay } from "../lib/phone";
 import { useAuth } from "../store/auth";
 
-const COPY: Record<
-  PreferredLanguage,
-  {
-    back: string;
-    title: string;
-    appearance: string;
-    appearanceDesc: string;
-    theme: string;
-    dark: string;
-    light: string;
-    system: string;
-    textSize: string;
-    normal: string;
-    large: string;
-    language: string;
-    languageDesc: string;
-    account: string;
-    signOut: string;
-    legal: string;
-    terms: string;
-    privacy: string;
-    escrow: string;
-    escrowDesc: string;
-  }
-> = {
-  english: {
-    back: "← My Account",
-    title: "Settings",
-    appearance: "Appearance",
-    appearanceDesc: "Theme and text size apply across the app.",
-    theme: "Theme",
-    dark: "Dark",
-    light: "Light",
-    system: "System",
-    textSize: "Text size",
-    normal: "Normal",
-    large: "Large",
-    language: "Language",
-    languageDesc: "English and Kiswahili for this app.",
-    account: "Account",
-    signOut: "Sign out",
-    legal: "Legal",
-    terms: "Terms of Use",
-    privacy: "Privacy Policy",
-    escrow: "Privacy & escrow",
-    escrowDesc:
-      "Dnols holds buyer payments in escrow until in-person handover at Kariakoo. Your name, email, and order history are kept only for pickup verification and dispute resolution. Sellers never receive your payment until you confirm the item.",
-  },
-  swahili: {
-    back: "← Akaunti yangu",
-    title: "Mipangilio",
-    appearance: "Muonekano",
-    appearanceDesc: "Mandhari na ukubwa wa maandishi hutumika kwenye programu nzima.",
-    theme: "Mandhari",
-    dark: "Giza",
-    light: "Mwanga",
-    system: "Mfumo",
-    textSize: "Ukubwa wa maandishi",
-    normal: "Kawaida",
-    large: "Kubwa",
-    language: "Lugha",
-    languageDesc: "English na Kiswahili kwa programu hii.",
-    account: "Akaunti",
-    signOut: "Toka",
-    legal: "Kisheria",
-    terms: "Masharti ya Matumizi",
-    privacy: "Sera ya Faragha",
-    escrow: "Faragha na escrow",
-    escrowDesc:
-      "Dnols inashikilia malipo ya mnunuzi kwenye escrow hadi bidhaa ikabidhiwe ana kwa ana Kariakoo. Jina, barua pepe, na historia ya oda hutumika tu kuthibitisha uchukuaji na kutatua migogoro. Muuzaji hapokei malipo yako hadi uthibitishe bidhaa.",
-  },
-};
-
 export function SettingsPage() {
   const { user, signOut } = useAuth();
-  const [settings, setSettings] = useState(loadSettings);
-  const t = COPY[settings.language];
-
-  function patchTheme(theme: ThemeMode) {
-    setSettings(saveSettings({ theme }));
-  }
-
-  function patchTextSize(textSize: TextSize) {
-    setSettings(saveSettings({ textSize }));
-  }
-
-  function patchLanguage(language: PreferredLanguage) {
-    setSettings(saveSettings({ language }));
-  }
+  const { settings, patch, t } = useI18n();
+  const profile = user ? loadProfile(user.uid) : {};
+  const themeOptions: { value: ThemeMode; label: string }[] = [
+    { value: "dark", label: t.dark },
+    { value: "light", label: t.light },
+    { value: "system", label: t.system },
+  ];
+  const textSizeOptions: { value: TextSize; label: string }[] = [
+    { value: "normal", label: t.normal },
+    { value: "large", label: t.large },
+  ];
 
   return (
-    <div className="page account-page">
+    <div className="page account-page settings-page">
       <div className="account-top">
         <Link to="/you" className="back-link">
-          {t.back}
+          {t.backAccount}
         </Link>
-        <h1>{t.title}</h1>
+        <h1>{t.settings}</h1>
       </div>
 
-      <section className="account-section">
-        <h2>{t.language}</h2>
-        <p className="section-desc">{t.languageDesc}</p>
+      {user ? (
+        <header className="settings-hero">
+          <UserAvatar user={user} size="xl" />
+          <div className="settings-hero-body">
+            <p className="settings-hero-name">{userDisplayName(user)}</p>
+            {user.email && <p className="settings-hero-line">{user.email}</p>}
+            {profile.phone && (
+              <p className="settings-hero-line">
+                {formatTzPhoneDisplay(profile.phone)}
+              </p>
+            )}
+            <p className="settings-hero-meta">
+              {t.signedInWith} {providerLabel(user.provider)}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="settings-hero-signout"
+            onClick={() => void signOut()}
+          >
+            {t.signOut}
+          </button>
+        </header>
+      ) : (
+        <header className="settings-hero settings-hero--guest">
+          <div className="settings-hero-body">
+            <p className="settings-hero-name">{t.guest}</p>
+            <p className="settings-hero-line">{t.signInToOrder}</p>
+            <Link to="/signin" className="btn settings-hero-cta">
+              {t.signIn}
+            </Link>
+          </div>
+        </header>
+      )}
+
+      <section className="settings-card">
+        <h2>{t.preferences}</h2>
+        <p className="settings-card-desc">{t.languageDesc}</p>
+        <p className="field-label">{t.language}</p>
         <div className="sheet-options" role="radiogroup" aria-label={t.language}>
           {PREFERRED_LANGUAGES.map((opt) => (
             <button
@@ -123,92 +80,87 @@ export function SettingsPage() {
               type="button"
               className={`sheet-chip ${settings.language === opt.id ? "on" : ""}`}
               aria-pressed={settings.language === opt.id}
-              onClick={() => patchLanguage(opt.id)}
+              onClick={() => patch({ language: opt.id })}
             >
               {opt.native}
             </button>
           ))}
         </div>
-      </section>
-
-      <section className="account-section">
-        <h2>{t.appearance}</h2>
-        <p className="section-desc">{t.appearanceDesc}</p>
         <p className="field-label">{t.theme}</p>
         <div className="sheet-options">
-          {(
-            [
-              ["dark", t.dark],
-              ["light", t.light],
-              ["system", t.system],
-            ] as const
-          ).map(([value, label]) => (
+          {themeOptions.map((opt) => (
             <button
-              key={value}
+              key={opt.value}
               type="button"
-              className={`sheet-chip ${settings.theme === value ? "on" : ""}`}
-              onClick={() => patchTheme(value)}
+              className={`sheet-chip ${settings.theme === opt.value ? "on" : ""}`}
+              onClick={() => patch({ theme: opt.value })}
             >
-              {label}
+              {opt.label}
             </button>
           ))}
         </div>
         <p className="field-label">{t.textSize}</p>
         <div className="sheet-options">
-          {(
-            [
-              ["normal", t.normal],
-              ["large", t.large],
-            ] as const
-          ).map(([value, label]) => (
+          {textSizeOptions.map((opt) => (
             <button
-              key={value}
+              key={opt.value}
               type="button"
-              className={`sheet-chip ${settings.textSize === value ? "on" : ""}`}
-              onClick={() => patchTextSize(value)}
+              className={`sheet-chip ${settings.textSize === opt.value ? "on" : ""}`}
+              onClick={() => patch({ textSize: opt.value })}
             >
-              {label}
+              {opt.label}
             </button>
           ))}
         </div>
       </section>
 
-      {user && (
-        <section className="account-section">
-          <h2>{t.account}</h2>
-          <div className="settings-profile">
-            <UserAvatar user={user} size="lg" />
-            <div>
-              <p className="account-name">{userDisplayName(user)}</p>
-              {user.email && <p className="muted">{user.email}</p>}
-              {loadProfile(user.uid).phone && (
-                <p className="muted">
-                  {formatTzPhoneDisplay(loadProfile(user.uid).phone!)}
-                </p>
-              )}
+      <section className="settings-card">
+        <h2>{t.account}</h2>
+        <nav className="settings-rows" aria-label={t.account}>
+          <Link to="/you" className="settings-row">
+            <span>{t.myProfile}</span>
+            <span className="account-links-chevron" aria-hidden>
+              ›
+            </span>
+          </Link>
+          <Link to="/orders" className="settings-row">
+            <span>{t.orders}</span>
+            <span className="account-links-chevron" aria-hidden>
+              ›
+            </span>
+          </Link>
+          <Link to="/you/saved" className="settings-row">
+            <span>{t.savedItems}</span>
+            <span className="account-links-chevron" aria-hidden>
+              ›
+            </span>
+          </Link>
+          {user && (
+            <div className="settings-row settings-row--static">
+              <span>{t.connectedAccounts}</span>
+              <span className="settings-row-meta">{providerLabel(user.provider)}</span>
             </div>
-          </div>
-          <button type="button" className="btn ghost account-menu-btn" onClick={() => void signOut()}>
-            {t.signOut}
-          </button>
-        </section>
-      )}
-
-      <section className="account-section">
-        <h2>{t.legal}</h2>
-        <nav className="account-menu" aria-label={t.legal}>
-          <Link to="/terms" className="account-menu-item">
-            {t.terms}
-          </Link>
-          <Link to="/privacy" className="account-menu-item">
-            {t.privacy}
-          </Link>
+          )}
         </nav>
       </section>
 
-      <section className="account-section">
-        <h2>{t.escrow}</h2>
-        <p className="section-desc">{t.escrowDesc}</p>
+      <section className="settings-card">
+        <h2>{t.legalNav}</h2>
+        <nav className="settings-rows" aria-label={t.legalNav}>
+          <Link to="/terms" className="settings-row">
+            <span>{t.terms}</span>
+            <span className="account-links-chevron" aria-hidden>
+              ›
+            </span>
+          </Link>
+          <Link to="/privacy" className="settings-row">
+            <span>{t.privacy}</span>
+            <span className="account-links-chevron" aria-hidden>
+              ›
+            </span>
+          </Link>
+        </nav>
+        <p className="settings-card-note">{t.escrowDesc}</p>
       </section>
     </div>
   );

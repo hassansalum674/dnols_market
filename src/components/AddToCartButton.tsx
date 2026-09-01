@@ -2,10 +2,11 @@ import { useState, type MouseEvent } from "react";
 import { createPortal } from "react-dom";
 import { useCart } from "../store/cart";
 import type { PublicListing } from "../types";
+import { useI18n } from "../store/i18n";
 
 export function AddToCartButton({
   listing,
-  label = "Add to cart",
+  label,
   fly = true,
 }: {
   listing: PublicListing;
@@ -13,8 +14,10 @@ export function AddToCartButton({
   fly?: boolean;
 }) {
   const { add } = useCart();
+  const { t } = useI18n();
   const [ok, setOk] = useState(false);
   const [dot, setDot] = useState<{ x: number; y: number } | null>(null);
+  const action = label ?? t.addToCart;
 
   const onClick = (e: MouseEvent<HTMLButtonElement>) => {
     if (!listing.inStock) return;
@@ -41,9 +44,9 @@ export function AddToCartButton({
             <path d="M5 12.5 10 17l9-10" />
           </svg>
         ) : listing.inStock ? (
-          label
+          action
         ) : (
-          "Sold out"
+          t.soldOut
         )}
       </button>
       {dot &&

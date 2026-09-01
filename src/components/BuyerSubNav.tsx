@@ -1,9 +1,11 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { SELLER_URL } from "../lib/urls";
+import { useI18n } from "../store/i18n";
 
 export function BuyerSubNav() {
   const { pathname } = useLocation();
   const [sp] = useSearchParams();
+  const { t } = useI18n();
   const cat = sp.get("cat") || "";
   const onHome = pathname === "/";
 
@@ -12,25 +14,25 @@ export function BuyerSubNav() {
   }
 
   return (
-    <nav className="subnav" aria-label="Browse">
+    <nav className="subnav" aria-label={t.browse}>
       <div className="shell-inner subnav-row">
         <Link to="/" className={tabClass(onHome && !cat)}>
-          Products
+          {t.products}
         </Link>
         <Link to="/?cat=fashion" className={tabClass(onHome && cat === "fashion")}>
-          Fashion
+          {t.fashion}
         </Link>
         <Link
           to="/?cat=electronics"
           className={tabClass(onHome && cat === "electronics")}
         >
-          Electronics
+          {t.electronics}
         </Link>
         <Link to="/orders" className={tabClass(pathname === "/orders")}>
-          Orders
+          {t.orders}
         </Link>
         <a href={SELLER_URL} className="subnav-seller" rel="noopener noreferrer">
-          Become a seller
+          {t.becomeSeller}
         </a>
       </div>
     </nav>

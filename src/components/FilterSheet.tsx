@@ -1,4 +1,5 @@
 import type { Category, ListingFilters, Sort } from "../types";
+import { useI18n } from "../store/i18n";
 
 type Props = {
   open: boolean;
@@ -9,26 +10,6 @@ type Props = {
   onApply: () => void;
 };
 
-const CATEGORIES: { value: Category | ""; label: string }[] = [
-  { value: "", label: "All" },
-  { value: "fashion", label: "Fashion" },
-  { value: "electronics", label: "Electronics" },
-];
-
-const DISTANCES: { value: number | ""; label: string }[] = [
-  { value: "", label: "Any distance" },
-  { value: 200, label: "200m walk" },
-  { value: 500, label: "500m walk" },
-  { value: 1000, label: "1km walk" },
-];
-
-const SORTS: { value: Sort; label: string }[] = [
-  { value: "nearest", label: "Nearest" },
-  { value: "newest", label: "Newest" },
-  { value: "price_asc", label: "Price · low" },
-  { value: "price_desc", label: "Price · high" },
-];
-
 export function FilterSheet({
   open,
   filters,
@@ -37,25 +18,44 @@ export function FilterSheet({
   onChange,
   onApply,
 }: Props) {
+  const { t } = useI18n();
   if (!open) return null;
 
   const set = (patch: Partial<ListingFilters>) =>
     onChange({ ...filters, ...patch });
 
+  const categories: { value: Category | ""; label: string }[] = [
+    { value: "", label: t.all },
+    { value: "fashion", label: t.fashion },
+    { value: "electronics", label: t.electronics },
+  ];
+  const distances: { value: number | ""; label: string }[] = [
+    { value: "", label: t.anyDistance },
+    { value: 200, label: t.walk200 },
+    { value: 500, label: t.walk500 },
+    { value: 1000, label: t.walk1km },
+  ];
+  const sorts: { value: Sort; label: string }[] = [
+    { value: "nearest", label: t.nearest },
+    { value: "newest", label: t.newest },
+    { value: "price_asc", label: t.priceLow },
+    { value: "price_desc", label: t.priceHigh },
+  ];
+
   return (
     <>
       <div className="sheet-backdrop" onClick={onClose} aria-hidden />
-      <div className="sheet" role="dialog" aria-label="Filters" aria-modal="true">
+      <div className="sheet" role="dialog" aria-label={t.filters} aria-modal="true">
         <div className="sheet-head">
-          <h3>Filters</h3>
-          <button type="button" className="sheet-close" onClick={onClose} aria-label="Close">
+          <h3>{t.filters}</h3>
+          <button type="button" className="sheet-close" onClick={onClose} aria-label={t.close}>
             ×
           </button>
         </div>
 
-        <p className="sheet-section-label">Category</p>
+        <p className="sheet-section-label">{t.category}</p>
         <div className="sheet-options">
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <button
               key={c.label}
               type="button"
@@ -67,9 +67,9 @@ export function FilterSheet({
           ))}
         </div>
 
-        <p className="sheet-section-label">Walking distance</p>
+        <p className="sheet-section-label">{t.walkingDistance}</p>
         <div className="sheet-options">
-          {DISTANCES.map((d) => (
+          {distances.map((d) => (
             <button
               key={d.label}
               type="button"
@@ -81,9 +81,9 @@ export function FilterSheet({
           ))}
         </div>
 
-        <p className="sheet-section-label">Sort by</p>
+        <p className="sheet-section-label">{t.sortBy}</p>
         <div className="sheet-options">
-          {SORTS.map((s) => (
+          {sorts.map((s) => (
             <button
               key={s.value}
               type="button"
@@ -95,12 +95,12 @@ export function FilterSheet({
           ))}
         </div>
 
-        <p className="sheet-section-label">Price range (TSh)</p>
+        <p className="sheet-section-label">{t.priceRange}</p>
         <div className="sheet-price-row">
           <input
             className="sheet-field"
             inputMode="numeric"
-            placeholder="Min"
+            placeholder={t.min}
             value={filters.minPrice ?? ""}
             onChange={(e) =>
               set({ minPrice: e.target.value === "" ? "" : Number(e.target.value) })
@@ -110,7 +110,7 @@ export function FilterSheet({
           <input
             className="sheet-field"
             inputMode="numeric"
-            placeholder="Max"
+            placeholder={t.max}
             value={filters.maxPrice ?? ""}
             onChange={(e) =>
               set({ maxPrice: e.target.value === "" ? "" : Number(e.target.value) })
@@ -123,7 +123,7 @@ export function FilterSheet({
           className={`sheet-chip sheet-chip-wide ${filters.inStock ? "on" : ""}`}
           onClick={() => set({ inStock: !filters.inStock })}
         >
-          In stock only
+          {t.inStockOnly}
         </button>
 
         <button
@@ -134,7 +134,7 @@ export function FilterSheet({
             onClose();
           }}
         >
-          Show {count} results
+          {t.showResults(count)}
         </button>
       </div>
     </>

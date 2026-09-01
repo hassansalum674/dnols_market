@@ -2,9 +2,9 @@ import { useState } from "react";
 import type { AuthUser } from "../store/auth";
 import { userInitial } from "../lib/userDisplay";
 
-type Size = "sm" | "md" | "lg";
+type Size = "sm" | "md" | "lg" | "xl";
 
-const SIZE: Record<Size, number> = { sm: 22, md: 32, lg: 56 };
+const SIZE: Record<Size, number> = { sm: 22, md: 32, lg: 56, xl: 104 };
 
 type Props = {
   user: AuthUser;

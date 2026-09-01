@@ -31,6 +31,7 @@ import { markPaid, saveLocalOrder } from "../store/persist";
 import { loadProfile, saveProfile } from "../lib/profile";
 import { UserAvatar } from "./UserAvatar";
 import { userDisplayName } from "../lib/userDisplay";
+import { useI18n } from "../store/i18n";
 
 export function CheckoutSheet() {
   const {
@@ -46,6 +47,7 @@ export function CheckoutSheet() {
   } = useCheckoutSheet();
   const { items, totalTzs, remove, setQty, clear } = useCart();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useI18n();
   const nav = useNavigate();
 
   const [phone, setPhone] = useState("");
@@ -124,19 +126,17 @@ export function CheckoutSheet() {
   const startPayment = async () => {
     setErr(null);
     if (!user?.uid) {
-      setErr("Sign in to place an order.");
+      setErr(t.signInToOrderErr);
       return;
     }
     if (!isValidTzPhone(phone)) {
-      setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
+      setErr(t.invalidPayPhone);
       return;
     }
     const normalizedPay = normalizeTzPhone(phone);
     const deliveryRaw = useCustomDelivery ? deliveryPhone : phone;
     if (!isValidTzPhone(deliveryRaw)) {
-      setErr(
-        "Enter a valid delivery contact number (+255 7XX XXX XXX).",
-      );
+      setErr(t.invalidDeliveryPhone);
       return;
     }
     const normalizedDelivery = normalizeTzPhone(deliveryRaw);
@@ -169,7 +169,7 @@ export function CheckoutSheet() {
       setStep("success");
     } catch (e) {
       setStep("pay");
-      setErr(e instanceof Error ? e.message : "Payment failed. Try again.");
+      setErr(e instanceof Error ? e.message : t.paymentFailed);
     }
   };
 
@@ -193,23 +193,23 @@ export function CheckoutSheet() {
         aria-modal="true"
         aria-label={
           step === "basket"
-            ? "Your basket"
+            ? t.yourBasket
             : step === "pay"
-              ? "Checkout"
+              ? t.checkout
               : step === "waiting"
-                ? "Confirm payment"
-                : "Order confirmed"
+                ? t.confirmPayment
+                : t.orderConfirmed
         }
       >
         {needsSignIn && (
           <>
             <div className="sheet-head">
-              <h3>Checkout</h3>
+              <h3>{t.checkout}</h3>
               <button
                 type="button"
                 className="sheet-close"
                 onClick={handleClose}
-                aria-label="Close"
+                aria-label={t.close}
               >
                 ×
               </button>
@@ -220,19 +220,19 @@ export function CheckoutSheet() {
 
         {authLoading && (step === "basket" || step === "pay") && items.length > 0 && (
           <div className="checkout-auth-loading">
-            <p className="muted">Loading your account…</p>
+            <p className="muted">{t.loadingAccount}</p>
           </div>
         )}
 
         {!needsSignIn && !authLoading && step === "basket" && (
           <>
             <div className="sheet-head">
-              <h3>Your basket</h3>
+              <h3>{t.yourBasket}</h3>
               <button
                 type="button"
                 className="sheet-close"
                 onClick={handleClose}
-                aria-label="Close"
+                aria-label={t.close}
               >
                 ×
               </button>
@@ -240,9 +240,9 @@ export function CheckoutSheet() {
 
             {items.length === 0 ? (
               <div className="checkout-sheet-empty">
-                <p>Your basket is empty.</p>
+                <p>{t.basketEmpty}</p>
                 <button type="button" className="btn" onClick={handleClose}>
-                  Keep shopping
+                  {t.keepShopping}
                 </button>
               </div>
             ) : (
@@ -264,7 +264,7 @@ export function CheckoutSheet() {
                           <div className="uc-qty">
                             <button
                               type="button"
-                              aria-label="Decrease quantity"
+                              aria-label={t.decreaseQty}
                               onClick={() =>
                                 setQty(line.listing.id, line.qty - 1)
                               }
@@ -274,7 +274,7 @@ export function CheckoutSheet() {
                             <span>{line.qty}</span>
                             <button
                               type="button"
-                              aria-label="Increase quantity"
+                              aria-label={t.increaseQty}
                               onClick={() =>
                                 setQty(line.listing.id, line.qty + 1)
                               }
@@ -285,7 +285,7 @@ export function CheckoutSheet() {
                           <button
                             type="button"
                             className="uc-trash"
-                            aria-label="Remove item"
+                            aria-label={t.removeItem}
                             onClick={() => remove(line.listing.id)}
                           >
                             <IconTrash />
@@ -296,28 +296,24 @@ export function CheckoutSheet() {
                   ))}
                 </ul>
 
-                <section className="uc-totals" aria-label="Order totals">
+                <section className="uc-totals" aria-label={t.orderTotals}>
                   <div className="uc-totals-row">
-                    <span>Subtotal</span>
+                    <span>{t.subtotal}</span>
                     <span>{formatTsh(totalTzs)}</span>
                   </div>
                   <div className="uc-totals-row">
-                    <span>Delivery to you</span>
-                    <span className="uc-free">FREE</span>
+                    <span>{t.deliveryToYou}</span>
+                    <span className="uc-free">{t.free}</span>
                   </div>
                   <div className="uc-totals-row uc-totals-total">
-                    <span>Total</span>
+                    <span>{t.total}</span>
                     <span>{formatTsh(totalTzs)}</span>
                   </div>
                 </section>
 
-                <section className="uc-pay-section" aria-label="Unified checkout">
-                  <p className="uc-pay-label">Unified checkout</p>
-                  <p className="uc-pay-hint">
-                    Dnols notifies the seller and coordinates delivery to you.
-                    Funds stay in escrow until you receive the item. Saved billing
-                    cards make repeat checkout faster.
-                  </p>
+                <section className="uc-pay-section" aria-label={t.unifiedCheckout}>
+                  <p className="uc-pay-label">{t.unifiedCheckout}</p>
+                  <p className="uc-pay-hint">{t.unifiedHint}</p>
                   <div className="uc-pay-buttons">
                     {PAY_METHODS.map((m, i) => (
                       <button
@@ -340,7 +336,7 @@ export function CheckoutSheet() {
                   <p className="uc-pay-foot">
                     M-Pesa · Mix by Yas · Airtel Money ·{" "}
                     <Link to="/terms" onClick={handleClose}>
-                      escrow terms
+                      {t.escrowTerms}
                     </Link>
                   </p>
                 </section>
@@ -355,17 +351,17 @@ export function CheckoutSheet() {
               <button
                 type="button"
                 className="uc-back"
-                aria-label="Back to basket"
+                aria-label={t.backToBasket}
                 onClick={goBack}
               >
                 ←
               </button>
-              <h3 className="uc-topbar-title--caps">Checkout</h3>
+              <h3 className="uc-topbar-title--caps">{t.checkout}</h3>
               <button
                 type="button"
                 className="sheet-close"
                 onClick={handleClose}
-                aria-label="Close"
+                aria-label={t.close}
               >
                 ×
               </button>
@@ -382,13 +378,11 @@ export function CheckoutSheet() {
             )}
 
             {billingCards.length > 0 && (
-              <section className="uc-panel" aria-label="Saved billing cards">
+              <section className="uc-panel" aria-label={t.savedBilling}>
                 <div className="uc-panel-head">
-                  <h2 className="uc-panel-label">Saved wallets</h2>
+                  <h2 className="uc-panel-label">{t.savedWallets}</h2>
                 </div>
-                <p className="hint billing-cards-hint">
-                  Tap a card to charge that number — no need to retype it each time.
-                </p>
+                <p className="hint billing-cards-hint">{t.tapCard}</p>
                 <div className="billing-cards-row">
                   {billingCards.map((card) => (
                     <BillingCardTile
@@ -409,7 +403,7 @@ export function CheckoutSheet() {
                       setErr(null);
                     }}
                   >
-                    Enter a different number
+                    {t.differentNumber}
                   </button>
                 )}
               </section>
@@ -417,10 +411,10 @@ export function CheckoutSheet() {
 
             <section className="uc-panel">
               <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Mobile money</h2>
+                <h2 className="uc-panel-label">{t.mobileMoney}</h2>
               </div>
               <label className="field-label" htmlFor="sheet-charge-phone">
-                Number to charge
+                {t.numberToCharge}
               </label>
               <input
                 id="sheet-charge-phone"
@@ -441,13 +435,9 @@ export function CheckoutSheet() {
 
             <section className="uc-panel">
               <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Delivery contact</h2>
+                <h2 className="uc-panel-label">{t.deliveryContactTitle}</h2>
               </div>
-              <p className="hint delivery-contact-note">
-                Dnols will call this number when your order is ready. We share
-                it with the seller through Dnols only — not for direct personal
-                contact between you and the seller.
-              </p>
+              <p className="hint delivery-contact-note">{t.deliveryContactNote}</p>
 
               <label className="checkout-toggle">
                 <input
@@ -461,13 +451,13 @@ export function CheckoutSheet() {
                     setErr(null);
                   }}
                 />
-                <span>Use a different number to receive delivery</span>
+                <span>{t.useDifferentDelivery}</span>
               </label>
 
               {useCustomDelivery ? (
                 <>
                   <label className="field-label" htmlFor="sheet-delivery-phone">
-                    Delivery phone number
+                    {t.deliveryPhone}
                   </label>
                   <input
                     id="sheet-delivery-phone"
@@ -485,16 +475,16 @@ export function CheckoutSheet() {
                 </>
               ) : (
                 <p className="uc-panel-strong">
-                  {displayPhone || "Same as mobile money number above"}
+                  {displayPhone || t.sameAsMoney}
                 </p>
               )}
             </section>
 
             <section className="uc-panel">
               <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Payment wallet</h2>
+                <h2 className="uc-panel-label">{t.paymentWallet}</h2>
                 <button type="button" className="uc-edit" onClick={goBack}>
-                  Change
+                  {t.change}
                 </button>
               </div>
 
@@ -530,7 +520,7 @@ export function CheckoutSheet() {
                   className="uc-use-saved"
                   onClick={() => setPhone(savedPhone)}
                 >
-                  Use saved number · {formatTzPhoneDisplay(savedPhone)}
+                  {t.useSavedNumber} · {formatTzPhoneDisplay(savedPhone)}
                 </button>
               )}
 
@@ -539,7 +529,7 @@ export function CheckoutSheet() {
 
             <section className="uc-panel uc-panel--compact">
               <div className="uc-totals-row">
-                <span>Total</span>
+                <span>{t.total}</span>
                 <span className="price">{formatTsh(totalTzs)}</span>
               </div>
             </section>
@@ -551,7 +541,7 @@ export function CheckoutSheet() {
               className="btn checkout-sheet-continue"
               onClick={() => void startPayment()}
             >
-              Continue
+              {t.continue}
             </button>
           </>
         )}
@@ -559,15 +549,12 @@ export function CheckoutSheet() {
         {step === "waiting" && (
           <div className="checkout-waiting">
             <div className="stk-pulse" aria-hidden />
-            <h2 className="checkout-title">Check your phone</h2>
+            <h2 className="checkout-title">{t.checkPhone}</h2>
             <p className="section-desc">
-              We sent a request to <strong>{displayPhone || phone}</strong> on{" "}
-              {selectedMethod.label}.
+              {t.sentRequest(displayPhone || phone, selectedMethod.label)}
             </p>
             <p className="hint">{selectedMethod.stkHint}</p>
-            <p className="checkout-waiting-note">
-              Do not close this screen until payment completes.
-            </p>
+            <p className="checkout-waiting-note">{t.dontClose}</p>
           </div>
         )}
 
@@ -576,20 +563,18 @@ export function CheckoutSheet() {
             <div className="checkout-success-badge" aria-hidden>
               ✓
             </div>
-            <h2 className="uc-success-title">Thank you for shopping with us!</h2>
+            <h2 className="uc-success-title">{t.thankYou}</h2>
 
             <section className="uc-panel checkout-code-panel">
-              <p className="uc-panel-label">Checkout code</p>
+              <p className="uc-panel-label">{t.checkoutCode}</p>
               <p className="checkout-code-value">{order.pickupCode}</p>
               <p className="hint">
-                {isValidPickupCode(order.pickupCode)
-                  ? "Keep this 6-character code — Dnols may ask for it when coordinating delivery."
-                  : "Your checkout code for this order."}
+                {isValidPickupCode(order.pickupCode) ? t.keepCode : t.yourCode}
               </p>
             </section>
 
             <section className="uc-panel">
-              <h2 className="uc-panel-label">Delivery to you</h2>
+              <h2 className="uc-panel-label">{t.deliveryToYou}</h2>
               <p className="uc-panel-strong">
                 {order.deliveryPhone
                   ? formatTzPhoneDisplay(order.deliveryPhone)
@@ -603,7 +588,7 @@ export function CheckoutSheet() {
 
             {primaryDirection ? (
               <section className="uc-panel">
-                <h2 className="uc-panel-label">Seller stall</h2>
+                <h2 className="uc-panel-label">{t.sellerStall}</h2>
                 <p className="uc-panel-strong">{primaryDirection.shopName}</p>
                 <p className="muted">{primaryDirection.streetAddress}</p>
                 <SellerStallPreview location={primaryDirection} />
@@ -620,7 +605,7 @@ export function CheckoutSheet() {
 
             {order.directions && order.directions.length > 1 && (
               <section className="uc-panel">
-                <h2 className="uc-panel-label">Other sellers</h2>
+                <h2 className="uc-panel-label">{t.otherSellers}</h2>
                 {order.directions.slice(1).map((d) => (
                   <div key={d.shopName} className="checkout-direction">
                     <p className="checkout-direction-name">{d.shopName}</p>
@@ -632,7 +617,7 @@ export function CheckoutSheet() {
             )}
 
             <section className="uc-panel">
-              <h2 className="uc-panel-label">Payment</h2>
+              <h2 className="uc-panel-label">{t.payment}</h2>
               <div className="uc-paid-with">
                 <span
                   className="uc-pay-mark"
@@ -664,14 +649,14 @@ export function CheckoutSheet() {
                 nav("/orders");
               }}
             >
-              View my orders
+              {t.ordersTitle}
             </button>
             <button
               type="button"
               className="uc-continue-link"
               onClick={handleClose}
             >
-              Continue shopping
+              {t.continueShopping}
             </button>
           </div>
         )}

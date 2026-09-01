@@ -1,32 +1,26 @@
 import { Link } from "react-router-dom";
 import { GoogleSignInButton } from "./GoogleSignInButton";
+import { useI18n } from "../store/i18n";
 
 type Props = {
   onClose: () => void;
   title?: string;
 };
 
-export function CheckoutSignInGate({
-  onClose,
-  title = "Sign in to checkout",
-}: Props) {
+export function CheckoutSignInGate({ onClose, title }: Props) {
+  const { t } = useI18n();
   return (
     <div className="checkout-signin-gate">
-      <h3>{title}</h3>
-      <p className="section-desc">
-        You need a Dnols account to place an order. Sign in once, then save your
-        mobile money wallet as a billing card for faster checkout next time.
-      </p>
-      <GoogleSignInButton label="Continue with Google" />
+      <h3>{title ?? t.signInToCheckout}</h3>
+      <p className="section-desc">{t.signInGateBody}</p>
+      <GoogleSignInButton label={t.continueGoogle} />
       <p className="auth-divider">
-        <span>or</span>
+        <span>{t.or}</span>
       </p>
       <Link to="/signin" className="btn signin-email-btn" onClick={onClose}>
-        Sign in with email
+        {t.signInEmail}
       </Link>
-      <p className="hint">
-        New here? Create an account on the next screen — it takes under a minute.
-      </p>
+      <p className="hint">{t.newHere}</p>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { StatusScreen } from "../components/EmptyState";
 import { PLACE_LABEL } from "../lib/format";
 import { SELLER_URL } from "../lib/urls";
+import { useI18n } from "../store/i18n";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
 
 function fromParams(sp: URLSearchParams): ListingFilters {
@@ -42,14 +43,15 @@ function toParams(f: ListingFilters, sp: URLSearchParams) {
   return next;
 }
 
-const SIDEBAR_CATS: { id: Category | ""; label: string }[] = [
-  { id: "", label: "All products" },
-  { id: "fashion", label: "Fashion" },
-  { id: "electronics", label: "Electronics" },
+const SIDEBAR_CATS: { id: Category | ""; labelKey: "allProducts" | "fashion" | "electronics" }[] = [
+  { id: "", labelKey: "allProducts" },
+  { id: "fashion", labelKey: "fashion" },
+  { id: "electronics", labelKey: "electronics" },
 ];
 
 export function HomePage() {
   const [sp, setSp] = useSearchParams();
+  const { t } = useI18n();
   const filters = useMemo(() => fromParams(sp), [sp]);
   const [draft, setDraft] = useState(filters);
   const [open, setOpen] = useState(false);
@@ -87,8 +89,8 @@ export function HomePage() {
   if (err === "offline") {
     return (
       <StatusScreen
-        line="You're offline. We'll show nearby shops when you're back."
-        action="Retry"
+        line={t.offlineHome}
+        action={t.retry}
         onAction={() => window.location.reload()}
       />
     );
@@ -98,23 +100,21 @@ export function HomePage() {
     <div className="page marketplace-page">
       <section className="home-hero">
         <div className="home-hero-text">
-          <h1>Welcome to dnols.com</h1>
-          <p>
-            Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
-          </p>
+          <h1>{t.welcome}</h1>
+          <p>{t.welcomeBody(PLACE_LABEL())}</p>
         </div>
         <a
           className="btn home-seller-cta"
           href={SELLER_URL}
           rel="noopener noreferrer"
         >
-          Become a seller
+          {t.becomeSeller}
         </a>
       </section>
 
       <div className="marketplace-layout">
-        <aside className="market-sidebar" aria-label="Categories">
-          <h2 className="sidebar-title">Categories</h2>
+        <aside className="market-sidebar" aria-label={t.categories}>
+          <h2 className="sidebar-title">{t.categories}</h2>
           <ul className="sidebar-list">
             {SIDEBAR_CATS.map((c) => (
               <li key={c.id || "all"}>
@@ -123,12 +123,12 @@ export function HomePage() {
                   className={filters.category === c.id ? "active" : ""}
                   onClick={() => setCategory(c.id)}
                 >
-                  {c.label}
+                  {t[c.labelKey]}
                 </button>
               </li>
             ))}
           </ul>
-          <h2 className="sidebar-title">Walk distance</h2>
+          <h2 className="sidebar-title">{t.walkDistance}</h2>
           <ul className="sidebar-list">
             {[200, 500, 1000].map((m) => (
               <li key={m}>
@@ -142,7 +142,7 @@ export function HomePage() {
                     })
                   }
                 >
-                  {m === 1000 ? "Within 1 km" : `Within ${m}m`}
+                  {m === 1000 ? t.within1km : t.withinM(m)}
                 </button>
               </li>
             ))}
@@ -152,19 +152,19 @@ export function HomePage() {
                 className={filters.inStock ? "active" : ""}
                 onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
               >
-                In stock only
+                {t.inStockOnly}
               </button>
             </li>
           </ul>
           <button type="button" className="sidebar-filters" onClick={() => setOpen(true)}>
-            More filters
+            {t.moreFilters}
           </button>
         </aside>
 
         <div className="market-main">
           <div className="filter-groups filter-groups-mobile">
             <div className="filter-group">
-              <span className="filter-label">Categories</span>
+              <span className="filter-label">{t.categories}</span>
               <div className="chips">
                 {(["fashion", "electronics"] as const).map((c) => (
                   <button
@@ -173,13 +173,13 @@ export function HomePage() {
                     className={`chip ${filters.category === c ? "on" : ""}`}
                     onClick={() => setCategory(filters.category === c ? "" : c)}
                   >
-                    {c === "fashion" ? "Fashion" : "Electronics"}
+                    {c === "fashion" ? t.fashion : t.electronics}
                   </button>
                 ))}
               </div>
             </div>
             <div className="filter-group">
-              <span className="filter-label">Nearby</span>
+              <span className="filter-label">{t.nearby}</span>
               <div className="chips">
                 {[200, 500, 1000].map((m) => (
                   <button
@@ -201,22 +201,22 @@ export function HomePage() {
                   className={`chip ${filters.inStock ? "on" : ""}`}
                   onClick={() => setFilters({ ...filters, inStock: !filters.inStock })}
                 >
-                  In stock
+                  {t.inStock}
                 </button>
                 <button type="button" className="chip chip-action" onClick={() => setOpen(true)}>
-                  All filters
+                  {t.allFilters}
                 </button>
               </div>
             </div>
           </div>
 
           {source === "mock" && listings && (
-            <p className="hint">Showing sample listings — reconnecting to live shops…</p>
+            <p className="hint">{t.sampleListings}</p>
           )}
           {listings === null ? (
             <SkeletonGrid />
           ) : listings.length === 0 ? (
-            <p className="muted">Nothing in this range. Widen the walk or try another category.</p>
+            <p className="muted">{t.nothingInRange}</p>
           ) : (
             <ProductGrid listings={listings} />
           )}
