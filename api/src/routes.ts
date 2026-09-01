@@ -94,7 +94,8 @@ export function registerRoutes(
     const buyerLng = num(q.buyerLng) ?? defaults.buyerLng;
     const search = (q.q ?? "").trim().toLowerCase();
     const category = q.category as Category | undefined;
-    const maxDistanceMeters = num(q.maxDistanceMeters);
+    const maxDistanceMeters =
+      num(q.maxDistanceMeters) ?? num(q.maxDistance);
     const minPrice = num(q.minPrice);
     const maxPrice = num(q.maxPrice);
     const inStock = parseBool(q.inStock);
@@ -140,6 +141,109 @@ export function registerRoutes(
       placeId: PLACE_ID,
       count: rows.length,
       items: rows.map((l) => toPublicListing(l, buyerLat, buyerLng)),
+    };
+  });
+
+  app.get("/search", async (req) => {
+    const q = req.query as Record<string, string | undefined>;
+    const buyerLat = num(q.buyerLat) ?? defaults.buyerLat;
+    const buyerLng = num(q.buyerLng) ?? defaults.buyerLng;
+    const search = (q.q ?? "").trim().toLowerCase();
+    let rows = store.allListings();
+    if (search) {
+      rows = rows.filter(
+        (l) =>
+          l.title.toLowerCase().includes(search) ||
+          l.description.toLowerCase().includes(search) ||
+          (l.brand ?? "").toLowerCase().includes(search),
+      );
+    }
+    rows.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+    return {
+      placeId: PLACE_ID,
+      count: rows.length,
+      items: rows.slice(0, 12).map((l) => toPublicListing(l, buyerLat, buyerLng)),
+    };
+  });
+
+  app.post("/listings", async (req, reply) => {
+    const body = (req.body ?? {}) as {
+      id?: string;
+      shopId?: string;
+      shop?: {
+        shopName?: string;
+        streetAddress?: string;
+        lat?: number;
+        lng?: number;
+      };
+      title?: string;
+      priceTzs?: number;
+      category?: Category;
+      photoUrl?: string;
+      inStock?: boolean;
+      description?: string;
+      sizes?: string[];
+      brand?: string;
+    };
+
+    const id = String(body.id ?? "").trim();
+    const shopId = String(body.shopId ?? "").trim();
+    const title = String(body.title ?? "").trim();
+    const photoUrl = String(body.photoUrl ?? "").trim();
+    const description = String(body.description ?? title).trim();
+    const priceTzs = num(body.priceTzs);
+    const category = body.category;
+
+    if (!id || !shopId || !title || !photoUrl || priceTzs === undefined || !category) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message:
+          "id, shopId, title, photoUrl, priceTzs, and category are required.",
+      });
+    }
+    if (!CATEGORIES.has(category)) {
+      return reply.code(400).send({
+        error: "bad_category",
+        message: "category must be fashion|electronics",
+      });
+    }
+
+    const shopName = String(body.shop?.shopName ?? "Kariakoo stall").trim();
+    const streetAddress =
+      String(body.shop?.streetAddress ?? "Kariakoo, Dar es Salaam").trim();
+    const lat =
+      num(body.shop?.lat) ?? defaults.buyerLat + (Math.random() - 0.5) * 0.002;
+    const lng =
+      num(body.shop?.lng) ?? defaults.buyerLng + (Math.random() - 0.5) * 0.002;
+
+    store.ensureShop({
+      id: shopId,
+      shopName,
+      streetAddress,
+      lat,
+      lng,
+      placeId: PLACE_ID,
+    });
+
+    const listing = store.upsertListing({
+      id,
+      shopId,
+      title,
+      priceTzs,
+      category,
+      photoUrl,
+      inStock: body.inStock !== false,
+      description,
+      ...(Array.isArray(body.sizes) && body.sizes.length
+        ? { sizes: body.sizes }
+        : {}),
+      ...(body.brand ? { brand: String(body.brand) } : {}),
+    });
+
+    return {
+      listingId: listing.id,
+      shopId: listing.shopId,
+      item: toPublicListing(listing, defaults.buyerLat, defaults.buyerLng),
     };
   });
 
@@ -344,6 +448,29 @@ export function registerRoutes(
     }
   });
 
+  app.get("/orders", async () => {
+    const orders = store.allOrders();
+    return {
+      count: orders.length,
+      orders: orders.map((order) => ({
+        id: order.id,
+        listingIds: order.listingIds,
+        status: order.status,
+        pickupCode: order.pickupCode,
+        handoverPin: order.handoverPin,
+        totalTzs: order.totalTzs,
+        createdAt: order.createdAt,
+        paidAt: order.paidAt,
+        handedOverAt: order.handedOverAt,
+        payMethod: order.payMethod,
+        payPhone: order.payPhone,
+        deliveryPhone: order.deliveryPhone,
+        accessToken: order.accessToken,
+        directions: order.shopIds.map((sid) => toDirections(store.shop(sid)!)),
+      })),
+    };
+  });
+
   app.get("/orders/:id", async (req, reply) => {
     const { id } = req.params as { id: string };
     const order = store.order(id);
@@ -425,6 +552,14 @@ export function registerRoutes(
       }
       throw e;
     }
+  });
+
+  app.delete("/orders/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    if (!store.deleteOrder(id)) {
+      return reply.code(404).send({ error: "not_found" });
+    }
+    return { deleted: true, orderId: id };
   });
 
   app.get("/trending", async (req) => {

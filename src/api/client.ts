@@ -35,7 +35,7 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 function qs(filters: ListingFilters): string {
   const p = new URLSearchParams();
   if (filters.category) p.set("category", filters.category);
-  if (filters.maxDistance) p.set("maxDistance", String(filters.maxDistance));
+  if (filters.maxDistance) p.set("maxDistanceMeters", String(filters.maxDistance));
   if (filters.sort) p.set("sort", filters.sort);
   if (filters.inStock) p.set("inStock", "1");
   if (filters.minPrice !== "" && filters.minPrice != null)
@@ -67,9 +67,6 @@ export async function fetchListings(
   try {
     const data = await getJson<unknown>(`/listings${qs(filters)}`, signal);
     const listings = asList(data);
-    if (!listings.length && !filters.q && !filters.category) {
-      throw new Error("empty_api");
-    }
     return { listings, source: "api" };
   } catch {
     return { listings: filterListings(filters), source: "mock" };
@@ -194,6 +191,16 @@ export async function fetchOrders(): Promise<Order[]> {
     return [];
   } catch {
     return [];
+  }
+}
+
+export async function deleteOrder(id: string): Promise<void> {
+  const res = await fetch(`${BASE}/orders/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+  });
+  if (!res.ok && res.status !== 404) {
+    throw new Error(`delete_failed_${res.status}`);
   }
 }
 

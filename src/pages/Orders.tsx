@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { fetchOrders } from "../api/client";
+import { deleteOrder, fetchOrders } from "../api/client";
 import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
-import { getLocalOrders } from "../store/persist";
+import { deleteLocalOrder, getLocalOrders } from "../store/persist";
 import { useI18n } from "../store/i18n";
 import type { Order } from "../types";
 
@@ -34,6 +34,17 @@ export function OrdersPage() {
       );
     });
   }, []);
+
+  async function removeOrder(id: string) {
+    if (!window.confirm(t.deleteOrderConfirm)) return;
+    deleteLocalOrder(id);
+    setOrders((prev) => prev.filter((o) => o.id !== id));
+    try {
+      await deleteOrder(id);
+    } catch {
+      /* local removal is enough for now */
+    }
+  }
 
   function payMethodLabel(id?: string): string | null {
     if (!id) return null;
@@ -121,6 +132,14 @@ export function OrdersPage() {
           <p className="hint">
             {new Date(o.paidAt ?? o.createdAt).toLocaleString(locale)}
           </p>
+
+          <button
+            type="button"
+            className="btn ghost order-delete"
+            onClick={() => void removeOrder(o.id)}
+          >
+            {t.deleteOrder}
+          </button>
         </article>
       ))}
     </div>

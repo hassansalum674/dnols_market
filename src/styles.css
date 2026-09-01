@@ -2494,6 +2494,11 @@ img {
   color: #22c55e;
 }
 
+.order-delete {
+  margin-top: 12px;
+  width: 100%;
+}
+
 .order-pickup {
   display: flex;
   align-items: baseline;

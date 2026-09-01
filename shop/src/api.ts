@@ -1,4 +1,5 @@
 import type {
+  Category,
   HandoverResponse,
   OrderView,
   PayResponse,
@@ -80,6 +81,31 @@ export async function rejectOrder(id: string): Promise<HandoverResponse> {
 
 export async function getTrending(): Promise<{ items: PublicListing[] }> {
   return json("/trending");
+}
+
+export type PublishListingInput = {
+  id: string;
+  shopId: string;
+  shop: {
+    shopName: string;
+    streetAddress: string;
+  };
+  title: string;
+  priceTzs: number;
+  category: Category;
+  photoUrl: string;
+  inStock: boolean;
+  description: string;
+  sizes?: string[];
+};
+
+export async function publishListing(
+  input: PublishListingInput,
+): Promise<{ listingId: string }> {
+  return json("/listings", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
 }
 
 export type ProcessedPhotoResponse = {

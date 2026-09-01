@@ -109,6 +109,9 @@ export const en = {
   statusPaid: "Paid · Dnols coordinating delivery",
   statusDelivered: "Delivered",
   statusRefunded: "Refunded",
+  deleteOrder: "Delete order",
+  deleteOrderConfirm:
+    "Remove this order from your history? This cannot be undone.",
 
   addToCart: "Add to cart",
   reservePay: "Reserve & pay",
@@ -314,6 +317,9 @@ export const sw: BuyerCopy = {
   statusPaid: "Imelipwa · Dnols inaratibu uwasilishaji",
   statusDelivered: "Imewasilishwa",
   statusRefunded: "Imerudishwa",
+  deleteOrder: "Futa oda",
+  deleteOrderConfirm:
+    "Ondoa oda hii kutoka historia yako? Haiwezi kutenduliwa.",
 
   addToCart: "Ongeza kikapuni",
   reservePay: "Hifadhi na lipa",

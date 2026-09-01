@@ -177,6 +177,46 @@ export class Store {
     return order;
   }
 
+  allOrders(): Order[] {
+    return [...this.orders.values()].sort(
+      (a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt),
+    );
+  }
+
+  deleteOrder(orderId: string): boolean {
+    const order = this.orders.get(orderId);
+    if (!order) return false;
+    if (order.accessToken) this.tokens.delete(order.accessToken);
+    return this.orders.delete(orderId);
+  }
+
+  ensureShop(shop: Shop): Shop {
+    const existing = this.shops.get(shop.id);
+    if (existing) return existing;
+    this.shops.set(shop.id, shop);
+    return shop;
+  }
+
+  upsertListing(
+    input: Omit<Listing, "trendingScore" | "createdAt"> & {
+      createdAt?: string;
+      trendingScore?: number;
+    },
+  ): Listing {
+    const existing = this.listings.get(input.id);
+    const listing: Listing = {
+      ...input,
+      createdAt: input.createdAt ?? existing?.createdAt ?? new Date().toISOString(),
+      trendingScore: input.trendingScore ?? existing?.trendingScore ?? 50,
+    };
+    this.listings.set(listing.id, listing);
+    return listing;
+  }
+
+  deleteListing(id: string): boolean {
+    return this.listings.delete(id);
+  }
+
   isPaid(status: EscrowStatus): boolean {
     return status === "paid_held" || status === "handed_over";
   }

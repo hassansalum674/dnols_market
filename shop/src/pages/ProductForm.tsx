@@ -6,6 +6,7 @@ import { SellHeader } from "../components/SellHeader";
 import { isCdnPhoto } from "../lib/photoPipeline";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
 import { loadProducts, loadProfile, upsertProduct } from "../storage";
+import { publishListing } from "../lib/publishListing";
 import type { ProductCondition, SellerProduct, ShopCategory } from "../types";
 import {
   PRODUCT_CONDITIONS,
@@ -59,6 +60,7 @@ export function ProductFormPage() {
   );
   const [customVariant, setCustomVariant] = useState("");
   const [err, setErr] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
   const [addingPhoto, setAddingPhoto] = useState(false);
 
   useEffect(() => {
@@ -100,8 +102,9 @@ export function ProductFormPage() {
     setCustomVariant("");
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (!profile) return;
     if (!product.name.trim()) {
       setErr("Product name is required.");
       return;
@@ -128,12 +131,27 @@ export function ProductFormPage() {
       return;
     }
 
-    upsertProduct({
+    const saved = {
       ...product,
       name: product.name.trim(),
       priceTzs: price,
       updatedAt: new Date().toISOString(),
-    });
+    };
+
+    setSaving(true);
+    setErr(null);
+    upsertProduct(saved);
+
+    try {
+      await publishListing(saved, profile);
+    } catch {
+      setErr(
+        "Saved on your stall, but buyers may not see it yet. Check your connection and try saving again.",
+      );
+      setSaving(false);
+      return;
+    }
+
     navigate("/dashboard");
   }
 
@@ -388,8 +406,8 @@ export function ProductFormPage() {
               )}
 
               {err && <p className="err">{err}</p>}
-              <button type="submit" className="btn product-form-submit">
-                {isEdit ? "Save product" : "Add product"}
+              <button type="submit" className="btn product-form-submit" disabled={saving}>
+                {saving ? "Publishing…" : isEdit ? "Save product" : "Add product"}
               </button>
             </section>
           </div>

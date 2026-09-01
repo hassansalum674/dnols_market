@@ -104,3 +104,11 @@ export function getLocalOrders<T>(): T[] {
     return [];
   }
 }
+
+export function deleteLocalOrder(id: string): void {
+  const cur = getLocalOrders<{ id: string }>();
+  localStorage.setItem(
+    ORDERS,
+    JSON.stringify(cur.filter((o) => o.id !== id)),
+  );
+}
