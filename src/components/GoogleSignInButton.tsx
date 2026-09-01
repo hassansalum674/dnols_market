@@ -1,16 +1,20 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/auth";
 
 type Props = {
   label?: string;
   className?: string;
+  redirectTo?: string;
 };
 
 export function GoogleSignInButton({
   label = "Continue with Google",
   className = "",
+  redirectTo = "/you",
 }: Props) {
   const { signInWithGoogle, configured } = useAuth();
+  const nav = useNavigate();
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -19,6 +23,7 @@ export function GoogleSignInButton({
     setBusy(true);
     try {
       await signInWithGoogle();
+      nav(redirectTo, { replace: true });
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Sign-in failed");
     } finally {

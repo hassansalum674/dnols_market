@@ -93,27 +93,39 @@ export function subscribeAuth(
   onReady?: () => void,
 ): () => void {
   let unsub = () => {};
+  let ready = false;
+  const markReady = () => {
+    if (ready) return;
+    ready = true;
+    onReady?.();
+  };
 
-  void initFirebase().then((ready) => {
-    if (!ready) {
-      onReady?.();
+  void (async () => {
+    const ok = await initFirebase();
+    if (!ok) {
       onUser(null);
+      markReady();
       return;
     }
     const auth = getFirebaseAuth();
     if (!auth) {
-      onReady?.();
       onUser(null);
+      markReady();
       return;
     }
-    void getRedirectResult(auth).then((cred) => {
-      if (cred?.user) onUser(mapUser(cred.user));
-    });
+
+    try {
+      const redirect = await getRedirectResult(auth);
+      if (redirect?.user) onUser(mapUser(redirect.user));
+    } catch (e) {
+      console.error("Google redirect sign-in failed", e);
+    }
+
     unsub = onAuthStateChanged(auth, (u) => {
       onUser(u ? mapUser(u) : null);
-      onReady?.();
+      markReady();
     });
-  });
+  })();
 
   return () => unsub();
 }

@@ -1,5 +1,10 @@
 import { initializeApp, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
+import {
+  browserLocalPersistence,
+  getAuth,
+  setPersistence,
+  type Auth,
+} from "firebase/auth";
 
 type FirebaseConfig = {
   apiKey: string;
@@ -50,6 +55,11 @@ export async function initFirebase(): Promise<boolean> {
     resolvedConfig = merged;
     app = initializeApp(merged);
     auth = getAuth(app);
+    try {
+      await setPersistence(auth, browserLocalPersistence);
+    } catch {
+      /* private mode / storage blocked — auth still works for this session */
+    }
     return true;
   })();
 
