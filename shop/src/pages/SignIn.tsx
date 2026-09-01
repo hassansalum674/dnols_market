@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { SignInPanel } from "../components/SignInPanel";
 import { SellHeader } from "../components/SellHeader";
 import { isValidTzPhone, normalizeTzPhone } from "../lib/validation";
+import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { useAuth } from "../store/auth";
 import { loadDraft, loadProfile, saveSession } from "../storage";
 
@@ -23,7 +24,7 @@ export function SignInPage() {
   function routeAfterSignIn() {
     const profile = loadProfile();
     if (profile?.status === "active") {
-      navigate("/dashboard");
+      navigate(DASHBOARD_PATH);
     } else if (profile?.status === "pending_review") {
       navigate("/pending");
     } else if (profile?.status === "rejected") {

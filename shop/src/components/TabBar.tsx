@@ -2,6 +2,7 @@ import { NavLink } from "react-router-dom";
 
 const tabs = [
   { to: "/stall", label: "Today", end: true, name: "Today" },
+  { to: "/stall/dashboard", label: "Overview", end: false, name: "Overview" },
   { to: "/stall/stock", label: "Products", end: false, name: "Stock" },
   { to: "/stall/orders", label: "Orders", end: false, name: "Orders" },
   { to: "/stall/shop", label: "Shop", end: false, name: "Shop" },
@@ -19,6 +20,15 @@ function Ico({ name }: { name: string }) {
     return (
       <svg {...s} viewBox="0 0 24 24">
         <path d="M4 11.5 12 5l8 6.5V20H4z" />
+      </svg>
+    );
+  if (name === "Overview")
+    return (
+      <svg {...s} viewBox="0 0 24 24">
+        <rect x="4" y="4" width="7" height="7" rx="1" />
+        <rect x="13" y="4" width="7" height="7" rx="1" />
+        <rect x="4" y="13" width="7" height="7" rx="1" />
+        <rect x="13" y="13" width="7" height="7" rx="1" />
       </svg>
     );
   if (name === "Stock")

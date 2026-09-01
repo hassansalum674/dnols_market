@@ -16,6 +16,7 @@ import {
   TOTAL_STEPS,
   validateStep,
 } from "../lib/onboarding";
+import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { formatTzPhone } from "../lib/validation";
 import {
   clearDraft,
@@ -55,7 +56,7 @@ export function OnboardingPage() {
   useEffect(() => {
     const profile = loadProfile();
     if (profile?.status === "active") {
-      navigate("/dashboard", { replace: true });
+      navigate(DASHBOARD_PATH, { replace: true });
     } else if (profile?.status === "pending_review") {
       navigate("/pending", { replace: true });
     }

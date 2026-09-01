@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { SellHeader } from "../components/SellHeader";
 import { useAuth } from "../store/auth";
 import { loadDraft, loadProfile } from "../storage";
@@ -13,8 +14,8 @@ export function SellLandingPage() {
   let ctaLabel = "Start";
 
   if (profile?.status === "active") {
-    ctaPath = "/dashboard";
-    ctaLabel = "Go to dashboard";
+    ctaPath = DASHBOARD_PATH;
+    ctaLabel = "Go to your shop";
   } else if (profile?.status === "pending_review") {
     ctaPath = "/pending";
     ctaLabel = "View application";

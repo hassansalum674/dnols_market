@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
-import { loadDraft, loadProfile } from "../storage";
+import { DASHBOARD_PATH, PRODUCTS_PATH } from "../lib/shopRoutes";
 import { useAuth } from "../store/auth";
+import { loadDraft, loadProfile } from "../storage";
 
 type Props = {
   signInTo?: string;
@@ -27,7 +28,7 @@ export function SellHeader({
   const hasDraft = Boolean(loadDraft());
   const showSellerCta = !hideSellerCta && !inOnboarding && !hasDraft;
   const signedIn = Boolean(user);
-  const shopHome = profile?.status === "active" ? "/dashboard" : "/stall/stock";
+  const shopHome = profile?.status === "active" ? DASHBOARD_PATH : PRODUCTS_PATH;
 
   return (
     <header className="sell-header">

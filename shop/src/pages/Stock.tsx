@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
-import { PRODUCT_NEW_PATH, productEditPath } from "../lib/productRoutes";
+import { ShopCatalogNav } from "../components/ShopCatalogNav";
+import { DASHBOARD_PATH, PRODUCT_NEW_PATH, productEditPath } from "../lib/shopRoutes";
 import { loadProducts, loadProfile } from "../storage";
 import { formatTzs } from "./errors";
 
@@ -11,12 +12,18 @@ export function StockPage() {
 
   return (
     <div className="page stall-page">
+      <ShopCatalogNav />
+
       <header className="stall-page-head">
         <div>
           <h1 className="stall-page-title">Your products</h1>
           <p className="muted stall-page-desc">
             Add photos, prices, and details buyers see on dnols.com. Tap a product
-            to edit it.
+            to edit it. View shop stats on{" "}
+            <Link to={DASHBOARD_PATH} className="text-link">
+              Overview
+            </Link>
+            .
           </p>
         </div>
         <Link to={PRODUCT_NEW_PATH} className="btn stall-page-action">

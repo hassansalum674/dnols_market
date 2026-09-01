@@ -1,6 +1,6 @@
-export const PRODUCTS_PATH = "/stall/stock";
-export const PRODUCT_NEW_PATH = "/stall/products/new";
-
-export function productEditPath(id: string): string {
-  return `/stall/products/${id}/edit`;
-}
+export {
+  DASHBOARD_PATH,
+  PRODUCTS_PATH,
+  PRODUCT_NEW_PATH,
+  productEditPath,
+} from "./shopRoutes";

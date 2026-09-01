@@ -9,6 +9,7 @@ import { markSplashSeen, splashSeen } from "./storage";
 
 const titles: Record<string, string> = {
   "/stall": "Today",
+  "/stall/dashboard": "Overview",
   "/stall/stock": "Products",
   "/stall/products/new": "Add product",
   "/stall/orders": "Orders",

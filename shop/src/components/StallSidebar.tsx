@@ -5,6 +5,7 @@ import { useAuth } from "../store/auth";
 
 const links = [
   { to: "/stall", label: "Today", end: true },
+  { to: "/stall/dashboard", label: "Overview", end: false },
   { to: "/stall/stock", label: "Products", end: false },
   { to: "/stall/orders", label: "Orders", end: false },
   { to: "/stall/shop", label: "Shop settings", end: false },
@@ -49,9 +50,6 @@ export function StallSidebar({ pickupCount }: Props) {
         <Link to={PRODUCT_NEW_PATH} className="stall-sidebar-link stall-sidebar-link--add">
           + Add product
         </Link>
-        <NavLink to="/dashboard" className="stall-sidebar-link stall-sidebar-link--muted">
-          Dashboard
-        </NavLink>
         <a
           href="https://dnols.com"
           className="stall-sidebar-link stall-sidebar-link--muted"

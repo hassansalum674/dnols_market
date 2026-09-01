@@ -35,6 +35,11 @@ const DemoRejectPage = lazy(() =>
 const DashboardPage = lazy(() =>
   import("./pages/Dashboard").then((m) => ({ default: m.DashboardPage })),
 );
+const DashboardRedirect = lazy(() =>
+  import("./pages/DashboardRedirect").then((m) => ({
+    default: m.DashboardRedirect,
+  })),
+);
 const ProductFormPage = lazy(() =>
   import("./pages/ProductForm").then((m) => ({ default: m.ProductFormPage })),
 );
@@ -67,7 +72,7 @@ const router = createBrowserRouter([
   { path: "/rejected", element: <RejectedPage /> },
   { path: "/demo/approve", element: <DemoApprovePage /> },
   { path: "/demo/reject", element: <DemoRejectPage /> },
-  { path: "/dashboard", element: <DashboardPage /> },
+  { path: "/dashboard", element: <DashboardRedirect /> },
   { path: "/products/new", element: <RedirectLegacyProductNew /> },
   { path: "/products/:id/edit", element: <RedirectLegacyProductEdit /> },
   {
@@ -76,6 +81,7 @@ const router = createBrowserRouter([
     errorElement: <ServerErrorPage />,
     children: [
       { index: true, element: <TodayPage /> },
+      { path: "dashboard", element: <DashboardPage /> },
       { path: "stock", element: <StockPage /> },
       { path: "products/new", element: <ProductFormPage /> },
       { path: "products/:id/edit", element: <ProductFormPage /> },
