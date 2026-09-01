@@ -856,6 +856,17 @@ label.lbl {
   opacity: 0.35;
 }
 
+.language-chips {
+  margin: 4px 0 8px;
+}
+
+.language-chips .chip {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .radio-group {
   display: flex;
   flex-direction: column;

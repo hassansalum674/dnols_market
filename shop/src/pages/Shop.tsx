@@ -2,13 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { getHealth, getOrder, getPlaces } from "../api";
 import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
 import { useShopData } from "../shopData";
+import { useLanguage } from "../store/language";
 import type { Place, PayoutMock, ShopHours } from "../types";
+import { PREFERRED_LANGUAGES } from "../types";
 import { formatTzs } from "./errors";
 
 const BUYER = "http://localhost:5173";
 
 export function ShopPage() {
   const { saved } = useShopData();
+  const { language, setLanguage, t, locale } = useLanguage();
   const [place, setPlace] = useState<Place | null>(null);
   const [apiOk, setApiOk] = useState<boolean | null>(null);
   const [hours, setHours] = useState<ShopHours>(() => loadHours());
@@ -49,17 +52,17 @@ export function ShopPage() {
 
   function mockPayout() {
     if (available <= 0) {
-      setPayoutMsg("Nothing to pay out until a handover lands.");
+      setPayoutMsg(t.nothingToPayout);
       return;
     }
     const row: PayoutMock = {
       id: `po_${Date.now().toString(36)}`,
       amountTzs: available,
       at: new Date().toISOString(),
-      note: "Mock mobile-money payout to stall wallet.",
+      note: t.mockPayoutNote,
     };
     setPayouts(addPayout(row));
-    setPayoutMsg(`Sent ${formatTzs(row.amountTzs)} (stub).`);
+    setPayoutMsg(t.sentPayout(formatTzs(row.amountTzs)));
   }
 
   function persistHours(next: ShopHours) {
@@ -70,63 +73,80 @@ export function ShopPage() {
   return (
     <div className="page">
       <section className="block">
-        <h2>Place</h2>
+        <h2>{t.place}</h2>
         <p>
           {place?.name ?? "Kariakoo"}
-          {place?.city ? `, ${place.city}` : " · Dar es Salaam"}
+          {place?.city ? `, ${place.city}` : ` · ${t.dar}`}
         </p>
+        <p className="hint">{place?.hint ?? t.defaultPlaceHint}</p>
         <p className="hint">
-          {place?.hint ??
-            "Shop-only cluster. Exact stall pin stays off buyer listings until they pay."}
-        </p>
-        <p className="hint">
-          API {apiOk === null ? "…" : apiOk ? "up on :8787" : "down — start api/"}
+          {apiOk === null ? t.apiChecking : apiOk ? t.apiUp : t.apiDown}
         </p>
       </section>
 
       <section className="block">
-        <h2>Hours</h2>
-        <label className="lbl">Days</label>
+        <h2>{t.language}</h2>
+        <div className="chip-grid language-chips" role="radiogroup" aria-label={t.language}>
+          {PREFERRED_LANGUAGES.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              className={`chip ${language === opt.id ? "selected" : ""}`}
+              aria-pressed={language === opt.id}
+              onClick={() => setLanguage(opt.id)}
+            >
+              {opt.native}
+            </button>
+          ))}
+        </div>
+        <p className="hint">{t.languageHint}</p>
+      </section>
+
+      <section className="block">
+        <h2>{t.hours}</h2>
+        <label className="lbl">{t.days}</label>
         <input
           className="field"
           value={hours.days}
           onChange={(e) => persistHours({ ...hours, days: e.target.value })}
         />
-        <label className="lbl">Open</label>
+        <label className="lbl">{t.open}</label>
         <input
           className="field"
           type="time"
           value={hours.open}
           onChange={(e) => persistHours({ ...hours, open: e.target.value })}
         />
-        <label className="lbl">Close</label>
+        <label className="lbl">{t.close}</label>
         <input
           className="field"
           type="time"
           value={hours.close}
           onChange={(e) => persistHours({ ...hours, close: e.target.value })}
         />
-        <p className="hint">Hours stay on this device only.</p>
+        <p className="hint">{t.hoursHint}</p>
       </section>
 
       <section className="block">
-        <h2>Payout</h2>
+        <h2>{t.payout}</h2>
         <p className="price" style={{ fontSize: 22, fontWeight: 700 }}>
           {formatTzs(available)}
         </p>
         <p className="muted">
-          Released after handover: {formatTzs(released)}. Already mocked out:{" "}
+          {t.releasedAfter}: {formatTzs(released)}. {t.alreadyMocked}:{" "}
           {formatTzs(paidOut)}.
         </p>
         <button className="btn" style={{ marginTop: 12 }} onClick={mockPayout}>
-          Send payout
+          {t.sendPayout}
         </button>
         {payoutMsg && <p className="ok">{payoutMsg}</p>}
         {payouts.slice(0, 5).map((p) => (
           <div key={p.id} className="card">
             <div className="card-meta">
               <span className="price">{formatTzs(p.amountTzs)}</span>
-              <span className="muted">{new Date(p.at).toLocaleString()}</span>
+              <span className="muted">
+                {new Date(p.at).toLocaleString(locale)}
+              </span>
             </div>
             <p className="hint">{p.note}</p>
           </div>
@@ -134,9 +154,11 @@ export function ShopPage() {
       </section>
 
       <a className="buy-link" href={BUYER}>
-        Switch to buying
+        {t.switchBuying}
       </a>
-      <p className="hint">Opens the buyer PWA at {BUYER}.</p>
+      <p className="hint">
+        {t.buyerPwa} {BUYER}.
+      </p>
     </div>
   );
 }

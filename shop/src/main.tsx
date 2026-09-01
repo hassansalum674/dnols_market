@@ -7,7 +7,10 @@ import "@fontsource/inter/600.css";
 import "@fontsource/inter/700.css";
 import App from "./App";
 import { RoutePulse } from "./components/Splash";
+import { applyLanguage, loadLanguage } from "./storage";
 import "./styles.css";
+
+applyLanguage(loadLanguage());
 
 registerSW({ immediate: true });
 

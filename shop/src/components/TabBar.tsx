@@ -1,11 +1,12 @@
 import { NavLink } from "react-router-dom";
+import { useLanguage } from "../store/language";
 
 const tabs = [
-  { to: "/stall", label: "Today", end: true, name: "Today" },
-  { to: "/stall/stock", label: "Stock", end: false, name: "Stock" },
-  { to: "/stall/orders", label: "Orders", end: false, name: "Orders" },
-  { to: "/stall/shop", label: "Shop", end: false, name: "Shop" },
-] as const;
+  { to: "/stall", end: true, name: "Today" as const, labelKey: "today" as const },
+  { to: "/stall/stock", end: false, name: "Stock" as const, labelKey: "stock" as const },
+  { to: "/stall/orders", end: false, name: "Orders" as const, labelKey: "orders" as const },
+  { to: "/stall/shop", end: false, name: "Shop" as const, labelKey: "shop" as const },
+];
 
 function Ico({ name }: { name: string }) {
   const s = {
@@ -43,22 +44,23 @@ function Ico({ name }: { name: string }) {
 }
 
 export function TabBar({ pickupCount }: { pickupCount: number }) {
+  const { t } = useLanguage();
   return (
-    <nav className="tabbar" aria-label="Shop">
-      {tabs.map((t) => (
+    <nav className="tabbar" aria-label={t.tabAria}>
+      {tabs.map((tab) => (
         <NavLink
-          key={t.to}
-          to={t.to}
-          end={t.end}
+          key={tab.to}
+          to={tab.to}
+          end={tab.end}
           className={({ isActive }) => (isActive ? "active" : "")}
         >
           <span className="tab-ico">
-            <Ico name={t.name} />
-            {t.name === "Today" && pickupCount > 0 && (
+            <Ico name={tab.name} />
+            {tab.name === "Today" && pickupCount > 0 && (
               <span className="badge">{pickupCount}</span>
             )}
           </span>
-          {t.label}
+          {t[tab.labelKey]}
         </NavLink>
       ))}
     </nav>

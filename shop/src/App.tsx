@@ -4,6 +4,7 @@ import { AppLayout } from "./AppLayout";
 import { ServerErrorPage } from "./pages/errors";
 import { ShopProvider } from "./shopData";
 import { AuthProvider } from "./store/auth";
+import { LanguageProvider } from "./store/language";
 
 const SellLandingPage = lazy(() =>
   import("./pages/SellLanding").then((m) => ({ default: m.SellLandingPage })),
@@ -101,9 +102,11 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <AuthProvider>
-      <ShopProvider>
-        <RouterProvider router={router} />
-      </ShopProvider>
+      <LanguageProvider>
+        <ShopProvider>
+          <RouterProvider router={router} />
+        </ShopProvider>
+      </LanguageProvider>
     </AuthProvider>
   );
 }

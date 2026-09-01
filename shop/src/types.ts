@@ -121,6 +121,20 @@ export const FLOORS: { id: Floor; label: string }[] = [
 
 export type PreferredLanguage = "english" | "swahili";
 
+export const PREFERRED_LANGUAGES: {
+  id: PreferredLanguage;
+  label: string;
+  native: string;
+  htmlLang: string;
+}[] = [
+  { id: "english", label: "English", native: "English", htmlLang: "en" },
+  { id: "swahili", label: "Swahili", native: "Kiswahili", htmlLang: "sw" },
+];
+
+export function isPreferredLanguage(value: unknown): value is PreferredLanguage {
+  return value === "english" || value === "swahili";
+}
+
 export type MobileMoneyProvider = "mpesa" | "airtel" | "mixx" | "tigopesa";
 
 export const MOBILE_MONEY_PROVIDERS: {

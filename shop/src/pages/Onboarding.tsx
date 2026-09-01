@@ -29,6 +29,7 @@ import {
   DAYS,
   FLOORS,
   MOBILE_MONEY_PROVIDERS,
+  PREFERRED_LANGUAGES,
   SHOP_CATEGORIES,
 } from "../types";
 
@@ -352,10 +353,10 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
       <label className="lbl">Preferred language</label>
       <RadioGroup
         name="language"
-        options={[
-          { id: "english" as const, label: "English" },
-          { id: "swahili" as const, label: "Swahili" },
-        ]}
+        options={PREFERRED_LANGUAGES.map((l) => ({
+          id: l.id,
+          label: l.native,
+        }))}
         value={s.language}
         onChange={(v) => updateStep("step3", { language: v })}
       />
