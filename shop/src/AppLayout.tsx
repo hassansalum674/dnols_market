@@ -4,23 +4,25 @@ import { getOrder } from "./api";
 import { TabBar } from "./components/TabBar";
 import { RoutePulse, Splash } from "./components/Splash";
 import { useShopData } from "./shopData";
+import { useLanguage } from "./store/language";
 import { markSplashSeen, splashSeen } from "./storage";
 
-const titles: Record<string, string> = {
-  "/stall": "Today",
-  "/stall/stock": "Stock",
-  "/stall/orders": "Orders",
-  "/stall/shop": "Shop",
-  "/stock": "Stock",
-  "/orders": "Orders",
-  "/shop": "Shop",
-  "/today": "Today",
+const titleKeys: Record<string, "today" | "stock" | "orders" | "shop"> = {
+  "/stall": "today",
+  "/stall/stock": "stock",
+  "/stall/orders": "orders",
+  "/stall/shop": "shop",
+  "/stock": "stock",
+  "/orders": "orders",
+  "/shop": "shop",
+  "/today": "today",
 };
 
 export function AppLayout() {
   const loc = useLocation();
   const nav = useNavigation();
   const { saved } = useShopData();
+  const { t } = useLanguage();
   const [splash, setSplash] = useState(() => !splashSeen());
   const [held, setHeld] = useState(0);
 
@@ -42,7 +44,10 @@ export function AppLayout() {
     };
   }, [saved]);
 
-  const title = useMemo(() => titles[loc.pathname] ?? "Shop", [loc.pathname]);
+  const title = useMemo(() => {
+    const key = titleKeys[loc.pathname] ?? "shop";
+    return t[key];
+  }, [loc.pathname, t]);
 
   return (
     <>

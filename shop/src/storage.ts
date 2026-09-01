@@ -1,13 +1,16 @@
-import type {
-  LocalSku,
-  OnboardingDraft,
-  PayoutMock,
-  SavedOrder,
-  SellerApplicationStatus,
-  SellerProduct,
-  SellerProfile,
-  SellerSession,
-  ShopHours,
+import {
+  isPreferredLanguage,
+  PREFERRED_LANGUAGES,
+  type LocalSku,
+  type OnboardingDraft,
+  type PayoutMock,
+  type PreferredLanguage,
+  type SavedOrder,
+  type SellerApplicationStatus,
+  type SellerProduct,
+  type SellerProfile,
+  type SellerSession,
+  type ShopHours,
 } from "./types";
 
 const DRAFT = "dnols.seller.draft";
@@ -18,6 +21,7 @@ const ORDERS = "dnols.shop.orders";
 const SKUS = "dnols.shop.skus";
 const HOURS = "dnols.shop.hours";
 const PAYOUTS = "dnols.shop.payouts";
+const LANGUAGE = "dnols.shop.language";
 const SPLASH = "dnols.shop.splash";
 
 function read<T>(key: string, fallback: T): T {
@@ -187,4 +191,44 @@ export function addPayout(row: PayoutMock): PayoutMock[] {
   const next = [row, ...loadPayouts()];
   write(PAYOUTS, next);
   return next;
+}
+
+/* ── Preferred language (English / Kiswahili) ── */
+
+export function htmlLangFor(language: PreferredLanguage): string {
+  return PREFERRED_LANGUAGES.find((l) => l.id === language)?.htmlLang ?? "en";
+}
+
+export function applyLanguage(language: PreferredLanguage): void {
+  document.documentElement.lang = htmlLangFor(language);
+}
+
+export function loadLanguage(): PreferredLanguage {
+  const stored = read<unknown>(LANGUAGE, null);
+  if (isPreferredLanguage(stored)) return stored;
+  const profile = loadProfile();
+  if (isPreferredLanguage(profile?.step3.language)) return profile.step3.language;
+  const draft = loadDraft();
+  if (isPreferredLanguage(draft?.step3.language)) return draft.step3.language;
+  return "english";
+}
+
+export function saveLanguage(language: PreferredLanguage): PreferredLanguage {
+  write(LANGUAGE, language);
+  const profile = loadProfile();
+  if (profile) {
+    saveProfile({
+      ...profile,
+      step3: { ...profile.step3, language },
+    });
+  }
+  const draft = loadDraft();
+  if (draft) {
+    saveDraft({
+      ...draft,
+      step3: { ...draft.step3, language },
+    });
+  }
+  applyLanguage(language);
+  return language;
 }
