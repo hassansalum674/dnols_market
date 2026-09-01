@@ -625,6 +625,15 @@ label.lbl {
   align-items: center;
 }
 
+.sell-nav-muted {
+  cursor: default;
+}
+
+.sell-nav-signed {
+  color: var(--white);
+  font-weight: 600;
+}
+
 .sell-nav-cta {
   font-size: 14px;
   font-weight: 700;
@@ -1765,6 +1774,14 @@ select.field {
   margin: 8px 0 0;
   font-size: 13px;
   color: var(--muted);
+}
+
+.stall-sidebar-user {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--white);
+  word-break: break-word;
 }
 
 .stall-sidebar-nav {

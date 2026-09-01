@@ -1,6 +1,7 @@
 import { Link, NavLink } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
 import { PRODUCT_NEW_PATH } from "../lib/productRoutes";
+import { useAuth } from "../store/auth";
 
 const links = [
   { to: "/stall", label: "Today", end: true },
@@ -14,11 +15,18 @@ type Props = {
 };
 
 export function StallSidebar({ pickupCount }: Props) {
+  const { user, loading } = useAuth();
+
   return (
     <aside className="stall-sidebar" aria-label="Seller navigation">
       <div className="stall-sidebar-brand">
         <BrandLogo variant="dark" className="stall-sidebar-logo" height={32} />
         <p className="stall-sidebar-tag">Seller portal</p>
+        {!loading && user && (
+          <p className="stall-sidebar-user">
+            {user.displayName || user.email || "Signed in"}
+          </p>
+        )}
       </div>
       <nav className="stall-sidebar-nav">
         {links.map((link) => (

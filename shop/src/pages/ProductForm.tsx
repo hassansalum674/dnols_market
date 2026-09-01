@@ -6,6 +6,7 @@ import { isCdnPhoto } from "../lib/photoPipeline";
 import { PRODUCTS_PATH } from "../lib/productRoutes";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
 import { loadProducts, loadProfile, upsertProduct } from "../storage";
+import { useAuth } from "../store/auth";
 import type { ProductCondition, SellerProduct, ShopCategory } from "../types";
 import {
   PRODUCT_CONDITIONS,
@@ -44,6 +45,7 @@ function emptyProduct(categories: ShopCategory[]): SellerProduct {
 export function ProductFormPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const profile = loadProfile();
   const isEdit = Boolean(id);
 
@@ -67,19 +69,44 @@ export function ProductFormPage() {
     }
   }, [profile, navigate]);
 
-  if (!profile) {
+  if (authLoading) {
+    return (
+      <div className="page stall-page">
+        <p className="muted">Loading your account…</p>
+      </div>
+    );
+  }
+
+  if (!user) {
     return (
       <div className="page stall-page">
         <h1 className="stall-page-title">Add product</h1>
         <p className="section-desc">
-          Sign in and register your Kariakoo stall before listing products.
+          Sign in to list products on Dnols.
         </p>
         <div className="product-setup-actions">
           <Link to="/signin" className="btn">
             Sign in
           </Link>
-          <Link to="/onboarding" className="btn ghost">
-            Become a seller
+          <Link to={PRODUCTS_PATH} className="back-link">
+            ← Back to products
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="page stall-page">
+        <h1 className="stall-page-title">Add product</h1>
+        <p className="section-desc">
+          You&apos;re signed in. Complete your Kariakoo stall registration to
+          start listing products.
+        </p>
+        <div className="product-setup-actions">
+          <Link to="/onboarding" className="btn">
+            Complete seller registration
           </Link>
           <Link to={PRODUCTS_PATH} className="back-link">
             ← Back to products

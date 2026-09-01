@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { SellHeader } from "../components/SellHeader";
-import { isSignedIn, loadDraft, loadProfile } from "../storage";
+import { useAuth } from "../store/auth";
+import { loadDraft, loadProfile } from "../storage";
 
 export function SellLandingPage() {
+  const { user, loading } = useAuth();
   const profile = loadProfile();
   const draft = loadDraft();
-  const signedIn = isSignedIn();
+  const signedIn = Boolean(user);
 
   let ctaPath = "/onboarding";
   let ctaLabel = "Start";
@@ -57,7 +59,7 @@ export function SellLandingPage() {
           {ctaLabel}
         </Link>
 
-        {!signedIn && (
+        {!loading && !signedIn && (
           <p className="sell-signin-hint">
             Already a seller?{" "}
             <Link to="/signin" className="text-link">

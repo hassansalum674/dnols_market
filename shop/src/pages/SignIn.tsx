@@ -36,9 +36,19 @@ export function SignInPage() {
 
   useEffect(() => {
     if (loading || !user) return;
-    const identifier = user.email ?? user.uid;
-    afterAuth(identifier);
+    afterAuth(user.email ?? user.uid);
   }, [user, loading]);
+
+  if (!loading && user) {
+    return (
+      <div className="sell-landing">
+        <SellHeader />
+        <main className="page auth-page signin-page">
+          <p className="muted">Signed in — taking you to your shop…</p>
+        </main>
+      </div>
+    );
+  }
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
