@@ -1,21 +1,30 @@
 import { formatDistance, formatTsh } from "../lib/format";
+import { photoUrl } from "../lib/images";
 import type { PublicListing } from "../types";
 import { Link } from "react-router-dom";
 
 export function ProductCard({
   listing,
   className = "",
+  priority = false,
 }: {
   listing: PublicListing;
   className?: string;
+  priority?: boolean;
 }) {
+  const src = photoUrl(listing.photoUrl, "card");
   return (
     <Link to={`/product/${listing.id}`} className={`card ${className}`}>
       <img
         className="card-photo"
-        src={listing.photoUrl}
+        src={src}
         alt={listing.title}
-        loading="lazy"
+        width={400}
+        height={400}
+        sizes="(max-width: 600px) 50vw, 220px"
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
       />
       <p className="card-title">{listing.title}</p>
       <div className="card-meta">
@@ -29,8 +38,8 @@ export function ProductCard({
 export function ProductGrid({ listings }: { listings: PublicListing[] }) {
   return (
     <div className="grid">
-      {listings.map((l) => (
-        <ProductCard key={l.id} listing={l} />
+      {listings.map((l, i) => (
+        <ProductCard key={l.id} listing={l} priority={i === 0} />
       ))}
     </div>
   );

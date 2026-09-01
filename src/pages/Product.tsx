@@ -5,6 +5,7 @@ import { ReservePayButton } from "../components/ReservePayButton";
 import { AddToCartButton } from "../components/AddToCartButton";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
+import { photoUrl } from "../lib/images";
 import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
 import { useI18n } from "../store/i18n";
 import type { PublicListingDetail } from "../types";
@@ -36,7 +37,15 @@ export function ProductPage() {
     <div className="product-page">
       <div className="product-layout">
         <div className="product-gallery">
-          <img className="product-hero" src={detail.photoUrl} alt={detail.title} />
+          <img
+            className="product-hero"
+            src={photoUrl(detail.photoUrl, "detail")}
+            alt={detail.title}
+            width={640}
+            height={640}
+            fetchPriority="high"
+            decoding="async"
+          />
         </div>
         <div className="product-info">
           <h1 className="product-title">{detail.title}</h1>

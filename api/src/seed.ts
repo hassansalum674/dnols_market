@@ -72,7 +72,7 @@ export const shops: Shop[] = [
 ];
 
 function pic(seed: string): string {
-  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/640/640`;
+  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/400/400`;
 }
 
 const iso = (d: string) => new Date(d).toISOString();

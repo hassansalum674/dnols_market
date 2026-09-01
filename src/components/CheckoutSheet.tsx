@@ -6,6 +6,7 @@ import { IconTrash } from "./IconTrash";
 import { BillingCardTile } from "./BillingCardTile";
 import { CheckoutSignInGate } from "./CheckoutSignInGate";
 import { formatTsh } from "../lib/format";
+import { photoUrl } from "../lib/images";
 import { isValidPickupCode } from "../lib/pickupCode";
 import {
   loadBillingCards,
@@ -252,7 +253,7 @@ export function CheckoutSheet() {
                     <li key={line.listing.id} className="uc-item">
                       <img
                         className="uc-item-photo"
-                        src={line.listing.photoUrl}
+                        src={photoUrl(line.listing.photoUrl, "thumb")}
                         alt=""
                       />
                       <div className="uc-item-body">

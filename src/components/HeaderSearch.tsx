@@ -8,6 +8,7 @@ import {
   pushHistory,
   type HistoryEntry,
 } from "../store/persist";
+import { photoUrl } from "../lib/images";
 import type { PublicListing } from "../types";
 import { useI18n } from "../store/i18n";
 
@@ -113,7 +114,7 @@ export function HeaderSearch({
                     nav(`/product/${s.id}`);
                   }}
                 >
-                  <img src={s.photoUrl} alt="" />
+                  <img src={photoUrl(s.photoUrl, "thumb")} alt="" width={48} height={48} loading="lazy" decoding="async" />
                   <span>{s.title}</span>
                 </button>
               ))}
@@ -130,7 +131,7 @@ export function HeaderSearch({
                   onClick={() => go(h.q, h.photoUrl)}
                 >
                   {h.photoUrl ? (
-                    <img src={h.photoUrl} alt="" />
+                    <img src={photoUrl(h.photoUrl, "thumb")} alt="" width={48} height={48} loading="lazy" decoding="async" />
                   ) : (
                     <img src="/brand/logo4_submark.svg" alt="" />
                   )}

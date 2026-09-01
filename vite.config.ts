@@ -23,6 +23,22 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules/firebase")) return "firebase";
+          if (
+            id.includes("node_modules/react-dom") ||
+            id.includes("node_modules/react/") ||
+            id.includes("node_modules/react-router")
+          ) {
+            return "react-vendor";
+          }
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     {
@@ -36,12 +52,14 @@ export default defineConfig({
     },
     VitePWA({
       registerType: "autoUpdate",
-      minify: false,
+      minify: true,
       includeAssets: [
         "favicon.png",
         "apple-touch-icon.png",
         "icons/*.png",
         "brand/*.svg",
+        "robots.txt",
+        "sitemap.xml",
       ],
       manifest: {
         name: "Dnols",
@@ -78,7 +96,12 @@ export default defineConfig({
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,ico}"],
         navigateFallback: "/index.html",
-        navigateFallbackDenylist: [/^\/__\//, /^\/api\//],
+        navigateFallbackDenylist: [
+          /^\/__\//,
+          /^\/api\//,
+          /^\/robots\.txt$/,
+          /^\/sitemap\.xml$/,
+        ],
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/api"),
