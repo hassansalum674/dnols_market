@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
 
 const links = [
@@ -37,6 +37,9 @@ export function StallSidebar({ pickupCount }: Props) {
         ))}
       </nav>
       <div className="stall-sidebar-foot">
+        <Link to="/products/new" className="stall-sidebar-link stall-sidebar-link--add">
+          + Add product
+        </Link>
         <NavLink to="/dashboard" className="stall-sidebar-link stall-sidebar-link--muted">
           Dashboard
         </NavLink>

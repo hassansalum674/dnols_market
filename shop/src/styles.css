@@ -1862,7 +1862,33 @@ select.field {
   margin-top: 12px;
 }
 
-.payout-card {
-  border-bottom: none;
-  padding: 12px 0 0;
+.stock-row--product {
+  text-decoration: none;
+  color: inherit;
+}
+
+.stock-row--dim {
+  opacity: 0.72;
+}
+
+.stock-grid--products .stock-row {
+  border: 1px solid var(--faint);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.stall-subsection {
+  margin-top: 28px;
+}
+
+.stall-subsection-title {
+  margin: 0 0 6px;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.stall-sidebar-link--add {
+  color: var(--brand);
+  font-weight: 700;
+  margin-bottom: 4px;
 }

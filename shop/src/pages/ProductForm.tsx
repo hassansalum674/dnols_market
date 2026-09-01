@@ -62,8 +62,12 @@ export function ProductFormPage() {
   const [addingPhoto, setAddingPhoto] = useState(false);
 
   useEffect(() => {
-    if (!profile || profile.status !== "active") {
-      navigate("/dashboard", { replace: true });
+    if (!profile) {
+      navigate("/", { replace: true });
+      return;
+    }
+    if (profile.status === "rejected") {
+      navigate("/rejected", { replace: true });
     }
   }, [profile, navigate]);
 
@@ -111,7 +115,7 @@ export function ProductFormPage() {
       return;
     }
     if (!product.photos.every(isCdnPhoto)) {
-      setErr("All photos must be processed via CDN before saving.");
+      setErr("Please wait for photos to finish uploading, then try again.");
       return;
     }
     const price = parseTzsPrice(priceInput);
@@ -134,7 +138,7 @@ export function ProductFormPage() {
       priceTzs: price,
       updatedAt: new Date().toISOString(),
     });
-    navigate("/dashboard");
+    navigate("/stall/stock");
   }
 
   const presets = variantPresets(product.category);
@@ -147,8 +151,8 @@ export function ProductFormPage() {
     <div className="sell-landing">
       <SellHeader becomeSellerTo="/dashboard" />
       <main className="page product-form-page">
-        <Link to="/dashboard" className="back-link">
-          ← Back to dashboard
+        <Link to="/stall/stock" className="back-link">
+          ← Back to products
         </Link>
         <h1>{isEdit ? "Edit product" : "Add product"}</h1>
 
