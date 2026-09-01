@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { PRODUCT_NEW_PATH, productEditPath } from "../lib/productRoutes";
 import { loadProducts, loadProfile } from "../storage";
 import { formatTzs } from "./errors";
 
@@ -18,7 +19,7 @@ export function StockPage() {
             to edit it.
           </p>
         </div>
-        <Link to="/products/new" className="btn stall-page-action">
+        <Link to={PRODUCT_NEW_PATH} className="btn stall-page-action">
           Add product
         </Link>
       </header>
@@ -33,7 +34,7 @@ export function StockPage() {
       {products.length === 0 ? (
         <div className="center-state">
           <p>No products yet. Add photos and details for your first listing.</p>
-          <Link to="/products/new" className="btn">
+          <Link to={PRODUCT_NEW_PATH} className="btn">
             Add product
           </Link>
         </div>
@@ -43,7 +44,7 @@ export function StockPage() {
             {active.map((p) => (
               <Link
                 key={p.id}
-                to={`/products/${p.id}/edit`}
+                to={productEditPath(p.id)}
                 className="stock-row stock-row--product"
               >
                 {p.coverPhoto ?? p.photos[0] ? (
@@ -79,7 +80,7 @@ export function StockPage() {
                 {hidden.map((p) => (
                   <Link
                     key={p.id}
-                    to={`/products/${p.id}/edit`}
+                    to={productEditPath(p.id)}
                     className="stock-row stock-row--product stock-row--dim"
                   >
                     {p.coverPhoto ?? p.photos[0] ? (

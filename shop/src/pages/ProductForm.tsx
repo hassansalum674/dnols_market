@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CharCount, RadioGroup, Toggle } from "../components/OnboardingLayout";
 import { ProductPhotoUpload } from "../components/ProductPhotoUpload";
-import { SellHeader } from "../components/SellHeader";
 import { isCdnPhoto } from "../lib/photoPipeline";
+import { PRODUCTS_PATH } from "../lib/productRoutes";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
 import { loadProducts, loadProfile, upsertProduct } from "../storage";
 import type { ProductCondition, SellerProduct, ShopCategory } from "../types";
@@ -62,14 +62,32 @@ export function ProductFormPage() {
   const [addingPhoto, setAddingPhoto] = useState(false);
 
   useEffect(() => {
-    if (!profile) {
-      navigate("/", { replace: true });
-      return;
-    }
-    if (profile.status === "rejected") {
+    if (profile?.status === "rejected") {
       navigate("/rejected", { replace: true });
     }
   }, [profile, navigate]);
+
+  if (!profile) {
+    return (
+      <div className="page stall-page">
+        <h1 className="stall-page-title">Add product</h1>
+        <p className="section-desc">
+          Sign in and register your Kariakoo stall before listing products.
+        </p>
+        <div className="product-setup-actions">
+          <Link to="/signin" className="btn">
+            Sign in
+          </Link>
+          <Link to="/onboarding" className="btn ghost">
+            Become a seller
+          </Link>
+          <Link to={PRODUCTS_PATH} className="back-link">
+            ← Back to products
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   function patch(partial: Partial<SellerProduct>) {
     setProduct((prev) => ({ ...prev, ...partial }));
@@ -143,20 +161,18 @@ export function ProductFormPage() {
 
   const presets = variantPresets(product.category);
   const isElectronics = product.category === "electronics_gadgets";
-  const categories = profile?.step1.categories.length
+  const categories = profile.step1.categories.length
     ? SHOP_CATEGORIES.filter((c) => profile.step1.categories.includes(c.id))
     : SHOP_CATEGORIES;
 
-  return (
-    <div className="sell-landing">
-      <SellHeader becomeSellerTo="/dashboard" />
-      <main className="page product-form-page">
-        <Link to="/stall/stock" className="back-link">
-          ← Back to products
-        </Link>
-        <h1>{isEdit ? "Edit product" : "Add product"}</h1>
+  const formBody = (
+    <>
+      <Link to={PRODUCTS_PATH} className="back-link">
+        ← Back to products
+      </Link>
+      <h1 className="stall-page-title">{isEdit ? "Edit product" : "Add product"}</h1>
 
-        <form className="product-form" onSubmit={submit}>
+      <form className="product-form" onSubmit={submit}>
           <div className="product-form-grid">
             <section className="product-form-panel product-form-details">
               <h2 className="product-form-section-title">Product details</h2>
@@ -398,7 +414,12 @@ export function ProductFormPage() {
             </section>
           </div>
         </form>
-      </main>
+    </>
+  );
+
+  return (
+    <div className="page stall-page product-form-page">
+      {formBody}
     </div>
   );
 }

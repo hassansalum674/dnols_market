@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
+import { PRODUCT_NEW_PATH } from "../lib/productRoutes";
 
 const links = [
   { to: "/stall", label: "Today", end: true },
@@ -37,7 +38,7 @@ export function StallSidebar({ pickupCount }: Props) {
         ))}
       </nav>
       <div className="stall-sidebar-foot">
-        <Link to="/products/new" className="stall-sidebar-link stall-sidebar-link--add">
+        <Link to={PRODUCT_NEW_PATH} className="stall-sidebar-link stall-sidebar-link--add">
           + Add product
         </Link>
         <NavLink to="/dashboard" className="stall-sidebar-link stall-sidebar-link--muted">

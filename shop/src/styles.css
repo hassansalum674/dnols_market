@@ -323,6 +323,8 @@ img {
   border: 2px solid transparent;
   box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
   transition: background 0.15s ease, transform 0.1s ease;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .btn:active:not(:disabled) {
@@ -1891,4 +1893,20 @@ select.field {
   color: var(--brand);
   font-weight: 700;
   margin-bottom: 4px;
+}
+
+.product-setup-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 320px;
+}
+
+.product-setup-actions .back-link {
+  margin-top: 8px;
+}
+
+.stall-page-action {
+  flex-shrink: 0;
+  text-align: center;
 }

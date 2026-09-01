@@ -2,6 +2,10 @@ import { lazy } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { ServerErrorPage } from "./pages/errors";
+import {
+  RedirectLegacyProductEdit,
+  RedirectLegacyProductNew,
+} from "./pages/productRedirects";
 import { ShopProvider } from "./shopData";
 import { AuthProvider } from "./store/auth";
 
@@ -60,8 +64,8 @@ const router = createBrowserRouter([
   { path: "/demo/approve", element: <DemoApprovePage /> },
   { path: "/demo/reject", element: <DemoRejectPage /> },
   { path: "/dashboard", element: <DashboardPage /> },
-  { path: "/products/new", element: <ProductFormPage /> },
-  { path: "/products/:id/edit", element: <ProductFormPage /> },
+  { path: "/products/new", element: <RedirectLegacyProductNew /> },
+  { path: "/products/:id/edit", element: <RedirectLegacyProductEdit /> },
   {
     path: "/stall",
     element: <AppLayout />,
@@ -69,6 +73,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <TodayPage /> },
       { path: "stock", element: <StockPage /> },
+      { path: "products/new", element: <ProductFormPage /> },
+      { path: "products/:id/edit", element: <ProductFormPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "shop", element: <ShopPage /> },
       { path: "*", element: <NotFoundPage /> },

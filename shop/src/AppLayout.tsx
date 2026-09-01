@@ -10,6 +10,7 @@ import { markSplashSeen, splashSeen } from "./storage";
 const titles: Record<string, string> = {
   "/stall": "Today",
   "/stall/stock": "Products",
+  "/stall/products/new": "Add product",
   "/stall/orders": "Orders",
   "/stall/shop": "Shop settings",
   "/stock": "Products",
@@ -17,6 +18,14 @@ const titles: Record<string, string> = {
   "/shop": "Shop settings",
   "/today": "Today",
 };
+
+function titleForPath(pathname: string): string {
+  if (titles[pathname]) return titles[pathname]!;
+  if (pathname.startsWith("/stall/products/") && pathname.endsWith("/edit")) {
+    return "Edit product";
+  }
+  return "Shop";
+}
 
 export function AppLayout() {
   const loc = useLocation();
@@ -43,7 +52,7 @@ export function AppLayout() {
     };
   }, [saved]);
 
-  const title = useMemo(() => titles[loc.pathname] ?? "Shop", [loc.pathname]);
+  const title = useMemo(() => titleForPath(loc.pathname), [loc.pathname]);
 
   return (
     <>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SellHeader } from "../components/SellHeader";
+import { PRODUCT_NEW_PATH, productEditPath } from "../lib/productRoutes";
 import { loadPayouts, loadProducts, loadProfile } from "../storage";
 import { formatTzs } from "./errors";
 
@@ -79,7 +80,7 @@ export function DashboardPage() {
           </div>
         </div>
 
-        <Link to="/products/new" className="btn dashboard-add">
+        <Link to={PRODUCT_NEW_PATH} className="btn dashboard-add">
           + Add product
         </Link>
 
@@ -91,7 +92,7 @@ export function DashboardPage() {
           {products.map((p) => (
             <Link
               key={p.id}
-              to={`/products/${p.id}/edit`}
+              to={productEditPath(p.id)}
               className="product-row"
             >
               {p.coverPhoto ?? p.photos[0] ? (
