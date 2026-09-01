@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getOrder, handoverOrder } from "../api";
+import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
 import type { OrderView, SavedOrder } from "../types";
@@ -49,10 +50,10 @@ export function TodayPage() {
 
   if (offline && !rows) {
     return (
-      <div className="page">
+      <div className="page stall-page">
         <div className="center-state">
           <img src="/brand/logo4_submark.svg" alt="" width={48} height={48} />
-          <p>You're offline. Pickups need the API.</p>
+          <p>You&apos;re offline. Reconnect to see today&apos;s pickups.</p>
         </div>
       </div>
     );
@@ -60,7 +61,7 @@ export function TodayPage() {
 
   if (rows === null) {
     return (
-      <div className="page">
+      <div className="page stall-page">
         <ShimmerList rows={3} />
       </div>
     );
@@ -68,12 +69,20 @@ export function TodayPage() {
 
   if (incoming.length === 0) {
     return (
-      <div className="page">
+      <div className="page stall-page">
+        <header className="stall-page-head">
+          <div>
+            <h1 className="stall-page-title">Today</h1>
+            <p className="muted stall-page-desc">
+              Buyers ready to pick up appear here after they pay.
+            </p>
+          </div>
+        </header>
         <div className="center-state">
           <img src="/brand/logo4_submark.svg" alt="" width={48} height={48} />
-          <p>No pickups waiting. Demo an incoming order from Orders.</p>
+          <p>No pickups waiting right now.</p>
           <Link className="btn" to="/stall/orders">
-            Open Orders
+            View orders
           </Link>
         </div>
       </div>
@@ -81,21 +90,28 @@ export function TodayPage() {
   }
 
   return (
-    <div className="page">
-      <p className="muted">
-        Buyer walks up. Confirm the handover PIN from pay — escrow then
-        releases.
-      </p>
-      {incoming.map((r) => (
-        <PickupCard
-          key={r.saved.orderId}
-          row={r}
-          onDone={() => {
-            refresh();
-            void load();
-          }}
-        />
-      ))}
+    <div className="page stall-page">
+      <header className="stall-page-head">
+        <div>
+          <h1 className="stall-page-title">Today</h1>
+          <p className="muted stall-page-desc">
+            Confirm the buyer&apos;s code when they arrive — then escrow releases
+            to you.
+          </p>
+        </div>
+      </header>
+      <div className="order-list">
+        {incoming.map((r) => (
+          <PickupCard
+            key={r.saved.orderId}
+            row={r}
+            onDone={() => {
+              refresh();
+              void load();
+            }}
+          />
+        ))}
+      </div>
     </div>
   );
 }
@@ -112,7 +128,7 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
   async function confirm(useStored: boolean) {
     const value = useStored ? pinFromPay : pin.trim();
     if (!value) {
-      setErr("Enter the PIN the buyer shows, or use Confirm from pay.");
+      setErr("Enter the code the buyer shows you.");
       return;
     }
     setBusy(true);
@@ -120,32 +136,34 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
     setMsg(null);
     try {
       const res = await handoverOrder(live.orderId, value);
-      setMsg(res.mock ?? "Handed over.");
+      setMsg(res.mock ?? "Handover confirmed.");
       onDone();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "handover failed");
+      setErr(e instanceof Error ? e.message : "Could not confirm handover");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <article className="card">
-      <span className="pill live">pickup · {live.escrow}</span>
-      <h2>{live.orderId}</h2>
+    <article className="card order-card">
+      <span className="pill live">{escrowLabel(live.escrow)}</span>
+      <h2>{shortOrderRef(live.orderId)}</h2>
       <div className="card-meta">
         <span className="price">{formatTzs(live.totalTzs)}</span>
-        <span className="muted">{live.listingIds.length} SKU</span>
+        <span className="muted">
+          {live.listingIds.length} item{live.listingIds.length === 1 ? "" : "s"}
+        </span>
       </div>
-      <p className="hint">Ask the buyer for the handover PIN (or pickup code).</p>
+      <p className="hint">Ask the buyer for their handover code or checkout code.</p>
       <input
         className="pin-input"
         inputMode="numeric"
         maxLength={8}
-        placeholder="••••"
+        placeholder="Enter code"
         value={pin}
         onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
-        aria-label="Handover PIN"
+        aria-label="Handover code"
       />
       <div className="btn-row">
         <button
@@ -153,20 +171,18 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
           disabled={busy}
           onClick={() => void confirm(false)}
         >
-          Confirm PIN
+          Confirm code
         </button>
-        <button
-          className="btn ghost"
-          disabled={busy || !pinFromPay}
-          onClick={() => void confirm(true)}
-        >
-          Seller confirm
-        </button>
+        {pinFromPay && (
+          <button
+            className="btn ghost"
+            disabled={busy}
+            onClick={() => void confirm(true)}
+          >
+            Use saved code
+          </button>
+        )}
       </div>
-      <p className="hint">
-        Seller confirm posts the PIN stored from POST /orders/pay (the mock
-        has no separate seller PIN).
-      </p>
       {err && <p className="err">{err}</p>}
       {msg && <p className="ok">{msg}</p>}
     </article>

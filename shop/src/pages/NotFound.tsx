@@ -19,14 +19,14 @@ export function NotFoundPage() {
       <h1 className="header-title" style={{ fontSize: 22, margin: "8px 0 12px" }}>
         Page missing.
       </h1>
-      <p className="muted">Still in the stall app. Trending SKUs from GET /trending.</p>
-      <Link className="btn" to="/" style={{ width: "auto", padding: "0 24px", margin: "16px 0" }}>
+      <p className="muted">This page is not in the seller portal.</p>
+      <Link className="btn" to="/stall" style={{ width: "auto", padding: "0 24px", margin: "16px 0" }}>
         Back to Today
       </Link>
       {row === null ? (
         <ShimmerList rows={2} />
       ) : row.length === 0 ? (
-        <p className="hint">Nothing trending — is the API up?</p>
+        <p className="hint">Nothing trending right now.</p>
       ) : (
         <div className="row-scroll">
           {row.slice(0, 6).map((l) => (

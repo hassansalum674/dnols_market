@@ -213,14 +213,14 @@ export function ProductFormPage() {
               />
 
               <label className="lbl" htmlFor="product-sku">
-                SKU / product code (never shown to buyers)
+                Product code (optional, for your records)
               </label>
               <input
                 id="product-sku"
                 className="field"
                 value={product.skuCode}
                 onChange={(e) => patch({ skuCode: e.target.value })}
-                placeholder="Optional internal code"
+                placeholder="e.g. shelf A3 — buyers never see this"
               />
             </section>
 

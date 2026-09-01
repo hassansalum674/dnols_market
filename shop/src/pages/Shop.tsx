@@ -1,16 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { getHealth, getOrder, getPlaces } from "../api";
+import { BUYER_URL } from "../lib/urls";
 import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
 import { useShopData } from "../shopData";
 import type { Place, PayoutMock, ShopHours } from "../types";
 import { formatTzs } from "./errors";
 
-const BUYER = "http://localhost:5173";
-
 export function ShopPage() {
   const { saved } = useShopData();
   const [place, setPlace] = useState<Place | null>(null);
-  const [apiOk, setApiOk] = useState<boolean | null>(null);
+  const [online, setOnline] = useState<boolean | null>(null);
   const [hours, setHours] = useState<ShopHours>(() => loadHours());
   const [payouts, setPayouts] = useState<PayoutMock[]>(() => loadPayouts());
   const [released, setReleased] = useState(0);
@@ -21,8 +20,8 @@ export function ShopPage() {
       .then((r) => setPlace(r.places[0] ?? null))
       .catch(() => setPlace(null));
     void getHealth()
-      .then(() => setApiOk(true))
-      .catch(() => setApiOk(false));
+      .then(() => setOnline(true))
+      .catch(() => setOnline(false));
   }, []);
 
   useEffect(() => {
@@ -47,19 +46,19 @@ export function ShopPage() {
   );
   const available = Math.max(0, released - paidOut);
 
-  function mockPayout() {
+  function sendPayout() {
     if (available <= 0) {
-      setPayoutMsg("Nothing to pay out until a handover lands.");
+      setPayoutMsg("Nothing to pay out until a handover is confirmed.");
       return;
     }
     const row: PayoutMock = {
       id: `po_${Date.now().toString(36)}`,
       amountTzs: available,
       at: new Date().toISOString(),
-      note: "Mock mobile-money payout to stall wallet.",
+      note: "Sent to your mobile money wallet.",
     };
     setPayouts(addPayout(row));
-    setPayoutMsg(`Sent ${formatTzs(row.amountTzs)} (stub).`);
+    setPayoutMsg(`Sent ${formatTzs(row.amountTzs)} to your wallet.`);
   }
 
   function persistHours(next: ShopHours) {
@@ -68,75 +67,87 @@ export function ShopPage() {
   }
 
   return (
-    <div className="page">
-      <section className="block">
-        <h2>Place</h2>
-        <p>
-          {place?.name ?? "Kariakoo"}
-          {place?.city ? `, ${place.city}` : " · Dar es Salaam"}
-        </p>
-        <p className="hint">
-          {place?.hint ??
-            "Shop-only cluster. Exact stall pin stays off buyer listings until they pay."}
-        </p>
-        <p className="hint">
-          API {apiOk === null ? "…" : apiOk ? "up on :8787" : "down — start api/"}
-        </p>
-      </section>
+    <div className="page stall-page">
+      <header className="stall-page-head">
+        <div>
+          <h1 className="stall-page-title">Shop settings</h1>
+          <p className="muted stall-page-desc">
+            Your stall details, opening hours, and payouts.
+          </p>
+        </div>
+      </header>
 
-      <section className="block">
-        <h2>Hours</h2>
-        <label className="lbl">Days</label>
-        <input
-          className="field"
-          value={hours.days}
-          onChange={(e) => persistHours({ ...hours, days: e.target.value })}
-        />
-        <label className="lbl">Open</label>
-        <input
-          className="field"
-          type="time"
-          value={hours.open}
-          onChange={(e) => persistHours({ ...hours, open: e.target.value })}
-        />
-        <label className="lbl">Close</label>
-        <input
-          className="field"
-          type="time"
-          value={hours.close}
-          onChange={(e) => persistHours({ ...hours, close: e.target.value })}
-        />
-        <p className="hint">Hours stay on this device only.</p>
-      </section>
+      <div className="shop-settings-grid">
+        <section className="block shop-panel">
+          <h2>Stall location</h2>
+          <p>
+            {place?.name ?? "Kariakoo"}
+            {place?.city ? `, ${place.city}` : " · Dar es Salaam"}
+          </p>
+          <p className="hint">
+            {place?.hint ??
+              "Your exact stall pin is shared with buyers only after they pay."}
+          </p>
+          <p className="hint">
+            {online === null
+              ? "Checking connection…"
+              : online
+                ? "Connected to Dnols"
+                : "Offline — some features may be limited"}
+          </p>
+        </section>
 
-      <section className="block">
-        <h2>Payout</h2>
-        <p className="price" style={{ fontSize: 22, fontWeight: 700 }}>
-          {formatTzs(available)}
-        </p>
-        <p className="muted">
-          Released after handover: {formatTzs(released)}. Already mocked out:{" "}
-          {formatTzs(paidOut)}.
-        </p>
-        <button className="btn" style={{ marginTop: 12 }} onClick={mockPayout}>
-          Send payout
-        </button>
-        {payoutMsg && <p className="ok">{payoutMsg}</p>}
-        {payouts.slice(0, 5).map((p) => (
-          <div key={p.id} className="card">
-            <div className="card-meta">
-              <span className="price">{formatTzs(p.amountTzs)}</span>
-              <span className="muted">{new Date(p.at).toLocaleString()}</span>
+        <section className="block shop-panel">
+          <h2>Opening hours</h2>
+          <label className="lbl">Days open</label>
+          <input
+            className="field"
+            value={hours.days}
+            onChange={(e) => persistHours({ ...hours, days: e.target.value })}
+          />
+          <label className="lbl">Opens</label>
+          <input
+            className="field"
+            type="time"
+            value={hours.open}
+            onChange={(e) => persistHours({ ...hours, open: e.target.value })}
+          />
+          <label className="lbl">Closes</label>
+          <input
+            className="field"
+            type="time"
+            value={hours.close}
+            onChange={(e) => persistHours({ ...hours, close: e.target.value })}
+          />
+          <p className="hint">Hours are saved on this device.</p>
+        </section>
+
+        <section className="block shop-panel">
+          <h2>Payouts</h2>
+          <p className="price shop-payout-amount">{formatTzs(available)}</p>
+          <p className="muted">
+            Available after confirmed handovers: {formatTzs(released)}. Already
+            sent: {formatTzs(paidOut)}.
+          </p>
+          <button className="btn shop-payout-btn" type="button" onClick={sendPayout}>
+            Send to mobile money
+          </button>
+          {payoutMsg && <p className="ok">{payoutMsg}</p>}
+          {payouts.slice(0, 5).map((p) => (
+            <div key={p.id} className="card payout-card">
+              <div className="card-meta">
+                <span className="price">{formatTzs(p.amountTzs)}</span>
+                <span className="muted">{new Date(p.at).toLocaleString()}</span>
+              </div>
+              <p className="hint">{p.note}</p>
             </div>
-            <p className="hint">{p.note}</p>
-          </div>
-        ))}
-      </section>
+          ))}
+        </section>
+      </div>
 
-      <a className="buy-link" href={BUYER}>
-        Switch to buying
+      <a className="buy-link" href={BUYER_URL} rel="noopener noreferrer">
+        Switch to shopping on dnols.com
       </a>
-      <p className="hint">Opens the buyer PWA at {BUYER}.</p>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
 import { getOrder } from "./api";
+import { StallSidebar } from "./components/StallSidebar";
 import { TabBar } from "./components/TabBar";
 import { RoutePulse, Splash } from "./components/Splash";
 import { useShopData } from "./shopData";
@@ -8,12 +9,12 @@ import { markSplashSeen, splashSeen } from "./storage";
 
 const titles: Record<string, string> = {
   "/stall": "Today",
-  "/stall/stock": "Stock",
+  "/stall/stock": "Products",
   "/stall/orders": "Orders",
-  "/stall/shop": "Shop",
-  "/stock": "Stock",
+  "/stall/shop": "Shop settings",
+  "/stock": "Products",
   "/orders": "Orders",
-  "/shop": "Shop",
+  "/shop": "Shop settings",
   "/today": "Today",
 };
 
@@ -47,28 +48,33 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
-      <div className="app-shell">
-        <header className="header">
-          <div className="header-row">
-            <img
-              className="header-mark"
-              src="/brand/logo4_submark.svg"
-              alt="Dnols"
-            />
-            <span className="header-title">{title}</span>
-            <span className="header-sub">Kariakoo</span>
-          </div>
-        </header>
-        <main>
-          {nav.state === "loading" ? (
-            <RoutePulse />
-          ) : (
-            <Suspense fallback={<RoutePulse />}>
-              <Outlet />
-            </Suspense>
-          )}
-        </main>
-        <TabBar pickupCount={held} />
+      <div className="app-shell app-shell--stall">
+        <StallSidebar pickupCount={held} />
+        <div className="stall-main">
+          <header className="header stall-header">
+            <div className="header-row stall-header-row">
+              <img
+                className="header-mark"
+                src="/brand/logo4_submark.svg"
+                alt="Dnols"
+              />
+              <span className="header-title">{title}</span>
+              <span className="header-sub">Kariakoo</span>
+            </div>
+          </header>
+          <main className="stall-main-content">
+            {nav.state === "loading" ? (
+              <RoutePulse />
+            ) : (
+              <Suspense fallback={<RoutePulse />}>
+                <div className="stall-page-wrap">
+                  <Outlet />
+                </div>
+              </Suspense>
+            )}
+          </main>
+          <TabBar pickupCount={held} />
+        </div>
       </div>
     </>
   );

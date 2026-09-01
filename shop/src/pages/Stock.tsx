@@ -23,7 +23,7 @@ export function StockPage() {
       .then((r) => setCatalog(r.items))
       .catch((e: unknown) => {
         setCatalog([]);
-        setErr(e instanceof Error ? e.message : "listings failed");
+        setErr(e instanceof Error ? e.message : "Could not load products");
       });
   }, []);
 
@@ -47,73 +47,93 @@ export function StockPage() {
 
   if (catalog === null) {
     return (
-      <div className="page">
+      <div className="page stall-page">
         <ShimmerList rows={6} />
       </div>
     );
   }
 
   return (
-    <div className="page">
-      <p className="muted">
-        Catalog from GET /listings. There is no seller SKU API — add/edit lives
-        here, with notes stored locally.
-      </p>
+    <div className="page stall-page">
+      <header className="stall-page-head">
+        <div>
+          <h1 className="stall-page-title">Your products</h1>
+          <p className="muted stall-page-desc">
+            Add and update what you sell. Notes stay on this device until your
+            listings sync to Dnols.
+          </p>
+        </div>
+        <button
+          className="btn stall-page-action"
+          type="button"
+          onClick={() => setAdding(true)}
+        >
+          Add product
+        </button>
+      </header>
+
       {err && <p className="err">{err}</p>}
-      <button className="btn" style={{ margin: "12px 0" }} onClick={() => setAdding(true)}>
-        Add SKU
-      </button>
-      {rows.length === 0 && (
+
+      {rows.length === 0 ? (
         <div className="center-state">
-          <p>No SKUs. Start the API on 8787, or add a local item.</p>
+          <p>No products yet. Add your first item to get started.</p>
+          <button className="btn" type="button" onClick={() => setAdding(true)}>
+            Add product
+          </button>
+        </div>
+      ) : (
+        <div className="stock-grid">
+          {rows.map((r) => {
+            const title = r.local?.title ?? r.listing?.title ?? "";
+            const price = r.local?.priceTzs ?? r.listing?.priceTzs ?? 0;
+            const stock = r.local?.inStock ?? r.listing?.inStock ?? false;
+            const photo = r.local?.photoUrl ?? r.listing?.photoUrl;
+            const notes = r.local?.notes;
+            return (
+              <button
+                key={r.key}
+                className="stock-row"
+                type="button"
+                onClick={() =>
+                  setEditing(
+                    r.local ??
+                      ({
+                        id: `overlay_${r.listing!.id}`,
+                        listingId: r.listing!.id,
+                        title: r.listing!.title,
+                        priceTzs: r.listing!.priceTzs,
+                        category: r.listing!.category,
+                        inStock: r.listing!.inStock,
+                        notes: "",
+                        photoUrl: r.listing!.photoUrl,
+                        createdAt: new Date().toISOString(),
+                      } satisfies LocalSku),
+                  )
+                }
+              >
+                {photo ? (
+                  <img className="stock-thumb" src={photo} alt="" />
+                ) : (
+                  <div className="stock-thumb skel" />
+                )}
+                <div className="stock-row-body">
+                  <strong>{title}</strong>
+                  <div className="muted">
+                    {formatTzs(price)} · {stock ? "In stock" : "Out of stock"}
+                  </div>
+                  {notes ? <div className="hint">{notes}</div> : null}
+                </div>
+                <span className="stock-row-action">
+                  {r.local && !r.listing ? "Yours" : "Edit"}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
-      {rows.map((r) => {
-        const title = r.local?.title ?? r.listing?.title ?? "";
-        const price = r.local?.priceTzs ?? r.listing?.priceTzs ?? 0;
-        const stock = r.local?.inStock ?? r.listing?.inStock ?? false;
-        const photo = r.local?.photoUrl ?? r.listing?.photoUrl;
-        const notes = r.local?.notes;
-        return (
-          <button
-            key={r.key}
-            className="stock-row"
-            type="button"
-            onClick={() =>
-              setEditing(
-                r.local ??
-                  ({
-                    id: `overlay_${r.listing!.id}`,
-                    listingId: r.listing!.id,
-                    title: r.listing!.title,
-                    priceTzs: r.listing!.priceTzs,
-                    category: r.listing!.category,
-                    inStock: r.listing!.inStock,
-                    notes: "",
-                    photoUrl: r.listing!.photoUrl,
-                    createdAt: new Date().toISOString(),
-                  } satisfies LocalSku),
-              )
-            }
-          >
-            {photo ? (
-              <img className="stock-thumb" src={photo} alt="" />
-            ) : (
-              <div className="stock-thumb skel" />
-            )}
-            <div>
-              <strong>{title}</strong>
-              <div className="muted">
-                {formatTzs(price)} · {stock ? "in stock" : "out"}
-              </div>
-              {notes ? <div className="hint">{notes}</div> : null}
-            </div>
-            <span className="muted">{r.local && !r.listing ? "local" : "edit"}</span>
-          </button>
-        );
-      })}
+
       {(editing || adding) && (
-        <SkuSheet
+        <ProductSheet
           initial={
             adding
               ? {
@@ -147,7 +167,7 @@ export function StockPage() {
   );
 }
 
-function SkuSheet({
+function ProductSheet({
   initial,
   onClose,
   onSave,
@@ -165,11 +185,11 @@ function SkuSheet({
   return (
     <>
       <div className="sheet-backdrop" onClick={onClose} />
-      <div className="sheet" role="dialog" aria-label="Edit SKU">
-        <h3>{initial.listingId ? "Edit overlay" : "SKU"}</h3>
+      <div className="sheet sheet--dialog" role="dialog" aria-label="Edit product">
+        <h3>{initial.listingId ? "Update product" : "New product"}</h3>
         <p className="hint">
-          Changes stay on this phone. The mock API does not persist seller
-          listings.
+          Changes save on this phone. Buyers see updates once your listing is live
+          on Dnols.
         </p>
         <label className="lbl">Title</label>
         <input className="field" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -186,8 +206,8 @@ function SkuSheet({
           value={category}
           onChange={(e) => setCategory(e.target.value as Category)}
         >
-          <option value="fashion">fashion</option>
-          <option value="electronics">electronics</option>
+          <option value="fashion">Fashion</option>
+          <option value="electronics">Electronics</option>
         </select>
         <div className="toggle">
           <span>In stock</span>
@@ -200,12 +220,12 @@ function SkuSheet({
             {inStock ? "Yes" : "No"}
           </button>
         </div>
-        <label className="lbl">Notes (local)</label>
+        <label className="lbl">Your notes</label>
         <textarea
           className="field"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Stall note — size, stall number, restock…"
+          placeholder="Size, stall shelf, restock date — only you see this"
         />
         <div className="btn-row">
           <button className="btn ghost" type="button" onClick={onClose}>

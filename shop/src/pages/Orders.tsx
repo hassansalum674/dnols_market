@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getOrder, handoverOrder, payOrder, rejectOrder } from "../api";
+import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
 import type { OrderView, SavedOrder } from "../types";
@@ -25,7 +26,7 @@ export function OrdersPage() {
           return {
             saved: s,
             live: null,
-            err: e instanceof Error ? e.message : "not_found",
+            err: e instanceof Error ? e.message : "unavailable",
           };
         }
       }),
@@ -37,7 +38,7 @@ export function OrdersPage() {
     void load();
   }, [load]);
 
-  async function demoIncoming() {
+  async function trySampleOrder() {
     setBusy(true);
     setDemoErr(null);
     setDemoMsg(null);
@@ -53,14 +54,14 @@ export function OrdersPage() {
         createdAt: new Date().toISOString(),
       });
       setDemoMsg(
-        `Paid & held ${pay.orderId}. PIN ${pay.handoverPin} (also pickup ${pay.pickupCode}). Confirm on Today or below.`,
+        `Sample order ${shortOrderRef(pay.orderId)} is ready. Confirm pickup on Today.`,
       );
       refresh();
     } catch (e) {
       setDemoErr(
         e instanceof Error
-          ? `${e.message}. Is the API on :8787?`
-          : "pay failed",
+          ? `${e.message}. Check your connection and try again.`
+          : "Could not create sample order",
       );
     } finally {
       setBusy(false);
@@ -68,40 +69,47 @@ export function OrdersPage() {
   }
 
   return (
-    <div className="page">
-      <p className="muted">
-        Escrow is per-order. The API has no list-all; we GET /orders/:id for
-        ids saved after pay (and this demo).
-      </p>
-      <button className="btn" disabled={busy} onClick={() => void demoIncoming()}>
-        Demo incoming order
-      </button>
-      <p className="hint">
-        POST /orders/pay with {DEMO_LISTING}, then you can POST handover with
-        the PIN from that response.
-      </p>
-      {demoErr && <p className="err">{demoErr}</p>}
-      {demoMsg && <p className="ok">{demoMsg}</p>}
+    <div className="page stall-page">
+      <header className="stall-page-head">
+        <div>
+          <h1 className="stall-page-title">Orders</h1>
+          <p className="muted stall-page-desc">
+            Payments held in escrow until you confirm the buyer received the item.
+          </p>
+        </div>
+      </header>
+
+      <details className="demo-panel">
+        <summary>Try a sample order (for testing)</summary>
+        <p className="hint">
+          Creates a practice order so you can see how pickup confirmation works.
+        </p>
+        <button className="btn" disabled={busy} onClick={() => void trySampleOrder()}>
+          Create sample order
+        </button>
+        {demoErr && <p className="err">{demoErr}</p>}
+        {demoMsg && <p className="ok">{demoMsg}</p>}
+      </details>
 
       {rows === null ? (
         <ShimmerList rows={3} />
       ) : rows.length === 0 ? (
         <div className="center-state">
-          <p>No escrow yet. Run the demo, or pay from the buyer app and we
-            still need the order id here — demo is the path until a seller
-            inbox exists.</p>
+          <p>No orders yet. When a buyer pays, the order appears here.</p>
         </div>
       ) : (
-        rows.map((r) => (
-          <EscrowCard
-            key={r.saved.orderId}
-            row={r}
-            onChange={() => {
-              refresh();
-              void load();
-            }}
-          />
-        ))
+        <div className="order-list">
+          {rows.map((r) => (
+            <EscrowCard
+              key={r.saved.orderId}
+              row={r}
+              onChange={() => {
+                refresh();
+                void load();
+              }}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
@@ -113,6 +121,7 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
 
   const live = row.live;
   const pin = row.saved.handoverPin;
+  const status = live?.escrow ?? row.err ?? null;
 
   async function hand() {
     if (!live) return;
@@ -122,7 +131,7 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
       await handoverOrder(live.orderId, pin);
       onChange();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "failed");
+      setErr(e instanceof Error ? e.message : "Could not confirm handover");
     } finally {
       setBusy(false);
     }
@@ -136,35 +145,38 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
       await rejectOrder(live.orderId);
       onChange();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "failed");
+      setErr(e instanceof Error ? e.message : "Could not process refund");
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <article className="card">
+    <article className="card order-card">
       <span className={live?.escrow === "paid_held" ? "pill live" : "pill"}>
-        {live?.escrow ?? row.err ?? "unknown"}
+        {escrowLabel(status)}
       </span>
-      <h2>{row.saved.orderId}</h2>
+      <h2>{shortOrderRef(row.saved.orderId)}</h2>
       <div className="card-meta">
         <span className="price">{formatTzs(row.saved.totalTzs)}</span>
-        <span className="muted">{row.saved.listingIds.join(", ")}</span>
+        <span className="muted">
+          {row.saved.listingIds.length} item
+          {row.saved.listingIds.length === 1 ? "" : "s"}
+        </span>
       </div>
       {!live && (
         <p className="hint">
-          GET /orders/:id failed — API restart wipes in-memory orders. Demo
-          again.
+          This order could not be loaded. It may have expired — try the sample
+          order again if you were testing.
         </p>
       )}
       {live?.escrow === "paid_held" && (
         <div className="btn-row">
           <button className="btn" disabled={busy} onClick={() => void hand()}>
-            Handover
+            Confirm handover
           </button>
           <button className="btn ghost" disabled={busy} onClick={() => void reject()}>
-            Reject refund
+            Refund buyer
           </button>
         </div>
       )}
