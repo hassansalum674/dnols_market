@@ -35,7 +35,9 @@ export function EditProfilePage() {
       return;
     }
     const p = loadProfile(user.uid);
-    setName(p.displayName?.trim() || user.displayName?.trim() || "");
+    setName(
+      p.displayName?.trim() || user.displayName?.trim() || "",
+    );
     setPhone(p.phone ? formatTzPhoneDisplay(p.phone) : "");
     setPhoto(
       p.avatarDataUrl ?? (p.preferLetterAvatar ? null : user.photoURL) ?? null,
@@ -43,6 +45,11 @@ export function EditProfilePage() {
     setStep(1);
     setErr(null);
   }, [user?.uid]);
+
+  useEffect(() => {
+    if (!user?.displayName) return;
+    setName((cur) => cur.trim() || user.displayName!.trim());
+  }, [user?.displayName]);
 
   useEffect(() => {
     if (!savedFlash) return;
@@ -80,12 +87,16 @@ export function EditProfilePage() {
     setErr(null);
     setBusy(true);
     try {
-      await updateDisplayName(trimmed);
       const patch: { displayName: string; phone?: string } = {
         displayName: trimmed,
       };
       if (phone.trim()) patch.phone = normalizeTzPhone(phone);
       saveProfile(user.uid, patch);
+      try {
+        await updateDisplayName(trimmed);
+      } catch (e) {
+        console.warn("Could not update Firebase display name", e);
+      }
       notifyAvatarChange();
       navigate("/you", { replace: true });
     } catch (e) {

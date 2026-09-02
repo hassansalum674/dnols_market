@@ -5,8 +5,8 @@ export function userDisplayName(user: AuthUser | null): string {
   if (!user) return "Guest";
   const local = user.uid ? loadProfile(user.uid).displayName?.trim() : "";
   return (
-    user.displayName?.trim() ||
     local ||
+    user.displayName?.trim() ||
     user.email?.split("@")[0] ||
     "Account"
   );

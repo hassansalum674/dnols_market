@@ -158,13 +158,14 @@ export async function signUpWithEmail(
   email: string,
   password: string,
   displayName?: string,
-): Promise<void> {
+): Promise<AuthUser> {
   const auth = await requireAuth();
   const cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
   if (displayName?.trim()) {
     const { updateProfile } = await import("firebase/auth");
     await updateProfile(cred.user, { displayName: displayName.trim() });
   }
+  return mapUser(cred.user);
 }
 
 export async function resetPassword(email: string): Promise<void> {

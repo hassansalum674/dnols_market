@@ -13,7 +13,7 @@ import {
   resetPassword,
   signInWithEmail,
   signInWithGoogle,
-  signUpWithEmail,
+  signUpWithEmail as persistSignUp,
   subscribeAuth,
   updateDisplayName as persistDisplayName,
   type AuthUser,
@@ -58,6 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const doSignUp = useCallback(async (email: string, password: string, name?: string) => {
+    const next = await persistSignUp(email, password, name);
+    setUser(next);
+  }, []);
+
   const doUpdateDisplayName = useCallback(async (name: string) => {
     const next = await persistDisplayName(name);
     setUser(next);
@@ -70,12 +75,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configured,
       signInWithGoogle,
       signInWithEmail,
-      signUpWithEmail,
+      signUpWithEmail: doSignUp,
       resetPassword,
       signOut: doSignOut,
       updateDisplayName: doUpdateDisplayName,
     }),
-    [user, loading, configured, doSignOut, doUpdateDisplayName],
+    [user, loading, configured, doSignOut, doSignUp, doUpdateDisplayName],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
