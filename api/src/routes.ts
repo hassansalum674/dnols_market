@@ -316,10 +316,9 @@ export function registerRoutes(
       buyerLng,
     );
 
-    const paidFlag = q.paid === "1" || q.paid === "true";
     const tok = q.token ?? q.accessToken;
     const unlocked =
-      paidFlag && typeof tok === "string" && store.tokenUnlocksListing(tok, id);
+      typeof tok === "string" && store.tokenUnlocksListing(tok, id);
 
     if (unlocked) {
       const shop = store.shop(listing.shopId)!;

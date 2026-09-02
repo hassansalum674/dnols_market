@@ -99,7 +99,10 @@ export async function fetchListingDetail(
 ): Promise<{ detail: PublicListingDetail | null; source: DataSource; status?: number }> {
   try {
     const params = withBuyerGeo(new URLSearchParams());
-    if (paidToken) params.set("token", paidToken);
+    if (paidToken) {
+      params.set("token", paidToken);
+      params.set("paid", "1");
+    }
     const q = params.toString() ? `?${params}` : "";
     const data = await getJson<PublicListingDetail & { paid?: boolean }>(
       `/listings/${encodeURIComponent(id)}${q}`,
