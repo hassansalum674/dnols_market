@@ -1,5 +1,7 @@
 import type { PreferredLanguage } from "../types";
 
+export type AppLanguage = "en" | "sw";
+
 const EN = {
   stepOf: "Step {current} of {total}",
   draftSaved: "Draft saved",
@@ -48,6 +50,32 @@ const EN = {
   closedHolidays: "Closed on public holidays",
   submitReview: "Submit for review",
   reviewHint: "Your shop will be reviewed within 24 hours. No auto-approval.",
+  becomeASeller: "Become a seller",
+  signIn: "Sign in",
+  loading: "Loading…",
+  myShop: "My shop",
+  sellHeroTitle: "Sell from Kariakoo",
+  sellHeroSub:
+    "List your stall on Dnols. Buyers pay upfront, pick up in person, and you get paid after handover.",
+  sellBrief:
+    "We verify every shop — you will need your NIDA or passport, stall location in Kariakoo, and a mobile money payout number. Review usually takes up to 24 hours.",
+  sellDraftHint:
+    "Your draft saves automatically if you leave. Use the same Google or email as on dnols.com — one account is both buyer and seller.",
+  sameAccountHint:
+    "One Dnols account is both buyer and seller. Sign in with the same Google or email you use on dnols.com.",
+  alreadySeller: "Already a seller?",
+  start: "Start",
+  goToShop: "Go to your shop",
+  viewApplication: "View application",
+  resubmit: "Resubmit",
+  sellerSignIn: "Sign in",
+  sellerSignInSub:
+    "Use the same Google or email you use on dnols.com. You can also continue with the phone number you registered with.",
+  signedInTakingYou: "Signed in — taking you to your shop…",
+  browseAsBuyer: "Browse as buyer",
+  switchToShopping: "Switch to shopping on dnols.com",
+  sellerPortal: "Seller portal",
+  signedInAs: "Signed in as",
 };
 
 const SW: typeof EN = {
@@ -98,30 +126,68 @@ const SW: typeof EN = {
   closedHolidays: "Imefungwa siku za sikukuu",
   submitReview: "Tuma kwa ukaguzi",
   reviewHint: "Duka litakaguliwa ndani ya saa 24. Hakuna idhini otomatiki.",
+  becomeASeller: "Kuwa muuzaji",
+  signIn: "Ingia",
+  loading: "Inapakia…",
+  myShop: "Duka langu",
+  sellHeroTitle: "Uza kutoka Kariakoo",
+  sellHeroSub:
+    "Orodhesha duka lako kwenye Dnols. Wanunuzi hulipa kwanza, wanachukua wenyewe, na unalipwa baada ya kukabidhi.",
+  sellBrief:
+    "Tunathibitisha kila duka — utahitaji NIDA au pasipoti, mahali pa duka Kariakoo, na namba ya malipo ya simu. Ukaguzi mara nyingi huchukua hadi saa 24.",
+  sellDraftHint:
+    "Rasimu inahifadhiwa otomatiki ukiondoka. Tumia Google au barua pepe ile ile ya dnols.com — akaunti moja ni ya mnunuzi na muuzaji.",
+  sameAccountHint:
+    "Akaunti moja ya Dnols ni ya mnunuzi na muuzaji. Ingia kwa Google au barua pepe ile ile unayotumia kwenye dnols.com.",
+  alreadySeller: "Tayari wewe ni muuzaji?",
+  start: "Anza",
+  goToShop: "Nenda dukani",
+  viewApplication: "Tazama ombi",
+  resubmit: "Tuma tena",
+  sellerSignIn: "Ingia",
+  sellerSignInSub:
+    "Tumia Google au barua pepe ile ile ya dnols.com. Unaweza pia kuendelea na namba ya simu uliyosajili.",
+  signedInTakingYou: "Umeingia — tunakupeleka dukani…",
+  browseAsBuyer: "Nunua kama mnunuzi",
+  switchToShopping: "Rudi kununua kwenye dnols.com",
+  sellerPortal: "Dirisha la muuzaji",
+  signedInAs: "Umeingia kama",
 };
 
-export function shopLang(pref: PreferredLanguage | ""): "en" | "sw" {
+export type ShopMsg = keyof typeof EN;
+
+export function shopLang(pref: PreferredLanguage | ""): AppLanguage {
   return pref === "english" ? "en" : "sw";
 }
 
-export function shopT(
-  pref: PreferredLanguage | "",
-  key: keyof typeof EN,
-): string {
-  const table = shopLang(pref) === "en" ? EN : SW;
-  return table[key];
+export function translate(lang: AppLanguage, key: ShopMsg): string {
+  return (lang === "sw" ? SW : EN)[key];
 }
 
-export function shopTf(
-  pref: PreferredLanguage | "",
-  key: keyof typeof EN,
+export function interpolate(
+  template: string,
   vars: Record<string, string | number>,
 ): string {
-  let out = shopT(pref, key);
+  let out = template;
   for (const [k, v] of Object.entries(vars)) {
     out = out.replaceAll(`{${k}}`, String(v));
   }
   return out;
+}
+
+export function shopT(
+  pref: PreferredLanguage | "",
+  key: ShopMsg,
+): string {
+  return translate(shopLang(pref), key);
+}
+
+export function shopTf(
+  pref: PreferredLanguage | "",
+  key: ShopMsg,
+  vars: Record<string, string | number>,
+): string {
+  return interpolate(shopT(pref, key), vars);
 }
 
 export function stepTitleI18n(

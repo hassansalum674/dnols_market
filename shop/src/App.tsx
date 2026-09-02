@@ -8,6 +8,7 @@ import {
 } from "./pages/productRedirects";
 import { ShopProvider } from "./shopData";
 import { AuthProvider } from "./store/auth";
+import { I18nProvider } from "./store/i18n";
 
 const SellLandingPage = lazy(() =>
   import("./pages/SellLanding").then((m) => ({ default: m.SellLandingPage })),
@@ -116,10 +117,12 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <AuthProvider>
-      <ShopProvider>
-        <RouterProvider router={router} />
-      </ShopProvider>
-    </AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
+        <ShopProvider>
+          <RouterProvider router={router} />
+        </ShopProvider>
+      </AuthProvider>
+    </I18nProvider>
   );
 }

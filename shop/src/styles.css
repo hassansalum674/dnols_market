@@ -1,17 +1,30 @@
-:root {
+:root,
+[data-theme="light"] {
+  color-scheme: light;
   --brand: #1a6fd4;
   --brand-hover: #2b82e8;
-  --brand-soft: rgba(26, 111, 212, 0.14);
+  --brand-soft: rgba(26, 111, 212, 0.1);
   --blue: #1a6fd4;
   --blue-hover: #2b82e8;
-  --black: #0d0d0d;
-  --white: #ffffff;
-  --muted: rgba(255, 255, 255, 0.62);
-  --faint: rgba(255, 255, 255, 0.16);
+  --black: #ffffff;
+  --white: #222222;
+  --surface: #f7f7f8;
+  --muted: rgba(34, 34, 34, 0.58);
+  --faint: rgba(34, 34, 34, 0.12);
   --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
   --tabs: calc(56px + env(safe-area-inset-bottom, 0px));
   --btn-radius: 999px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --brand-soft: rgba(26, 111, 212, 0.14);
+  --black: #0d0d0d;
+  --white: #ffffff;
+  --surface: #141414;
+  --muted: rgba(255, 255, 255, 0.62);
+  --faint: rgba(255, 255, 255, 0.16);
 }
 
 * {
@@ -101,7 +114,7 @@ img {
   position: fixed;
   inset: 0;
   z-index: 80;
-  background: #0d0d0d;
+  background: var(--black);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -252,7 +265,7 @@ img {
   padding: 0 4px;
   border-radius: 8px;
   background: var(--blue);
-  color: var(--white);
+  color: #fff;
   font-size: 10px;
   line-height: 16px;
   text-align: center;
@@ -264,7 +277,7 @@ img {
 }
 
 .skel {
-  background: #161616;
+  background: var(--surface);
   position: relative;
   overflow: hidden;
 }
@@ -276,7 +289,7 @@ img {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.35),
     transparent
   );
   animation: shimmer 1.4s ease-in-out infinite;
@@ -340,7 +353,7 @@ img {
 }
 
 .btn.ghost:active:not(:disabled) {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--faint);
 }
 
 .btn:disabled {
@@ -434,7 +447,7 @@ img {
 
 .field {
   width: 100%;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
   border: 2px solid var(--faint);
   border-radius: var(--btn-radius);
   color: var(--white);
@@ -492,7 +505,7 @@ label.lbl {
   width: 56px;
   height: 56px;
   object-fit: cover;
-  background: #161616;
+  background: var(--surface);
 }
 
 .sheet-backdrop {
@@ -508,7 +521,7 @@ label.lbl {
   right: 0;
   bottom: 0;
   z-index: 41;
-  background: #111;
+  background: var(--black);
   padding: 16px 16px calc(20px + env(safe-area-inset-bottom, 0px));
   max-height: 82vh;
   overflow: auto;
@@ -578,7 +591,7 @@ label.lbl {
   width: 140px;
   height: 140px;
   object-fit: cover;
-  background: #161616;
+  background: var(--surface);
 }
 
 .mini-card p {
@@ -622,6 +635,12 @@ label.lbl {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.sell-header-account {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .sell-nav-link {
@@ -720,7 +739,7 @@ label.lbl {
 
 .sell-brief {
   text-align: left;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
   border: 1px solid var(--faint);
   border-radius: 12px;
   padding: 16px 18px;
@@ -1014,7 +1033,7 @@ label.lbl {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: #161616;
+  background: var(--surface);
 }
 
 .cover-badge {
@@ -1023,6 +1042,7 @@ label.lbl {
   left: 4px;
   font-size: 10px;
   background: var(--blue);
+  color: #fff;
   padding: 2px 6px;
 }
 
@@ -1148,7 +1168,7 @@ label.lbl {
   gap: 4px;
   padding: 4px;
   margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--surface);
   border: 1px solid var(--faint);
   border-radius: 10px;
   max-width: 360px;
@@ -1214,7 +1234,7 @@ label.lbl {
 
 .stat-card--link:hover {
   border-color: var(--brand);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
 }
 
 .dashboard-header h1 {
@@ -1274,7 +1294,7 @@ label.lbl {
   width: 56px;
   height: 56px;
   object-fit: cover;
-  background: #161616;
+  background: var(--surface);
 }
 
 .product-info {
@@ -1326,7 +1346,7 @@ label.lbl {
 }
 
 .product-form-panel {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--surface);
   border: 1px solid var(--faint);
   border-radius: 12px;
   padding: 18px 16px 20px;
@@ -1358,7 +1378,7 @@ label.lbl {
   color: var(--muted);
   font-size: 15px;
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--surface);
 }
 
 .photo-grid-add:hover {
@@ -1486,7 +1506,7 @@ select.field {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
-  background: #161616;
+  background: var(--surface);
 }
 
 .before-after figcaption {
@@ -1518,7 +1538,7 @@ select.field {
   width: 100%;
   min-height: 52px;
   padding: 0 20px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--faint);
   color: var(--white);
   border: 2px solid var(--faint);
   border-radius: 6px;
@@ -1572,7 +1592,7 @@ select.field {
 }
 
 .btn-oauth.btn-google {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--faint);
   color: var(--white);
 }
 
@@ -1735,7 +1755,7 @@ select.field {
     position: sticky;
     top: 0;
     height: 100dvh;
-    background: #0a0a0a;
+    background: var(--black);
   }
 
   .stall-main {
@@ -1810,7 +1830,7 @@ select.field {
     border: 1px solid var(--faint);
     border-radius: 12px;
     padding: 16px 18px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface);
   }
 
   .shop-panel h2 {
@@ -1826,7 +1846,7 @@ select.field {
     border: 1px solid var(--faint);
     border-radius: 12px;
     padding: 16px 18px;
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--surface);
   }
 
   .order-card h2 {
@@ -1925,7 +1945,7 @@ select.field {
 }
 
 .stall-sidebar-link:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--faint);
   color: var(--white);
 }
 
@@ -2047,3 +2067,21 @@ select.field {
   flex-shrink: 0;
   text-align: center;
 }
+
+[data-theme="light"] .skel {
+  background: #ececef;
+}
+
+[data-theme="light"] .skel::after {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.7),
+    transparent
+  );
+}
+
+[data-theme="light"] .err {
+  color: #b42318;
+}
+

@@ -17,7 +17,9 @@ import {
 } from "../lib/onboarding";
 import { stepTitleI18n, shopT } from "../lib/i18n";
 import { shopIdFromUid } from "../lib/accountId";
+import { languageFromSeller, languageToSeller } from "../lib/sharedPrefs";
 import { useAuth } from "../store/auth";
+import { loadSettings, saveSettings } from "../store/settings";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { formatTzPhone } from "../lib/validation";
 import {
@@ -54,6 +56,19 @@ export function OnboardingPage() {
     setDraft(next);
     saveDraft(next);
     setSaved(true);
+  }, []);
+
+  useEffect(() => {
+    const pref = languageToSeller(loadSettings().language);
+    setDraft((current) => {
+      if (current.step3.language === pref) return current;
+      const next = {
+        ...current,
+        step3: { ...current.step3, language: pref },
+      };
+      saveDraft(next);
+      return next;
+    });
   }, []);
 
   useEffect(() => {
@@ -127,7 +142,10 @@ export function OnboardingPage() {
       title={stepTitleI18n(step, draft.step3.language)}
       draftSaved={saved}
       language={draft.step3.language}
-      onLanguageChange={(language) => updateStep("step3", { language })}
+      onLanguageChange={(language) => {
+        saveSettings({ language: languageFromSeller(language) });
+        updateStep("step3", { language });
+      }}
       onBack={() => {
         if (step > 1) navigate(`/onboarding/${step - 1}`);
         else navigate("/");

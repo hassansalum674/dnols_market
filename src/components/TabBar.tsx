@@ -6,7 +6,8 @@ import { useAuth } from "../store/auth";
 import { UserAvatar } from "./UserAvatar";
 import { userDisplayName } from "../lib/userDisplay";
 import { BrandLogo } from "./BrandLogo";
-import { SELLER_URL } from "../lib/urls";
+import { SellerPortalLink } from "./SellerPortalLink";
+import { useI18n } from "../store/i18n";
 
 const buyer = [
   { to: "/", label: "Home", end: true },
@@ -124,6 +125,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
   const { count } = useCart();
   const { user, loading } = useAuth();
   const { openBasket } = useCheckoutSheet();
+  const { t } = useI18n();
   const displayName = userDisplayName(user);
 
   return (
@@ -150,9 +152,9 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
             </>
           )}
         </nav>
-        <a className="header-seller" href={SELLER_URL} rel="noopener noreferrer">
-          Become a seller
-        </a>
+        <SellerPortalLink className="header-seller">
+          {t("becomeASeller")}
+        </SellerPortalLink>
         <nav className="header-nav" aria-label="Account">
           <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}>
             Home

@@ -4,6 +4,7 @@ import {
   validateMobileMoneyNumber,
   validateNida,
 } from "./validation";
+import { languageToSeller, readSharedPrefs } from "./sharedPrefs";
 
 export const TOTAL_STEPS = 6;
 
@@ -27,7 +28,7 @@ export function emptyDraft(): OnboardingDraft {
       primaryPhone: "",
       whatsappSame: true,
       whatsappPhone: "",
-      language: "english",
+      language: languageToSeller(readSharedPrefs().language ?? "en"),
     },
     step4: {
       legalName: "",

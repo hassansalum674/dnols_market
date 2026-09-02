@@ -1,7 +1,9 @@
 import { Link, useLocation } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
 import { DASHBOARD_PATH, PRODUCTS_PATH } from "../lib/shopRoutes";
+import { publicAccountId } from "../lib/accountId";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
 import { loadDraft, loadProfile } from "../storage";
 
 type Props = {
@@ -10,10 +12,14 @@ type Props = {
   hideSellerCta?: boolean;
 };
 
-function sellerNavLabel(email: string | null, displayName: string | null): string {
+function sellerNavLabel(
+  email: string | null,
+  displayName: string | null,
+  fallback: string,
+): string {
   if (displayName?.trim()) return displayName.trim();
-  if (email) return email.split("@")[0] ?? "My shop";
-  return "My shop";
+  if (email) return email.split("@")[0] ?? fallback;
+  return fallback;
 }
 
 export function SellHeader({
@@ -23,6 +29,7 @@ export function SellHeader({
 }: Props) {
   const { pathname } = useLocation();
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const profile = loadProfile();
   const inOnboarding = pathname.startsWith("/onboarding");
   const hasDraft = Boolean(loadDraft());
@@ -34,27 +41,33 @@ export function SellHeader({
     <header className="sell-header">
       <div className="sell-header-row">
         <Link to="/" className="sell-logo">
-          <BrandLogo variant="dark" className="sell-wordmark" height={34} />
+          <BrandLogo className="sell-wordmark" height={34} />
         </Link>
         <nav className="sell-nav">
           {loading ? (
-            <span className="sell-nav-link sell-nav-muted">Loading…</span>
+            <span className="sell-nav-link sell-nav-muted">{t("loading")}</span>
           ) : signedIn ? (
             <Link to={shopHome} className="sell-nav-link sell-nav-signed">
-              {sellerNavLabel(user!.email, user!.displayName)}
+              {sellerNavLabel(user!.email, user!.displayName, t("myShop"))}
             </Link>
           ) : (
             <Link to={signInTo} className="sell-nav-link">
-              Sign in
+              {t("signIn")}
             </Link>
           )}
           {showSellerCta && !signedIn && (
             <Link to={becomeSellerTo} className="sell-nav-cta">
-              Become a seller
+              {t("becomeASeller")}
             </Link>
           )}
         </nav>
       </div>
+      {signedIn && user && (
+        <p className="sell-header-account">
+          {t("signedInAs")} {user.email || user.displayName} ·{" "}
+          {publicAccountId(user.uid)}
+        </p>
+      )}
     </header>
   );
 }

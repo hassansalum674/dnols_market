@@ -1,7 +1,9 @@
 import { Link, NavLink } from "react-router-dom";
 import { BrandLogo } from "./BrandLogo";
+import { BuyerPortalLink } from "./BuyerPortalLink";
 import { PRODUCT_NEW_PATH } from "../lib/productRoutes";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
 
 const links = [
   { to: "/stall", label: "Today", end: true },
@@ -17,12 +19,13 @@ type Props = {
 
 export function StallSidebar({ pickupCount }: Props) {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
 
   return (
     <aside className="stall-sidebar" aria-label="Seller navigation">
       <div className="stall-sidebar-brand">
-        <BrandLogo variant="dark" className="stall-sidebar-logo" height={32} />
-        <p className="stall-sidebar-tag">Seller portal</p>
+        <BrandLogo className="stall-sidebar-logo" height={32} />
+        <p className="stall-sidebar-tag">{t("sellerPortal")}</p>
         {!loading && user && (
           <p className="stall-sidebar-user">
             {user.displayName || user.email || "Signed in"}
@@ -50,13 +53,9 @@ export function StallSidebar({ pickupCount }: Props) {
         <Link to={PRODUCT_NEW_PATH} className="stall-sidebar-link stall-sidebar-link--add">
           + Add product
         </Link>
-        <a
-          href="https://dnols.com"
-          className="stall-sidebar-link stall-sidebar-link--muted"
-          rel="noopener noreferrer"
-        >
-          Browse as buyer
-        </a>
+        <BuyerPortalLink className="stall-sidebar-link stall-sidebar-link--muted">
+          {t("browseAsBuyer")}
+        </BuyerPortalLink>
       </div>
     </aside>
   );

@@ -5,7 +5,8 @@ import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { StatusScreen } from "../components/EmptyState";
 import { PLACE_LABEL } from "../lib/format";
-import { SELLER_URL } from "../lib/urls";
+import { SellerPortalLink } from "../components/SellerPortalLink";
+import { useI18n } from "../store/i18n";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
 
 function fromParams(sp: URLSearchParams): ListingFilters {
@@ -49,6 +50,7 @@ const SIDEBAR_CATS: { id: Category | ""; label: string }[] = [
 ];
 
 export function HomePage() {
+  const { t } = useI18n();
   const [sp, setSp] = useSearchParams();
   const filters = useMemo(() => fromParams(sp), [sp]);
   const [draft, setDraft] = useState(filters);
@@ -103,13 +105,9 @@ export function HomePage() {
             Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
           </p>
         </div>
-        <a
-          className="btn home-seller-cta"
-          href={SELLER_URL}
-          rel="noopener noreferrer"
-        >
-          Become a seller
-        </a>
+        <SellerPortalLink className="btn home-seller-cta">
+          {t("becomeASeller")}
+        </SellerPortalLink>
       </section>
 
       <div className="marketplace-layout">

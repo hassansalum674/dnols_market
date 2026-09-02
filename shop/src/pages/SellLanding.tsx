@@ -1,30 +1,33 @@
 import { Link } from "react-router-dom";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
+import { publicAccountId } from "../lib/accountId";
 import { SellHeader } from "../components/SellHeader";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
 import { loadDraft, loadProfile } from "../storage";
 
 export function SellLandingPage() {
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const profile = loadProfile();
   const draft = loadDraft();
   const signedIn = Boolean(user);
 
   let ctaPath = "/onboarding";
-  let ctaLabel = "Start";
+  let ctaLabel = t("start");
 
   if (profile?.status === "active") {
     ctaPath = DASHBOARD_PATH;
-    ctaLabel = "Go to your shop";
+    ctaLabel = t("goToShop");
   } else if (profile?.status === "pending_review") {
     ctaPath = "/pending";
-    ctaLabel = "View application";
+    ctaLabel = t("viewApplication");
   } else if (profile?.status === "rejected") {
     ctaPath = "/rejected";
-    ctaLabel = "Resubmit";
+    ctaLabel = t("resubmit");
   } else if (draft) {
     ctaPath = `/onboarding/${draft.currentStep}`;
-    ctaLabel = "Continue";
+    ctaLabel = t("continue");
   }
 
   return (
@@ -38,22 +41,21 @@ export function SellLandingPage() {
           width={72}
           height={72}
         />
-        <h1>Sell from Kariakoo</h1>
-        <p className="sell-hero-sub">
-          List your stall on Dnols. Buyers pay upfront, pick up in person, and you
-          get paid after handover.
-        </p>
+        <h1>{t("sellHeroTitle")}</h1>
+        <p className="sell-hero-sub">{t("sellHeroSub")}</p>
 
         <div className="sell-brief">
           <p>
-            We verify every shop — you will need your <strong>NIDA or passport</strong>,
-            stall location in Kariakoo, and a <strong>mobile money payout</strong> number.
-            Review usually takes up to 24 hours.
+            {t("sellBrief")}
           </p>
-          <p className="muted">
-            Your draft saves automatically if you leave. Sign in with Google or email
-            to continue later on any device.
-          </p>
+          <p className="muted">{t("sellDraftHint")}</p>
+          {signedIn && user && (
+            <p className="muted">
+              {t("signedInAs")} {user.email || user.displayName}
+              {" · "}
+              {publicAccountId(user.uid)}
+            </p>
+          )}
         </div>
 
         <Link to={ctaPath} className="btn sell-cta">
@@ -62,9 +64,9 @@ export function SellLandingPage() {
 
         {!loading && !signedIn && (
           <p className="sell-signin-hint">
-            Already a seller?{" "}
+            {t("alreadySeller")}{" "}
             <Link to="/signin" className="text-link">
-              Sign in
+              {t("signIn")}
             </Link>
           </p>
         )}

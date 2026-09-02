@@ -5,11 +5,13 @@ import { SellHeader } from "../components/SellHeader";
 import { isValidTzPhone, normalizeTzPhone } from "../lib/validation";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
 import { loadDraft, loadProfile, saveSession } from "../storage";
 
 export function SignInPage() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
+  const { t } = useI18n();
   const [phone, setPhone] = useState("");
   const [err, setErr] = useState<string | null>(null);
 
@@ -45,7 +47,7 @@ export function SignInPage() {
       <div className="sell-landing">
         <SellHeader />
         <main className="page auth-page signin-page">
-          <p className="muted">Signed in — taking you to your shop…</p>
+          <p className="muted">{t("signedInTakingYou")}</p>
         </main>
       </div>
     );
@@ -65,8 +67,8 @@ export function SignInPage() {
       <SellHeader />
       <main className="page auth-page signin-page">
         <SignInPanel
-          title="Seller sign in"
-          subtitle="Use Google or email. You can also continue with the phone number you registered with."
+          title={t("sellerSignIn")}
+          subtitle={t("sellerSignInSub")}
         />
 
         <p className="auth-divider">or use phone</p>

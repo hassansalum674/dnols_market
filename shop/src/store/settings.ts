@@ -8,11 +8,9 @@ import {
 } from "../lib/sharedPrefs";
 
 export type ThemeMode = "dark" | "light" | "system";
-export type TextSize = "normal" | "large";
 
 export type AppSettings = {
   theme: ThemeMode;
-  textSize: TextSize;
   language: AppLanguage;
 };
 
@@ -20,7 +18,6 @@ const KEY = "dnols.settings.v1";
 
 const DEFAULTS: AppSettings = {
   theme: "light",
-  textSize: "normal",
   language: "en",
 };
 
@@ -99,7 +96,6 @@ function setThemeColor(theme: "dark" | "light") {
 export function applySettings(s: AppSettings = loadSettings()) {
   const theme = resolvedTheme(s.theme);
   document.documentElement.dataset.theme = theme;
-  document.documentElement.dataset.textSize = s.textSize;
   document.documentElement.lang = s.language === "sw" ? "sw" : "en";
   setThemeColor(theme);
 }

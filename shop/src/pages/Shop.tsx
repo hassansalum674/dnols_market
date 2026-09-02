@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { getHealth, getOrder, getPlaces } from "../api";
-import { BUYER_URL } from "../lib/urls";
+import { BuyerPortalLink } from "../components/BuyerPortalLink";
 import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
 import { useShopData } from "../shopData";
+import { useI18n } from "../store/i18n";
 import type { Place, PayoutMock, ShopHours } from "../types";
 import { formatTzs } from "./errors";
 
 export function ShopPage() {
+  const { t } = useI18n();
   const { saved } = useShopData();
   const [place, setPlace] = useState<Place | null>(null);
   const [online, setOnline] = useState<boolean | null>(null);
@@ -145,9 +147,9 @@ export function ShopPage() {
         </section>
       </div>
 
-      <a className="buy-link" href={BUYER_URL} rel="noopener noreferrer">
-        Switch to shopping on dnols.com
-      </a>
+      <BuyerPortalLink className="buy-link">
+        {t("switchToShopping")}
+      </BuyerPortalLink>
     </div>
   );
 }

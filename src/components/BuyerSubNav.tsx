@@ -1,9 +1,11 @@
 import { Link, useLocation, useSearchParams } from "react-router-dom";
-import { SELLER_URL } from "../lib/urls";
+import { SellerPortalLink } from "./SellerPortalLink";
+import { useI18n } from "../store/i18n";
 
 export function BuyerSubNav() {
   const { pathname } = useLocation();
   const [sp] = useSearchParams();
+  const { t } = useI18n();
   const cat = sp.get("cat") || "";
   const onHome = pathname === "/";
 
@@ -29,9 +31,9 @@ export function BuyerSubNav() {
         <Link to="/orders" className={tabClass(pathname === "/orders")}>
           Orders
         </Link>
-        <a href={SELLER_URL} className="subnav-seller" rel="noopener noreferrer">
-          Become a seller
-        </a>
+        <SellerPortalLink className="subnav-seller">
+          {t("becomeASeller")}
+        </SellerPortalLink>
       </div>
     </nav>
   );

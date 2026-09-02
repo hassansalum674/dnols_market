@@ -74,6 +74,9 @@ const EN = {
   account: "Account",
   legal: "Legal",
   loading: "Loading…",
+  becomeASeller: "Become a seller",
+  sameAccountHint:
+    "One account is both buyer and seller. Sign in on the seller site with the same Google or email you use here.",
 };
 
 const SW: typeof EN = {
@@ -150,6 +153,9 @@ const SW: typeof EN = {
   account: "Akaunti",
   legal: "Sheria",
   loading: "Inapakia…",
+  becomeASeller: "Kuwa muuzaji",
+  sameAccountHint:
+    "Akaunti moja ni ya mnunuzi na muuzaji. Ingia kwenye tovuti ya kuuza kwa Google au barua pepe ile ile unayotumia hapa.",
 };
 
 export const I18N = { en: EN, sw: SW } as const;

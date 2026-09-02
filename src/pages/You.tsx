@@ -11,7 +11,7 @@ import { loadProfile } from "../lib/profile";
 import { providerLabel, userDisplayName } from "../lib/userDisplay";
 import { formatTzPhoneDisplay } from "../lib/phone";
 import { publicAccountId } from "../lib/accountId";
-import { SELLER_URL } from "../lib/urls";
+import { SellerPortalLink } from "../components/SellerPortalLink";
 import { useI18n } from "../store/i18n";
 
 export function YouPage() {
@@ -167,17 +167,14 @@ export function YouPage() {
             ›
           </span>
         </Link>
-        <a
-          href={SELLER_URL}
-          className="account-links-item"
-          rel="noopener noreferrer"
-        >
-          <span>Become a seller</span>
+        <SellerPortalLink className="account-links-item">
+          <span>{t("becomeASeller")}</span>
           <span className="account-links-chevron" aria-hidden>
             ›
           </span>
-        </a>
+        </SellerPortalLink>
       </nav>
+      <p className="hint">{t("sameAccountHint")}</p>
 
       {user && (
         <button
