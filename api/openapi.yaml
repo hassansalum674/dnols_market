@@ -103,6 +103,13 @@ paths:
                 listingIds:
                   type: array
                   items: { type: string }
+                fulfillment:
+                  type: string
+                  enum: [pickup, delivery]
+                deliveryAddress:
+                  type: string
+                deliveryPhone:
+                  type: string
   /orders/reserve:
     post:
       summary: Optional unpaid order for demo

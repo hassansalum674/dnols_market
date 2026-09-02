@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { SellerStallPreview } from "./SellerStallPreview";
@@ -13,11 +13,14 @@ import {
   type BillingCard,
 } from "../lib/billingCards";
 import {
+  loadLastAddress,
   loadLastDeliveryPhone,
+  loadLastFulfillment,
   loadLastPayMethod,
   loadLastPayPhone,
   PAY_METHODS,
   saveCheckoutPrefs,
+  type Fulfillment,
 } from "../lib/checkout";
 import {
   formatTzPhoneDisplay,
@@ -51,12 +54,20 @@ export function CheckoutSheet() {
   const [phone, setPhone] = useState("");
   const [deliveryPhone, setDeliveryPhone] = useState("");
   const [useCustomDelivery, setUseCustomDelivery] = useState(false);
+  const [fulfillment, setFulfillment] = useState<Fulfillment | null>(null);
+  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [billingCards, setBillingCards] = useState<BillingCard[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const prefsHydrated = useRef(false);
 
   useEffect(() => {
-    if (step === "closed") return;
+    if (step === "closed") {
+      prefsHydrated.current = false;
+      return;
+    }
+    if (prefsHydrated.current) return;
+    prefsHydrated.current = true;
     setMethod(loadLastPayMethod());
     const savedPay = loadLastPayPhone();
     const savedDelivery = loadLastDeliveryPhone();
@@ -65,6 +76,8 @@ export function CheckoutSheet() {
     const deliveryDefault = profile.deliveryPhone || savedDelivery || payDefault;
     setPhone(payDefault);
     setDeliveryPhone(deliveryDefault);
+    setFulfillment(profile.fulfillment || loadLastFulfillment());
+    setDeliveryAddress(profile.deliveryAddress || loadLastAddress());
     setUseCustomDelivery(
       Boolean(
         deliveryDefault &&
@@ -90,6 +103,13 @@ export function CheckoutSheet() {
       return () => {
         document.body.style.overflow = "";
       };
+    }
+  }, [step]);
+
+  useEffect(() => {
+    if (step === "pay" || step === "basket" || step === "success") {
+      const el = document.querySelector(".checkout-sheet");
+      if (el) el.scrollTop = 0;
     }
   }, [step]);
 
@@ -131,12 +151,23 @@ export function CheckoutSheet() {
       setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
       return;
     }
+    if (!fulfillment) {
+      setErr("Choose self pickup or delivery to your location.");
+      return;
+    }
     const normalizedPay = normalizeTzPhone(phone);
     const deliveryRaw = useCustomDelivery ? deliveryPhone : phone;
     if (!isValidTzPhone(deliveryRaw)) {
       setErr(
-        "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+        fulfillment === "pickup"
+          ? "Enter a valid contact number (+255 7XX XXX XXX)."
+          : "Enter a valid delivery contact number (+255 7XX XXX XXX).",
       );
+      return;
+    }
+    const address = deliveryAddress.trim();
+    if (fulfillment === "delivery" && address.length < 4) {
+      setErr("Enter the area or street where we should deliver.");
       return;
     }
     const normalizedDelivery = normalizeTzPhone(deliveryRaw);
@@ -149,11 +180,21 @@ export function CheckoutSheet() {
         payMethod: method,
         phone: normalizedPay,
         deliveryPhone: normalizedDelivery,
+        fulfillment,
+        deliveryAddress: fulfillment === "delivery" ? address : undefined,
       });
-      saveCheckoutPrefs(normalizedPay, method, normalizedDelivery);
+      saveCheckoutPrefs(
+        normalizedPay,
+        method,
+        normalizedDelivery,
+        fulfillment,
+        fulfillment === "delivery" ? address : undefined,
+      );
       saveProfile(user.uid, {
         phone: normalizedPay,
         deliveryPhone: normalizedDelivery,
+        fulfillment,
+        deliveryAddress: fulfillment === "delivery" ? address : undefined,
       });
       upsertBillingCardFromCheckout(
         user.uid,
@@ -302,7 +343,13 @@ export function CheckoutSheet() {
                     <span>{formatTsh(totalTzs)}</span>
                   </div>
                   <div className="uc-totals-row">
-                    <span>Delivery to you</span>
+                    <span>
+                      {fulfillment === "pickup"
+                        ? "Self pickup"
+                        : fulfillment === "delivery"
+                          ? "Delivery to you"
+                          : "Pickup or delivery"}
+                    </span>
                     <span className="uc-free">FREE</span>
                   </div>
                   <div className="uc-totals-row uc-totals-total">
@@ -311,12 +358,29 @@ export function CheckoutSheet() {
                   </div>
                 </section>
 
-                <section className="uc-pay-section" aria-label="Unified checkout">
-                  <p className="uc-pay-label">Unified checkout</p>
+                <section className="uc-pay-section" aria-label="How to receive">
+                  <p className="uc-pay-label">How do you want to receive this?</p>
+                  <div className="fulfillment-cards">
+                    <button
+                      type="button"
+                      className={`fulfillment-card ${fulfillment === "pickup" ? "on" : ""}`}
+                      onClick={() => setFulfillment("pickup")}
+                    >
+                      <strong>Self pickup</strong>
+                      <span>Walk to the stall in Kariakoo after you pay.</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={`fulfillment-card ${fulfillment === "delivery" ? "on" : ""}`}
+                      onClick={() => setFulfillment("delivery")}
+                    >
+                      <strong>Delivery</strong>
+                      <span>We bring it to your location in Dar es Salaam.</span>
+                    </button>
+                  </div>
                   <p className="uc-pay-hint">
-                    Dnols notifies the seller and coordinates delivery to you.
-                    Funds stay in escrow until you receive the item. Saved billing
-                    cards make repeat checkout faster.
+                    Funds stay in escrow until you receive the item. Then choose
+                    a payment wallet below.
                   </p>
                   <div className="uc-pay-buttons">
                     {PAY_METHODS.map((m, i) => (
@@ -381,6 +445,60 @@ export function CheckoutSheet() {
               </div>
             )}
 
+            <section className="uc-panel" aria-label="Receive order">
+              <div className="uc-panel-head">
+                <h2 className="uc-panel-label">Receive your order</h2>
+              </div>
+              <div className="fulfillment-cards">
+                <button
+                  type="button"
+                  className={`fulfillment-card ${fulfillment === "pickup" ? "on" : ""}`}
+                  onClick={() => {
+                    setFulfillment("pickup");
+                    setErr(null);
+                  }}
+                >
+                  <strong>Self pickup</strong>
+                  <span>Collect it yourself at the stall.</span>
+                </button>
+                <button
+                  type="button"
+                  className={`fulfillment-card ${fulfillment === "delivery" ? "on" : ""}`}
+                  onClick={() => {
+                    setFulfillment("delivery");
+                    setErr(null);
+                  }}
+                >
+                  <strong>Delivery</strong>
+                  <span>Bring it to my location.</span>
+                </button>
+              </div>
+              {fulfillment === "pickup" && (
+                <p className="hint">
+                  After payment we show the stall address. Bring your pickup
+                  code.
+                </p>
+              )}
+              {fulfillment === "delivery" && (
+                <>
+                  <label className="field-label" htmlFor="sheet-delivery-address">
+                    Your location
+                  </label>
+                  <textarea
+                    id="sheet-delivery-address"
+                    className="sheet-field fulfillment-address"
+                    rows={2}
+                    placeholder="Area and street, e.g. Kariakoo, Uhuru Street"
+                    value={deliveryAddress}
+                    onChange={(e) => {
+                      setDeliveryAddress(e.target.value);
+                      setErr(null);
+                    }}
+                  />
+                </>
+              )}
+            </section>
+
             {billingCards.length > 0 && (
               <section className="uc-panel" aria-label="Saved billing cards">
                 <div className="uc-panel-head">
@@ -441,12 +559,14 @@ export function CheckoutSheet() {
 
             <section className="uc-panel">
               <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Delivery contact</h2>
+                <h2 className="uc-panel-label">
+                  {fulfillment === "pickup" ? "Contact number" : "Delivery contact"}
+                </h2>
               </div>
               <p className="hint delivery-contact-note">
-                Dnols will call this number when your order is ready. We share
-                it with the seller through Dnols only — not for direct personal
-                contact between you and the seller.
+                {fulfillment === "pickup"
+                  ? "We may call this number if the stall needs to reach you."
+                  : "Dnols will call this number when your order is on the way. We share it with the seller through Dnols only."}
               </p>
 
               <label className="checkout-toggle">
@@ -461,7 +581,11 @@ export function CheckoutSheet() {
                     setErr(null);
                   }}
                 />
-                <span>Use a different number to receive delivery</span>
+                <span>
+                  {fulfillment === "pickup"
+                    ? "Use a different contact number"
+                    : "Use a different number to receive delivery"}
+                </span>
               </label>
 
               {useCustomDelivery ? (
@@ -583,22 +707,42 @@ export function CheckoutSheet() {
               <p className="checkout-code-value">{order.pickupCode}</p>
               <p className="hint">
                 {isValidPickupCode(order.pickupCode)
-                  ? "Keep this 6-character code — Dnols may ask for it when coordinating delivery."
+                  ? order.fulfillment === "pickup"
+                    ? "Keep this 6-character code — show it at the stall."
+                    : "Keep this 6-character code — Dnols may ask for it when coordinating delivery."
                   : "Your checkout code for this order."}
               </p>
             </section>
 
             <section className="uc-panel">
-              <h2 className="uc-panel-label">Delivery to you</h2>
-              <p className="uc-panel-strong">
-                {order.deliveryPhone
-                  ? formatTzPhoneDisplay(order.deliveryPhone)
-                  : displayDeliveryPhone}
-              </p>
-              <p className="hint">
-                Dnols will contact you on this number. The seller is notified
-                through Dnols — you do not need to call them directly.
-              </p>
+              <h2 className="uc-panel-label">
+                {order.fulfillment === "pickup"
+                  ? "Self pickup"
+                  : "Delivery to you"}
+              </h2>
+              {order.fulfillment === "pickup" ? (
+                <>
+                  <p className="uc-panel-strong">Collect at the stall</p>
+                  <p className="hint">
+                    Show your checkout code at handover. Stall details are below.
+                  </p>
+                </>
+              ) : (
+                <>
+                  {order.deliveryAddress && (
+                    <p className="uc-panel-strong">{order.deliveryAddress}</p>
+                  )}
+                  <p className="uc-panel-strong">
+                    {order.deliveryPhone
+                      ? formatTzPhoneDisplay(order.deliveryPhone)
+                      : displayDeliveryPhone}
+                  </p>
+                  <p className="hint">
+                    Dnols will contact you on this number and bring the order to
+                    your location.
+                  </p>
+                </>
+              )}
             </section>
 
             {primaryDirection ? (
@@ -652,7 +796,7 @@ export function CheckoutSheet() {
               </div>
               <p className="hint">
                 {formatTsh(order.totalTzs)} held in escrow until you confirm
-                delivery.
+                {order.fulfillment === "pickup" ? " pickup." : " delivery."}
               </p>
             </section>
 

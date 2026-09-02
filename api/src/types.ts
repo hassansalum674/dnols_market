@@ -79,4 +79,6 @@ export type Order = {
   payMethod?: PayMethod;
   payPhone?: string;
   deliveryPhone?: string;
+  fulfillment?: "pickup" | "delivery";
+  deliveryAddress?: string;
 };

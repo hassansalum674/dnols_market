@@ -49,13 +49,16 @@ export function ProductPage() {
           )}
           {detail.paid && detail.directions ? (
             <div className="you-block">
-              <h2>Pickup</h2>
+              <h2>Stall</h2>
               <p>{detail.directions.shopName}</p>
               <p>{detail.directions.streetAddress}</p>
               <p className="hint">{detail.directions.mapsHint}</p>
             </div>
           ) : (
-            <p className="hint">Pay, then Dnols coordinates delivery to you.</p>
+            <p className="hint">
+              Pay, then choose self pickup at the stall or delivery to your
+              location.
+            </p>
           )}
           <button
             type="button"

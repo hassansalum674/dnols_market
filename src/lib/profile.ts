@@ -3,6 +3,9 @@ import { loadLastDeliveryPhone, loadLastPayPhone } from "./checkout";
 export type UserProfile = {
   phone?: string;
   deliveryPhone?: string;
+  deliveryAddress?: string;
+  fulfillment?: "pickup" | "delivery";
+  avatarDataUrl?: string;
 };
 
 function key(uid: string): string {
@@ -20,7 +23,9 @@ export function loadProfile(uid: string): UserProfile {
 export function saveProfile(uid: string, patch: UserProfile): void {
   try {
     const cur = loadProfile(uid);
-    localStorage.setItem(key(uid), JSON.stringify({ ...cur, ...patch }));
+    const next = { ...cur, ...patch };
+    if (patch.avatarDataUrl === "") delete next.avatarDataUrl;
+    localStorage.setItem(key(uid), JSON.stringify(next));
   } catch {
     /* ignore */
   }

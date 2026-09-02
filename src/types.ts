@@ -59,6 +59,10 @@ export type Order = {
   payPhone?: string;
   /** Number Dnols uses to reach the buyer for delivery. */
   deliveryPhone?: string;
+  /** How the buyer receives the order. */
+  fulfillment?: "pickup" | "delivery";
+  /** Street / area for delivery to the buyer. */
+  deliveryAddress?: string;
 };
 
 export type CartLine = {

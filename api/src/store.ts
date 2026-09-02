@@ -62,7 +62,13 @@ export class Store {
 
   createPaidOrder(
     listingIds: string[],
-    opts?: { payMethod?: string; payPhone?: string; deliveryPhone?: string },
+    opts?: {
+      payMethod?: string;
+      payPhone?: string;
+      deliveryPhone?: string;
+      fulfillment?: "pickup" | "delivery";
+      deliveryAddress?: string;
+    },
   ): Order {
     const unique = [...new Set(listingIds)];
     const shopIds = [
@@ -100,6 +106,8 @@ export class Store {
           : undefined,
       payPhone: opts?.payPhone,
       deliveryPhone: opts?.deliveryPhone ?? opts?.payPhone,
+      fulfillment: opts?.fulfillment === "pickup" ? "pickup" : "delivery",
+      deliveryAddress: opts?.deliveryAddress?.trim() || undefined,
     };
     this.orders.set(order.id, order);
     this.tokens.set(order.accessToken, order.id);
