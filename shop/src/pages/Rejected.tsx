@@ -1,6 +1,7 @@
+import { useEffect, useState } from "react";
 import { SellHeader } from "../components/SellHeader";
 import { TOTAL_STEPS } from "../lib/onboarding";
-import { syncShopToApi } from "../lib/shopSync";
+import { syncAllProductsToApi, syncShopToApi } from "../lib/shopSync";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { loadProfile, saveDraft, updateProfileStatus } from "../storage";
 
@@ -50,12 +51,30 @@ export function RejectedPage() {
 
 /** Demo route handlers */
 export function DemoApprovePage() {
-  const profile = updateProfileStatus("active");
-  if (profile) {
-    void syncShopToApi(profile).catch(() => undefined);
-  }
-  window.location.href = DASHBOARD_PATH;
-  return null;
+  const [msg] = useState("Publishing your stall to dnols.com…");
+
+  useEffect(() => {
+    const profile = updateProfileStatus("active");
+    void (async () => {
+      if (profile) {
+        try {
+          await syncShopToApi(profile);
+          await syncAllProductsToApi(profile);
+        } catch {
+          /* Dashboard will retry unsynced listings. */
+        }
+      }
+      window.location.href = DASHBOARD_PATH;
+    })();
+  }, []);
+
+  return (
+    <div className="sell-landing">
+      <main className="page status-page">
+        <p className="muted">{msg}</p>
+      </main>
+    </div>
+  );
 }
 
 export function DemoRejectPage() {

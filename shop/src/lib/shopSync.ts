@@ -3,7 +3,7 @@ import {
   registerShop,
   updateShopLocation,
 } from "../api";
-import { loadProfile, saveProfile, upsertProduct } from "../storage";
+import { loadProducts, loadProfile, saveProfile, upsertProduct } from "../storage";
 import type { SellerProduct, SellerProfile, ShopCategory } from "../types";
 import { formatStallAddress } from "./stallAddress";
 
@@ -70,8 +70,31 @@ export async function syncProductToApi(
     description: product.description.trim(),
     sizes: product.variants.length ? product.variants : undefined,
   });
-  if (res.id && res.id !== product.id) {
-    upsertProduct({ ...product, id: res.id });
+  const listingId = res.id ?? product.id;
+  upsertProduct({
+    ...product,
+    id: listingId,
+    liveOnDnols: true,
+    updatedAt: new Date().toISOString(),
+  });
+  return listingId;
+}
+
+export async function syncAllProductsToApi(
+  profile: SellerProfile,
+): Promise<{ ok: number; failed: number }> {
+  const rows = loadProducts().filter(
+    (p) => p.stock > 0 && (p.coverPhoto || p.photos[0]),
+  );
+  let ok = 0;
+  let failed = 0;
+  for (const product of rows) {
+    try {
+      await syncProductToApi(product, profile);
+      ok += 1;
+    } catch {
+      failed += 1;
+    }
   }
-  return res.id ?? product.id;
+  return { ok, failed };
 }

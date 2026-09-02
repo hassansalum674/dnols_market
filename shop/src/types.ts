@@ -239,6 +239,8 @@ export type SellerProduct = {
   skuCode: string;
   createdAt: string;
   updatedAt: string;
+  /** True after POST /listings succeeds — buyers can see it on dnols.com */
+  liveOnDnols?: boolean;
 };
 
 export type SellerSession = {
