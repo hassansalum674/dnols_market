@@ -125,7 +125,9 @@ export async function fetchListingDetail(
 
 export async function fetchSuggest(q: string): Promise<PublicListing[]> {
   try {
-    const data = await getJson<unknown>(`/search?q=${encodeURIComponent(q)}`);
+    const params = withBuyerGeo(new URLSearchParams());
+    params.set("q", q);
+    const data = await getJson<unknown>(`/search?${params.toString()}`);
     const listings = asList(data);
     return listings.slice(0, 6);
   } catch {
@@ -206,9 +208,12 @@ export async function payOrder(input: {
   }
 }
 
-export async function fetchOrders(): Promise<Order[]> {
+export async function fetchOrders(opts?: { phone?: string }): Promise<Order[]> {
   try {
-    const data = await getJson<unknown>("/orders");
+    const params = new URLSearchParams();
+    if (opts?.phone) params.set("phone", opts.phone);
+    const q = params.toString() ? `?${params.toString()}` : "";
+    const data = await getJson<unknown>(`/orders${q}`);
     if (Array.isArray(data)) return data as Order[];
     if (data && typeof data === "object" && Array.isArray((data as { orders?: unknown }).orders)) {
       return (data as { orders: Order[] }).orders;

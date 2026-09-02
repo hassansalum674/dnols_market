@@ -34,6 +34,39 @@ export class Store {
   readonly orders: Map<string, Order> = new Map();
   /** accessToken -> orderId (paid orders only) */
   readonly tokens: Map<string, string> = new Map();
+  onDirty?: () => void;
+
+  private touch(): void {
+    this.onDirty?.();
+  }
+
+  snapshot(): { shops: Shop[]; listings: Listing[]; orders: Order[] } {
+    return {
+      shops: [...this.shops.values()],
+      listings: [...this.listings.values()],
+      orders: [...this.orders.values()],
+    };
+  }
+
+  replaceAll(data: {
+    shops: Shop[];
+    listings: Listing[];
+    orders: Order[];
+  }): void {
+    this.shops.clear();
+    this.listings.clear();
+    this.orders.clear();
+    this.tokens.clear();
+    this.carts.clear();
+    for (const shop of data.shops) this.shops.set(shop.id, shop);
+    for (const listing of data.listings) this.listings.set(listing.id, listing);
+    for (const order of data.orders) {
+      this.orders.set(order.id, order);
+      if (this.isPaid(order.status) && order.accessToken) {
+        this.tokens.set(order.accessToken, order.id);
+      }
+    }
+  }
 
   allListings(): Listing[] {
     return [...this.listings.values()];
@@ -76,6 +109,7 @@ export class Store {
         input.locationCapturedAt ?? prev?.locationCapturedAt,
     };
     this.shops.set(shopId, shop);
+    this.touch();
     return shop;
   }
 
@@ -109,6 +143,7 @@ export class Store {
       trendingScore: prev?.trendingScore ?? 50,
     };
     this.listings.set(listingId, listing);
+    this.touch();
     return listing;
   }
 
@@ -168,6 +203,7 @@ export class Store {
     };
     this.orders.set(order.id, order);
     this.tokens.set(order.accessToken, order.id);
+    this.touch();
     return order;
   }
 
@@ -199,6 +235,7 @@ export class Store {
       handedOverAt: null,
     };
     this.orders.set(order.id, order);
+    this.touch();
     return order;
   }
 
@@ -229,6 +266,7 @@ export class Store {
     }
     order.status = "handed_over";
     order.handedOverAt = new Date().toISOString();
+    this.touch();
     return order;
   }
 
@@ -239,7 +277,26 @@ export class Store {
       throw new Error("bad_state");
     }
     order.status = "rejected_refund";
+    this.touch();
     return order;
+  }
+
+  ordersForShop(shopId: string): Order[] {
+    return [...this.orders.values()]
+      .filter((o) => o.shopIds.includes(shopId))
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+  }
+
+  ordersForPhone(phone: string): Order[] {
+    const digits = phone.replace(/\D/g, "");
+    if (!digits) return [];
+    return [...this.orders.values()]
+      .filter((o) => {
+        const pay = (o.payPhone ?? "").replace(/\D/g, "");
+        const delivery = (o.deliveryPhone ?? "").replace(/\D/g, "");
+        return pay === digits || delivery === digits;
+      })
+      .sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
   }
 
   isPaid(status: EscrowStatus): boolean {

@@ -1,9 +1,9 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { Outlet, useLocation, useNavigation } from "react-router-dom";
-import { getOrder } from "./api";
 import { StallSidebar } from "./components/StallSidebar";
 import { TabBar } from "./components/TabBar";
 import { RoutePulse, Splash } from "./components/Splash";
+import { countHeldPickups } from "./lib/shopOrders";
 import { useShopData } from "./shopData";
 import { markSplashSeen, splashSeen } from "./storage";
 
@@ -42,14 +42,16 @@ export function AppLayout() {
 
   useEffect(() => {
     let cancelled = false;
-    void Promise.all(
-      saved.map((s) => getOrder(s.orderId).catch(() => null)),
-    ).then((rows) => {
-      if (cancelled) return;
-      setHeld(rows.filter((o) => o?.escrow === "paid_held").length);
-    });
+    const refresh = () => {
+      void countHeldPickups(saved).then((n) => {
+        if (!cancelled) setHeld(n);
+      });
+    };
+    refresh();
+    const tick = window.setInterval(refresh, 12000);
     return () => {
       cancelled = true;
+      window.clearInterval(tick);
     };
   }, [saved]);
 
@@ -58,6 +60,9 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
+      <a className="skip-link" href="#main">
+        Skip to stall
+      </a>
       <div className="app-shell app-shell--stall">
         <StallSidebar pickupCount={held} />
         <div className="stall-main">
@@ -72,7 +77,7 @@ export function AppLayout() {
               <span className="header-sub">Kariakoo</span>
             </div>
           </header>
-          <main className="stall-main-content">
+          <main id="main" className="stall-main-content" tabIndex={-1}>
             {nav.state === "loading" ? (
               <RoutePulse />
             ) : (

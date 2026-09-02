@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { fetchOrders } from "../api/client";
 import { SellerStallPreview } from "../components/SellerStallPreview";
 import { useAuth } from "../store/auth";
-import { PAY_METHODS } from "../lib/checkout";
+import { loadLastPayPhone, PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
-import { formatTzPhoneDisplay } from "../lib/phone";
+import { formatTzPhoneDisplay, normalizeTzPhone } from "../lib/phone";
+import { loadProfile } from "../lib/profile";
 import { getLocalOrders } from "../store/persist";
 import type { Order } from "../types";
 
@@ -28,7 +29,11 @@ export function OrdersPage() {
   useEffect(() => {
     const local = getLocalOrders<Order>();
     setOrders(local);
-    void fetchOrders().then((remote) => {
+    const profilePhone = user?.uid ? loadProfile(user.uid).phone : undefined;
+    const phone = profilePhone || loadLastPayPhone();
+    void fetchOrders({
+      phone: phone ? normalizeTzPhone(phone) : undefined,
+    }).then((remote) => {
       const map = new Map<string, Order>();
       [...local, ...remote].forEach((o) => map.set(o.id, o));
       setOrders(
@@ -37,7 +42,7 @@ export function OrdersPage() {
         ),
       );
     });
-  }, []);
+  }, [user?.uid]);
 
   if (!user) {
     return (

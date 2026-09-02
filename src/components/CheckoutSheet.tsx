@@ -128,15 +128,13 @@ export function CheckoutSheet() {
       return;
     }
     if (!isValidTzPhone(phone)) {
-      setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
+      setErr("Enter a valid Tanzania mobile money number (+255 6XX or 7XX).");
       return;
     }
     const normalizedPay = normalizeTzPhone(phone);
     const deliveryRaw = useCustomDelivery ? deliveryPhone : phone;
     if (!isValidTzPhone(deliveryRaw)) {
-      setErr(
-        "Enter a valid delivery contact number (+255 7XX XXX XXX).",
-      );
+      setErr("Enter a valid delivery contact number (+255 6XX or 7XX).");
       return;
     }
     const normalizedDelivery = normalizeTzPhone(deliveryRaw);
@@ -428,7 +426,7 @@ export function CheckoutSheet() {
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel"
-                placeholder="+255 7XX XXX XXX"
+                placeholder="+255 6XX or 7XX XXX XXX"
                 value={phone}
                 onChange={(e) => {
                   setSelectedCardId(null);
@@ -475,7 +473,7 @@ export function CheckoutSheet() {
                     type="tel"
                     inputMode="tel"
                     autoComplete="tel"
-                    placeholder="+255 7XX XXX XXX"
+                    placeholder="+255 6XX or 7XX XXX XXX"
                     value={deliveryPhone}
                     onChange={(e) => {
                       setDeliveryPhone(e.target.value);

@@ -53,12 +53,14 @@ export function FilterSheet({
           </button>
         </div>
 
-        <p className="sheet-section-label">Category</p>
-        <div className="sheet-options">
+        <p className="sheet-section-label" id="filter-category">Category</p>
+        <div className="sheet-options" role="radiogroup" aria-labelledby="filter-category">
           {CATEGORIES.map((c) => (
             <button
               key={c.label}
               type="button"
+              role="radio"
+              aria-checked={filters.category === c.value}
               className={`sheet-chip ${filters.category === c.value ? "on" : ""}`}
               onClick={() => set({ category: c.value })}
             >
@@ -67,12 +69,14 @@ export function FilterSheet({
           ))}
         </div>
 
-        <p className="sheet-section-label">Walking distance</p>
-        <div className="sheet-options">
+        <p className="sheet-section-label" id="filter-distance">Walking distance</p>
+        <div className="sheet-options" role="radiogroup" aria-labelledby="filter-distance">
           {DISTANCES.map((d) => (
             <button
               key={d.label}
               type="button"
+              role="radio"
+              aria-checked={filters.maxDistance === d.value}
               className={`sheet-chip ${filters.maxDistance === d.value ? "on" : ""}`}
               onClick={() => set({ maxDistance: d.value })}
             >
@@ -81,12 +85,14 @@ export function FilterSheet({
           ))}
         </div>
 
-        <p className="sheet-section-label">Sort by</p>
-        <div className="sheet-options">
+        <p className="sheet-section-label" id="filter-sort">Sort by</p>
+        <div className="sheet-options" role="radiogroup" aria-labelledby="filter-sort">
           {SORTS.map((s) => (
             <button
               key={s.value}
               type="button"
+              role="radio"
+              aria-checked={(filters.sort ?? "nearest") === s.value}
               className={`sheet-chip ${(filters.sort ?? "nearest") === s.value ? "on" : ""}`}
               onClick={() => set({ sort: s.value })}
             >

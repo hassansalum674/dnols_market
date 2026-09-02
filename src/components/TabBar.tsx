@@ -87,6 +87,7 @@ export function TabBar() {
               type="button"
               className="tabbar-cart-btn"
               onClick={openCart}
+              aria-label={count > 0 ? `Cart, ${count} items` : "Cart"}
             >
               <span className="tab-ico">
                 <Ico name={t.label} />
@@ -161,6 +162,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
             type="button"
             className="header-nav-cart"
             onClick={() => openBasket()}
+            aria-label={count > 0 ? `Cart, ${count} items` : "Cart"}
           >
             Cart
             {count > 0 && <span className="header-badge">{count}</span>}

@@ -1,35 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getOrder, handoverOrder } from "../api";
+import { handoverOrder } from "../api";
 import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
+import { loadShopOrderRows, type OrderRow } from "../lib/shopOrders";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
-import type { OrderView, SavedOrder } from "../types";
 import { formatTzs } from "./errors";
-
-type Row = { saved: SavedOrder; live: OrderView | null; err?: string };
 
 export function TodayPage() {
   const { saved, refresh } = useShopData();
-  const [rows, setRows] = useState<Row[] | null>(null);
+  const [rows, setRows] = useState<OrderRow[] | null>(null);
   const [offline, setOffline] = useState(!navigator.onLine);
 
   const load = useCallback(async () => {
-    const next = await Promise.all(
-      saved.map(async (s) => {
-        try {
-          const live = await getOrder(s.orderId);
-          return { saved: s, live };
-        } catch (e) {
-          return {
-            saved: s,
-            live: null,
-            err: e instanceof Error ? e.message : "missing",
-          };
-        }
-      }),
-    );
-    setRows(next);
+    setRows(await loadShopOrderRows(saved));
   }, [saved]);
 
   useEffect(() => {
@@ -44,6 +28,15 @@ export function TodayPage() {
 
   useEffect(() => {
     void load();
+    const tick = window.setInterval(() => void load(), 12000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.clearInterval(tick);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [load]);
 
   const incoming = (rows ?? []).filter((r) => r.live?.escrow === "paid_held");
@@ -116,7 +109,7 @@ export function TodayPage() {
   );
 }
 
-function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
+function PickupCard({ row, onDone }: { row: OrderRow; onDone: () => void }) {
   const live = row.live!;
   const [pin, setPin] = useState("");
   const [busy, setBusy] = useState(false);
@@ -155,6 +148,12 @@ function PickupCard({ row, onDone }: { row: Row; onDone: () => void }) {
           {live.listingIds.length} item{live.listingIds.length === 1 ? "" : "s"}
         </span>
       </div>
+      {live.listingTitles && live.listingTitles.length > 0 && (
+        <p className="hint">{live.listingTitles.join(" · ")}</p>
+      )}
+      {(live.deliveryPhone || live.payPhone) && (
+        <p className="hint">Buyer · {live.deliveryPhone || live.payPhone}</p>
+      )}
       <p className="hint">Ask the buyer for their handover code or checkout code.</p>
       <input
         className="pin-input"

@@ -105,7 +105,7 @@ export function HomePage() {
             Browse stalls near {PLACE_LABEL()}. Nearby first — after you pay, you
             see exactly where the product is.
           </p>
-          <p className="hint">
+          <p className="hint" aria-live="polite">
             {here
               ? "Distances are from where you are now to each stall."
               : locationDenied

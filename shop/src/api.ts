@@ -53,12 +53,51 @@ export async function getListing(id: string): Promise<PublicListing> {
 export async function payOrder(listingIds: string[]): Promise<PayResponse> {
   return json("/orders/pay", {
     method: "POST",
-    body: JSON.stringify({ listingIds }),
+    body: JSON.stringify({
+      listingIds,
+      payMethod: "mpesa",
+      phone: "255712000000",
+      deliveryPhone: "255712000000",
+    }),
   });
 }
 
 export async function getOrder(id: string): Promise<OrderView> {
   return json(`/orders/${encodeURIComponent(id)}`);
+}
+
+export async function fetchShopOrders(shopId: string): Promise<OrderView[]> {
+  const data = await json<{
+    orders?: Array<{
+      orderId: string;
+      escrow: OrderView["escrow"];
+      listingIds: string[];
+      listingTitles?: string[];
+      totalTzs: number;
+      createdAt: string;
+      paidAt: string | null;
+      handedOverAt: string | null;
+      pickupCode?: string;
+      handoverPin?: string;
+      payPhone?: string;
+      deliveryPhone?: string;
+    }>;
+  }>(`/orders?shopId=${encodeURIComponent(shopId)}`);
+  return (data.orders ?? []).map((o) => ({
+    orderId: o.orderId,
+    escrow: o.escrow,
+    listingIds: o.listingIds,
+    listingTitles: o.listingTitles,
+    totalTzs: o.totalTzs,
+    createdAt: o.createdAt,
+    paidAt: o.paidAt,
+    handedOverAt: o.handedOverAt,
+    locationUnlocked: o.escrow === "paid_held" || o.escrow === "handed_over",
+    pickupCode: o.pickupCode,
+    handoverPin: o.handoverPin,
+    payPhone: o.payPhone,
+    deliveryPhone: o.deliveryPhone,
+  }));
 }
 
 export async function handoverOrder(

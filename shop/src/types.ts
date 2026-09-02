@@ -30,6 +30,7 @@ export type OrderView = {
   orderId: string;
   escrow: EscrowStatus;
   listingIds: string[];
+  listingTitles?: string[];
   totalTzs: number;
   createdAt: string;
   paidAt: string | null;
@@ -38,6 +39,8 @@ export type OrderView = {
   pickupCode?: string;
   handoverPin?: string;
   accessToken?: string;
+  payPhone?: string;
+  deliveryPhone?: string;
 };
 
 export type PayResponse = {

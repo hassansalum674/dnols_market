@@ -11,6 +11,11 @@ export function Splash({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
 
   useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      onDone();
+      return;
+    }
     const rotate = window.setInterval(
       () => setI((n) => (n + 1) % LINES.length),
       2800,
