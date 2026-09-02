@@ -167,6 +167,12 @@ export type OnboardingDraft = {
     floor: Floor | "";
     blockName: string;
     landmark: string;
+    /** GPS pin captured at the stall — buyers see this after they pay. */
+    lat: number | null;
+    lng: number | null;
+    accuracyMeters: number | null;
+    capturedAt: string | null;
+    locationSource: "gps" | "kariakoo_fallback" | "";
   };
   step3: {
     primaryPhone: string;

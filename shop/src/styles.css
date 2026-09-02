@@ -791,6 +791,61 @@ label.lbl {
   gap: 4px;
 }
 
+.stall-pin {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 4px 0 16px;
+}
+
+.stall-pin .btn {
+  width: 100%;
+}
+
+.stall-pin-map {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--faint);
+  background: rgba(26, 111, 212, 0.08);
+}
+
+.stall-pin-map-img {
+  display: block;
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.stall-pin-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 120px;
+}
+
+.stall-pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 0 6px rgba(26, 111, 212, 0.25);
+}
+
+.stall-pin-meta {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.stall-pin-coords {
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", monospace;
+  margin-top: 0;
+}
+
+.stall-pin-warn {
+  color: #e8c48a;
+}
+
 .progress-wrap {
   margin: 8px 0 4px;
 }

@@ -1,3 +1,4 @@
+import { haversineMeters } from "../lib/geo";
 import type {
   Category,
   DirectionsPayload,
@@ -481,8 +482,19 @@ function toPublic(s: Seed): PublicListing {
   };
 }
 
-export function filterListings(filters: ListingFilters): PublicListing[] {
-  let rows = SEED.filter((s) => {
+export function filterListings(
+  filters: ListingFilters,
+  buyer?: { lat: number; lng: number } | null,
+): PublicListing[] {
+  const located = SEED.map((s) =>
+    buyer
+      ? {
+          ...s,
+          distanceMeters: haversineMeters(buyer.lat, buyer.lng, s.lat, s.lng),
+        }
+      : s,
+  );
+  let rows = located.filter((s) => {
     if (filters.category && s.category !== filters.category) return false;
     if (filters.maxDistance && s.distanceMeters > Number(filters.maxDistance))
       return false;

@@ -4,6 +4,11 @@ import { fetchListings } from "../api/client";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { StatusScreen } from "../components/EmptyState";
+import {
+  loadBuyerLocation,
+  requestBuyerLocation,
+  type BuyerLocation,
+} from "../lib/buyerLocation";
 import { PLACE_LABEL } from "../lib/format";
 import { SELLER_URL } from "../lib/urls";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
@@ -56,8 +61,15 @@ export function HomePage() {
   const [listings, setListings] = useState<PublicListing[] | null>(null);
   const [source, setSource] = useState<"api" | "mock">("mock");
   const [err, setErr] = useState<"offline" | "500" | null>(null);
+  const [here, setHere] = useState<BuyerLocation | null>(() =>
+    loadBuyerLocation(),
+  );
 
   useEffect(() => setDraft(filters), [filters]);
+
+  useEffect(() => {
+    void requestBuyerLocation().then(setHere);
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -74,7 +86,7 @@ export function HomePage() {
     return () => {
       live = false;
     };
-  }, [filters]);
+  }, [filters, here?.lat, here?.lng]);
 
   const setFilters = (next: ListingFilters) => {
     setSp(toParams(next, sp), { replace: true });
@@ -100,7 +112,13 @@ export function HomePage() {
         <div className="home-hero-text">
           <h1>Welcome to dnols.com</h1>
           <p>
-            Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
+            Browse stalls near {PLACE_LABEL()}. Nearby first — after you pay, you
+            see exactly where the product is.
+          </p>
+          <p className="hint">
+            {here
+              ? "Using your location to show the closest stalls."
+              : "Allow location to see what's closest to you."}
           </p>
         </div>
         <a

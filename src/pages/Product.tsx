@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
 import { ReservePayButton } from "../components/ReservePayButton";
 import { AddToCartButton } from "../components/AddToCartButton";
+import { SellerStallPreview } from "../components/SellerStallPreview";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
 import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
@@ -49,13 +50,17 @@ export function ProductPage() {
           )}
           {detail.paid && detail.directions ? (
             <div className="you-block">
-              <h2>Pickup</h2>
+              <h2>Where the product is</h2>
               <p>{detail.directions.shopName}</p>
               <p>{detail.directions.streetAddress}</p>
+              <SellerStallPreview location={detail.directions} />
               <p className="hint">{detail.directions.mapsHint}</p>
             </div>
           ) : (
-            <p className="hint">Pay, then Dnols coordinates delivery to you.</p>
+            <p className="hint">
+              Pay to unlock the stall pin — you will see exactly where this
+              product is.
+            </p>
           )}
           <button
             type="button"

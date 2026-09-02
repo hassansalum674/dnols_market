@@ -1,5 +1,6 @@
 import { SellHeader } from "../components/SellHeader";
 import { TOTAL_STEPS } from "../lib/onboarding";
+import { syncShopToApi } from "../lib/shopSync";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { loadProfile, saveDraft, updateProfileStatus } from "../storage";
 
@@ -49,7 +50,10 @@ export function RejectedPage() {
 
 /** Demo route handlers */
 export function DemoApprovePage() {
-  updateProfileStatus("active");
+  const profile = updateProfileStatus("active");
+  if (profile) {
+    void syncShopToApi(profile).catch(() => undefined);
+  }
   window.location.href = DASHBOARD_PATH;
   return null;
 }

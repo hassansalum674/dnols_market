@@ -22,6 +22,11 @@ export function emptyDraft(): OnboardingDraft {
       floor: "",
       blockName: "",
       landmark: "",
+      lat: null,
+      lng: null,
+      accuracyMeters: null,
+      capturedAt: null,
+      locationSource: "",
     },
     step3: {
       primaryPhone: "",
@@ -55,7 +60,7 @@ export function emptyDraft(): OnboardingDraft {
 export function stepTitle(step: number): string {
   const titles = [
     "Shop Identity",
-    "Location in Kariakoo",
+    "Stall location",
     "Contact",
     "Owner Identity & Trust",
     "Payout",
@@ -81,6 +86,8 @@ export function validateStep(draft: OnboardingDraft, step: number): string | nul
       if (!draft.step2.floor) return "Floor is required.";
       if (draft.step2.landmark.length > 80)
         return "Landmark hint must be 80 characters or less.";
+      if (draft.step2.lat == null || draft.step2.lng == null)
+        return "Pin your stall location so nearby buyers know where the product is.";
       return null;
     }
     case 3: {

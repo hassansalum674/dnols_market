@@ -29,7 +29,10 @@ app.get("/openapi.json", async (_req, reply) => {
     paths: [
       "GET /health",
       "GET /places",
+      "POST /shops",
+      "PATCH /shops/:id",
       "GET /listings",
+      "POST /listings",
       "GET /listings/:id",
       "GET /cart",
       "POST /cart",

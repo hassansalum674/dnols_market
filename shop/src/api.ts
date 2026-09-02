@@ -82,6 +82,67 @@ export async function getTrending(): Promise<{ items: PublicListing[] }> {
   return json("/trending");
 }
 
+export type ShopRegistration = {
+  id?: string;
+  shopName: string;
+  lat: number | null;
+  lng: number | null;
+  streetAddress: string;
+  stallNumber?: string;
+  floor?: string;
+  landmark?: string;
+  locationCapturedAt?: string;
+};
+
+export type RegisteredShop = {
+  shopId: string;
+  shopName: string;
+  lat: number;
+  lng: number;
+  streetAddress: string;
+  placeId: string;
+};
+
+export async function registerShop(
+  shop: ShopRegistration,
+): Promise<RegisteredShop> {
+  return json("/shops", {
+    method: "POST",
+    body: JSON.stringify(shop),
+  });
+}
+
+export async function updateShopLocation(
+  shopId: string,
+  shop: ShopRegistration,
+): Promise<RegisteredShop> {
+  return json(`/shops/${encodeURIComponent(shopId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(shop),
+  });
+}
+
+export type CreateListingInput = {
+  id?: string;
+  shopId: string;
+  title: string;
+  priceTzs: number;
+  category: "fashion" | "electronics";
+  photoUrl: string;
+  inStock: boolean;
+  description: string;
+  sizes?: string[];
+};
+
+export async function createListing(
+  listing: CreateListingInput,
+): Promise<{ id: string; shopId: string }> {
+  return json("/listings", {
+    method: "POST",
+    body: JSON.stringify(listing),
+  });
+}
+
 export type ProcessedPhotoResponse = {
   cdnUrl: string;
   cdnId: string;

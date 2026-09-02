@@ -14,6 +14,7 @@ import type {
   PublicListing,
   PublicListingDetail,
 } from "../types";
+import { loadBuyerLocation } from "../lib/buyerLocation";
 import { generatePickupCode } from "../lib/pickupCode";
 import { apiBase } from "../lib/apiBase";
 
@@ -32,10 +33,22 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+function withBuyerGeo(params: URLSearchParams): URLSearchParams {
+  const loc = loadBuyerLocation();
+  if (loc) {
+    params.set("buyerLat", String(loc.lat));
+    params.set("buyerLng", String(loc.lng));
+  }
+  return params;
+}
+
 function qs(filters: ListingFilters): string {
   const p = new URLSearchParams();
   if (filters.category) p.set("category", filters.category);
-  if (filters.maxDistance) p.set("maxDistance", String(filters.maxDistance));
+  if (filters.maxDistance) {
+    p.set("maxDistanceMeters", String(filters.maxDistance));
+    p.set("maxDistance", String(filters.maxDistance));
+  }
   if (filters.sort) p.set("sort", filters.sort);
   if (filters.inStock) p.set("inStock", "1");
   if (filters.minPrice !== "" && filters.minPrice != null)
@@ -43,6 +56,7 @@ function qs(filters: ListingFilters): string {
   if (filters.maxPrice !== "" && filters.maxPrice != null)
     p.set("maxPrice", String(filters.maxPrice));
   if (filters.q) p.set("q", filters.q);
+  withBuyerGeo(p);
   const s = p.toString();
   return s ? `?${s}` : "";
 }
@@ -72,7 +86,10 @@ export async function fetchListings(
     }
     return { listings, source: "api" };
   } catch {
-    return { listings: filterListings(filters), source: "mock" };
+    return {
+      listings: filterListings(filters, loadBuyerLocation()),
+      source: "mock",
+    };
   }
 }
 
@@ -81,7 +98,9 @@ export async function fetchListingDetail(
   paidToken?: string | null,
 ): Promise<{ detail: PublicListingDetail | null; source: DataSource; status?: number }> {
   try {
-    const q = paidToken ? `?token=${encodeURIComponent(paidToken)}` : "";
+    const params = withBuyerGeo(new URLSearchParams());
+    if (paidToken) params.set("token", paidToken);
+    const q = params.toString() ? `?${params}` : "";
     const data = await getJson<PublicListingDetail & { paid?: boolean }>(
       `/listings/${encodeURIComponent(id)}${q}`,
     );

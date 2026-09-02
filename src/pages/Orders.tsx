@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchOrders } from "../api/client";
+import { SellerStallPreview } from "../components/SellerStallPreview";
 import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
@@ -99,9 +100,13 @@ export function OrdersPage() {
           )}
 
           {o.directions?.map((d) => (
-            <div key={d.shopName} className="order-direction">
+            <div key={`${d.shopName}-${d.lat}-${d.lng}`} className="order-direction">
               <p className="order-direction-name">{d.shopName}</p>
               <p className="muted">{d.streetAddress}</p>
+              <SellerStallPreview location={d} />
+              <p className="hint">
+                {d.lat.toFixed(5)}, {d.lng.toFixed(5)}
+              </p>
             </div>
           ))}
 

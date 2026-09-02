@@ -5,6 +5,7 @@ import { ProductPhotoUpload } from "../components/ProductPhotoUpload";
 import { isCdnPhoto } from "../lib/photoPipeline";
 import { PRODUCTS_PATH } from "../lib/productRoutes";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
+import { syncProductToApi } from "../lib/shopSync";
 import { loadProducts, loadProfile, upsertProduct } from "../storage";
 import { useAuth } from "../store/auth";
 import type { ProductCondition, SellerProduct, ShopCategory } from "../types";
@@ -177,12 +178,16 @@ export function ProductFormPage() {
       return;
     }
 
-    upsertProduct({
+    const saved = {
       ...product,
       name: product.name.trim(),
       priceTzs: price,
       updatedAt: new Date().toISOString(),
-    });
+    };
+    upsertProduct(saved);
+    if (profile.status === "active") {
+      void syncProductToApi(saved, profile).catch(() => undefined);
+    }
     navigate("/stall/stock");
   }
 

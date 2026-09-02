@@ -2,7 +2,7 @@
 
 Independent Node + TypeScript + Fastify backend for the shop-only marketplace. The Vite PWA at the repo root is a separate package — this folder has its own `package.json`. Do not point the PWA `npm start` here.
 
-Exact shop coordinates, street address, and shop name are **never** returned on listing endpoints until mock payment succeeds.
+Exact shop coordinates, street address, and shop name are **never** returned on listing endpoints until mock payment succeeds. Shops register a GPS pin during onboarding (`POST /shops`); listings inherit that pin so a paid order can show where the product is.
 
 ## Run
 
@@ -34,7 +34,10 @@ Keep these even if the frontend uses different helper names:
 |--------|------|--------|
 | GET | `/health` | `{ ok: true }` |
 | GET | `/places` | Mock Kariakoo `placeId`: `place_kariakoo_dsm` |
-| GET | `/listings` | Query: `placeId`, `q`, `category=fashion\|electronics`, `maxDistanceMeters`, `minPrice`, `maxPrice`, `inStock`, `sort=nearest\|price_asc\|price_desc\|newest`. Optional `buyerLat`/`buyerLng` for distance (defaults to Kariakoo pin). |
+| POST | `/shops` | Register stall pin from seller onboarding (`shopName`, `lat`, `lng`, `streetAddress`) |
+| PATCH | `/shops/:id` | Update a registered stall pin |
+| GET | `/listings` | Query: `placeId`, `q`, `category=fashion\|electronics`, `maxDistanceMeters` (alias `maxDistance`), `minPrice`, `maxPrice`, `inStock`, `sort=nearest\|price_asc\|price_desc\|newest`. Optional `buyerLat`/`buyerLng` for distance (defaults to Kariakoo pin). |
+| POST | `/listings` | Create a listing on a registered shop so paid orders unlock that stall pin |
 | GET | `/listings/:id` | Adds `description` and `sizes` or `brand`. No coords unless `?paid=1&token=<accessToken>` after pay. |
 | GET | `/cart` | In-memory. Optional header `X-Session-Id` (or `X-Cart-Id`). |
 | POST | `/cart` | `{ "listingId": "...", "qty": 1 }` or `{ "items": [...] }` |

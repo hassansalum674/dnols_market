@@ -1,3 +1,4 @@
+import { emptyDraft } from "./lib/onboarding";
 import type {
   LocalSku,
   OnboardingDraft,
@@ -78,8 +79,23 @@ export function isSignedIn(): boolean {
 
 /* ── Onboarding draft ── */
 
+function mergeDraft(raw: OnboardingDraft): OnboardingDraft {
+  const empty = emptyDraft();
+  return {
+    ...empty,
+    ...raw,
+    step1: { ...empty.step1, ...raw.step1 },
+    step2: { ...empty.step2, ...raw.step2 },
+    step3: { ...empty.step3, ...raw.step3 },
+    step4: { ...empty.step4, ...raw.step4 },
+    step5: { ...empty.step5, ...raw.step5 },
+    step6: { ...empty.step6, ...raw.step6 },
+  };
+}
+
 export function loadDraft(): OnboardingDraft | null {
-  return read<OnboardingDraft | null>(DRAFT, null);
+  const raw = read<OnboardingDraft | null>(DRAFT, null);
+  return raw ? mergeDraft(raw) : null;
 }
 
 export function saveDraft(draft: OnboardingDraft): void {
@@ -97,7 +113,10 @@ export function clearDraft(): void {
 /* ── Seller profile (post-submit) ── */
 
 export function loadProfile(): SellerProfile | null {
-  return read<SellerProfile | null>(PROFILE, null);
+  const raw = read<SellerProfile | null>(PROFILE, null);
+  if (!raw) return null;
+  const merged = mergeDraft(raw);
+  return { ...raw, ...merged, step2: merged.step2 };
 }
 
 export function saveProfile(profile: SellerProfile): void {

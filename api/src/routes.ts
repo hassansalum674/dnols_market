@@ -94,7 +94,7 @@ export function registerRoutes(
     const buyerLng = num(q.buyerLng) ?? defaults.buyerLng;
     const search = (q.q ?? "").trim().toLowerCase();
     const category = q.category as Category | undefined;
-    const maxDistanceMeters = num(q.maxDistanceMeters);
+    const maxDistanceMeters = num(q.maxDistanceMeters) ?? num(q.maxDistance);
     const minPrice = num(q.minPrice);
     const maxPrice = num(q.maxPrice);
     const inStock = parseBool(q.inStock);
@@ -140,6 +140,164 @@ export function registerRoutes(
       placeId: PLACE_ID,
       count: rows.length,
       items: rows.map((l) => toPublicListing(l, buyerLat, buyerLng)),
+    };
+  });
+
+  app.post("/shops", async (req, reply) => {
+    const body = (req.body ?? {}) as {
+      id?: string;
+      shopName?: string;
+      lat?: number;
+      lng?: number;
+      streetAddress?: string;
+      stallNumber?: string;
+      floor?: string;
+      landmark?: string;
+      locationCapturedAt?: string;
+      placeId?: string;
+    };
+    const shopName = String(body.shopName ?? "").trim();
+    const streetAddress = String(body.streetAddress ?? "").trim();
+    const lat = num(body.lat);
+    const lng = num(body.lng);
+    if (!shopName) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "shopName is required.",
+      });
+    }
+    if (lat === undefined || lng === undefined) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "lat and lng are required so buyers can find the stall.",
+      });
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return reply.code(400).send({ error: "bad_coords" });
+    }
+    if (!streetAddress) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "streetAddress is required.",
+      });
+    }
+    const shop = store.upsertShop({
+      id: body.id,
+      shopName,
+      lat,
+      lng,
+      streetAddress,
+      stallNumber: body.stallNumber,
+      floor: body.floor,
+      landmark: body.landmark,
+      locationCapturedAt: body.locationCapturedAt,
+      placeId: body.placeId,
+    });
+    return {
+      shopId: shop.id,
+      shopName: shop.shopName,
+      lat: shop.lat,
+      lng: shop.lng,
+      streetAddress: shop.streetAddress,
+      placeId: shop.placeId,
+    };
+  });
+
+  app.patch("/shops/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const existing = store.shop(id);
+    if (!existing) return reply.code(404).send({ error: "not_found" });
+    const body = (req.body ?? {}) as {
+      shopName?: string;
+      lat?: number;
+      lng?: number;
+      streetAddress?: string;
+      stallNumber?: string;
+      floor?: string;
+      landmark?: string;
+      locationCapturedAt?: string;
+    };
+    const lat = num(body.lat) ?? existing.lat;
+    const lng = num(body.lng) ?? existing.lng;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return reply.code(400).send({ error: "bad_coords" });
+    }
+    const shop = store.upsertShop({
+      id,
+      shopName: String(body.shopName ?? existing.shopName).trim() || existing.shopName,
+      lat,
+      lng,
+      streetAddress:
+        String(body.streetAddress ?? existing.streetAddress).trim() ||
+        existing.streetAddress,
+      stallNumber: body.stallNumber ?? existing.stallNumber,
+      floor: body.floor ?? existing.floor,
+      landmark: body.landmark ?? existing.landmark,
+      locationCapturedAt:
+        body.locationCapturedAt ?? existing.locationCapturedAt,
+    });
+    return {
+      shopId: shop.id,
+      shopName: shop.shopName,
+      lat: shop.lat,
+      lng: shop.lng,
+      streetAddress: shop.streetAddress,
+      placeId: shop.placeId,
+    };
+  });
+
+  app.post("/listings", async (req, reply) => {
+    const body = (req.body ?? {}) as {
+      id?: string;
+      shopId?: string;
+      title?: string;
+      priceTzs?: number;
+      category?: string;
+      photoUrl?: string;
+      inStock?: boolean;
+      description?: string;
+      sizes?: string[];
+      brand?: string;
+    };
+    const shopId = String(body.shopId ?? "").trim();
+    if (!shopId || !store.shop(shopId)) {
+      return reply.code(400).send({
+        error: "unknown_shop",
+        message: "Register the shop location before listing products.",
+      });
+    }
+    const title = String(body.title ?? "").trim();
+    const photoUrl = String(body.photoUrl ?? "").trim();
+    const priceTzs = num(body.priceTzs);
+    if (!title || !photoUrl || priceTzs === undefined || priceTzs < 0) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "title, photoUrl, and priceTzs are required.",
+      });
+    }
+    if (body.category && !CATEGORIES.has(body.category as Category)) {
+      return reply.code(400).send({
+        error: "bad_category",
+        message: "category must be fashion|electronics",
+      });
+    }
+    const listing = store.upsertListing({
+      id: body.id,
+      shopId,
+      title,
+      priceTzs,
+      category: (body.category as Category) ?? "fashion",
+      photoUrl,
+      inStock: body.inStock !== false,
+      description: String(body.description ?? "").trim(),
+      sizes: Array.isArray(body.sizes) ? body.sizes : undefined,
+      brand: body.brand,
+    });
+    return {
+      id: listing.id,
+      shopId: listing.shopId,
+      title: listing.title,
+      inStock: listing.inStock,
     };
   });
 

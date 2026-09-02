@@ -47,6 +47,71 @@ export class Store {
     return this.listings.get(id);
   }
 
+  upsertShop(input: {
+    id?: string;
+    shopName: string;
+    lat: number;
+    lng: number;
+    streetAddress: string;
+    stallNumber?: string;
+    floor?: string;
+    landmark?: string;
+    locationCapturedAt?: string;
+    placeId?: string;
+  }): Shop {
+    const shopId =
+      input.id && input.id.trim() ? input.id.trim() : id("shop");
+    const prev = this.shops.get(shopId);
+    const shop: Shop = {
+      id: shopId,
+      shopName: input.shopName,
+      lat: input.lat,
+      lng: input.lng,
+      streetAddress: input.streetAddress,
+      placeId: input.placeId ?? prev?.placeId ?? "place_kariakoo_dsm",
+      stallNumber: input.stallNumber ?? prev?.stallNumber,
+      floor: input.floor ?? prev?.floor,
+      landmark: input.landmark ?? prev?.landmark,
+      locationCapturedAt:
+        input.locationCapturedAt ?? prev?.locationCapturedAt,
+    };
+    this.shops.set(shopId, shop);
+    return shop;
+  }
+
+  upsertListing(input: {
+    id?: string;
+    shopId: string;
+    title: string;
+    priceTzs: number;
+    category: Listing["category"];
+    photoUrl: string;
+    inStock: boolean;
+    description: string;
+    sizes?: string[];
+    brand?: string;
+  }): Listing {
+    const listingId =
+      input.id && input.id.trim() ? input.id.trim() : id("lst");
+    const prev = this.listings.get(listingId);
+    const listing: Listing = {
+      id: listingId,
+      shopId: input.shopId,
+      title: input.title,
+      priceTzs: input.priceTzs,
+      category: input.category,
+      photoUrl: input.photoUrl,
+      inStock: input.inStock,
+      description: input.description,
+      sizes: input.sizes ?? prev?.sizes,
+      brand: input.brand ?? prev?.brand,
+      createdAt: prev?.createdAt ?? new Date().toISOString(),
+      trendingScore: prev?.trendingScore ?? 50,
+    };
+    this.listings.set(listingId, listing);
+    return listing;
+  }
+
   getCart(sessionId: string): CartItem[] {
     return this.carts.get(sessionId) ?? [];
   }

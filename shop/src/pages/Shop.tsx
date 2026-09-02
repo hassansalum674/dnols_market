@@ -1,9 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
+import { StallPin } from "../components/StallPin";
 import { getHealth, getOrder, getPlaces } from "../api";
+import { captureStallLocation } from "../lib/geo";
+import { formatStallAddress } from "../lib/stallAddress";
+import { syncShopLocationToApi, syncShopToApi } from "../lib/shopSync";
 import { BUYER_URL } from "../lib/urls";
-import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
+import {
+  addPayout,
+  loadHours,
+  loadPayouts,
+  loadProfile,
+  saveHours,
+  saveProfile,
+} from "../storage";
 import { useShopData } from "../shopData";
-import type { Place, PayoutMock, ShopHours } from "../types";
+import type { Place, PayoutMock, SellerProfile, ShopHours } from "../types";
 import { formatTzs } from "./errors";
 
 export function ShopPage() {
@@ -14,6 +25,11 @@ export function ShopPage() {
   const [payouts, setPayouts] = useState<PayoutMock[]>(() => loadPayouts());
   const [released, setReleased] = useState(0);
   const [payoutMsg, setPayoutMsg] = useState<string | null>(null);
+  const [profile, setProfile] = useState<SellerProfile | null>(() =>
+    loadProfile(),
+  );
+  const [capturing, setCapturing] = useState(false);
+  const [geoErr, setGeoErr] = useState<string | null>(null);
 
   useEffect(() => {
     void getPlaces()
@@ -80,14 +96,59 @@ export function ShopPage() {
       <div className="shop-settings-grid">
         <section className="block shop-panel">
           <h2>Stall location</h2>
-          <p>
-            {place?.name ?? "Kariakoo"}
-            {place?.city ? `, ${place.city}` : " · Dar es Salaam"}
-          </p>
-          <p className="hint">
-            {place?.hint ??
-              "Your exact stall pin is shared with buyers only after they pay."}
-          </p>
+          {profile ? (
+            <>
+              <p>{formatStallAddress(profile.step2)}</p>
+              <StallPin
+                location={profile.step2}
+                capturing={capturing}
+                error={geoErr}
+                onCapture={() => {
+                  void (async () => {
+                    setCapturing(true);
+                    setGeoErr(null);
+                    try {
+                      const fix = await captureStallLocation();
+                      const next = {
+                        ...profile,
+                        step2: { ...profile.step2, ...fix },
+                      };
+                      saveProfile(next);
+                      setProfile(next);
+                      try {
+                        await syncShopLocationToApi(next);
+                      } catch {
+                        await syncShopToApi(next);
+                      }
+                    } catch (e) {
+                      setGeoErr(
+                        e instanceof Error
+                          ? e.message
+                          : "Could not update stall pin.",
+                      );
+                    } finally {
+                      setCapturing(false);
+                    }
+                  })();
+                }}
+              />
+              <p className="hint">
+                Nearby buyers sort by this pin. After they pay, they see exactly
+                where the product is.
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
+                {place?.name ?? "Kariakoo"}
+                {place?.city ? `, ${place.city}` : " · Dar es Salaam"}
+              </p>
+              <p className="hint">
+                Pin your stall during onboarding so buyers know where the
+                product is.
+              </p>
+            </>
+          )}
           <p className="hint">
             {online === null
               ? "Checking connection…"

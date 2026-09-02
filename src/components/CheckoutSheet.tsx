@@ -603,7 +603,7 @@ export function CheckoutSheet() {
 
             {primaryDirection ? (
               <section className="uc-panel">
-                <h2 className="uc-panel-label">Seller stall</h2>
+                <h2 className="uc-panel-label">Where the product is</h2>
                 <p className="uc-panel-strong">{primaryDirection.shopName}</p>
                 <p className="muted">{primaryDirection.streetAddress}</p>
                 <SellerStallPreview location={primaryDirection} />

@@ -4,8 +4,9 @@ info:
   version: 0.1.0
   description: |
     Shop-only marketplace stub for Kariakoo (Dar es Salaam, Tanzania).
-    Distance is computed on the server. Exact shopName, street, lat, and lng
-    are withheld until mock mobile-money payment succeeds.
+    Distance is computed on the server from the shop pin captured during
+    seller onboarding. Exact shopName, street, lat, and lng are withheld
+    until mock mobile-money payment succeeds.
 
     Escrow mock: reserved → paid_held → handed_over | rejected_refund
 
@@ -28,6 +29,40 @@ paths:
       responses:
         "200":
           description: placeId for listings
+  /shops:
+    post:
+      summary: Register a stall pin from seller onboarding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shopName, lat, lng, streetAddress]
+              properties:
+                id: { type: string }
+                shopName: { type: string }
+                lat: { type: number }
+                lng: { type: number }
+                streetAddress: { type: string }
+                stallNumber: { type: string }
+                floor: { type: string }
+                landmark: { type: string }
+                locationCapturedAt: { type: string }
+      responses:
+        "200":
+          description: shopId plus stored pin
+  /shops/{id}:
+    patch:
+      summary: Update a registered stall pin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: updated pin
   /listings:
     get:
       summary: Search listings (no exact location)
@@ -67,6 +102,30 @@ paths:
       responses:
         "200":
           description: items without lat/lng/address/shopName
+    post:
+      summary: Create a listing on a registered shop pin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shopId, title, priceTzs, photoUrl]
+              properties:
+                id: { type: string }
+                shopId: { type: string }
+                title: { type: string }
+                priceTzs: { type: number }
+                category: { type: string, enum: [fashion, electronics] }
+                photoUrl: { type: string }
+                inStock: { type: boolean }
+                description: { type: string }
+                sizes:
+                  type: array
+                  items: { type: string }
+      responses:
+        "200":
+          description: listing id tied to the shop pin
   /listings/{id}:
     get:
       summary: Listing detail
