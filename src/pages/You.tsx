@@ -10,10 +10,13 @@ import { useAuth } from "../store/auth";
 import { loadProfile } from "../lib/profile";
 import { providerLabel, userDisplayName } from "../lib/userDisplay";
 import { formatTzPhoneDisplay } from "../lib/phone";
+import { publicAccountId } from "../lib/accountId";
 import { SELLER_URL } from "../lib/urls";
+import { useI18n } from "../store/i18n";
 
 export function YouPage() {
   const { user, loading, signOut } = useAuth();
+  const { t } = useI18n();
   const { openBasket } = useCheckoutSheet();
   const [profilePhone, setProfilePhone] = useState<string | null>(null);
   const [profileDelivery, setProfileDelivery] = useState<string | null>(null);
@@ -39,13 +42,13 @@ export function YouPage() {
 
   return (
     <div className="page account-page account-page--hub">
-      <h1 className="account-title">My Account</h1>
+      <h1 className="account-title">{t("myAccount")}</h1>
 
       {loading ? (
         <p className="muted">Loading…</p>
       ) : user ? (
         <div className="account-profile account-profile--signed-in">
-          <Link to="/you/profile" className="account-avatar-link" aria-label="Edit my profile">
+          <Link to="/you/profile" className="account-avatar-link" aria-label={t("editProfile")}>
             <UserAvatar user={user} size="xl" />
             <span className="user-avatar-camera" aria-hidden>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
@@ -63,13 +66,17 @@ export function YouPage() {
             <p className="account-name">{displayName}</p>
             {user.email && (
               <p className="account-detail">
-                <span className="account-detail-label">Email</span>
+                <span className="account-detail-label">{t("email")}</span>
                 <span>{user.email}</span>
               </p>
             )}
+            <p className="account-detail">
+              <span className="account-detail-label">{t("yourId")}</span>
+              <span className="account-id">{publicAccountId(user.uid)}</span>
+            </p>
             {profilePhone && (
               <p className="account-detail">
-                <span className="account-detail-label">Phone</span>
+                <span className="account-detail-label">{t("mobileNumber")}</span>
                 <span>{formatTzPhoneDisplay(profilePhone)}</span>
               </p>
             )}
@@ -85,14 +92,14 @@ export function YouPage() {
             </p>
             <div className="account-profile-actions">
               <Link to="/you/profile" className="btn account-edit-btn">
-                Edit my profile
+                {t("editProfile")}
               </Link>
               <button
                 type="button"
                 className="text-link-btn"
                 onClick={() => void signOut()}
               >
-                Sign out
+                {t("signOut")}
               </button>
             </div>
           </div>
@@ -178,7 +185,7 @@ export function YouPage() {
           className="btn ghost account-signout-btn"
           onClick={() => void signOut()}
         >
-          Sign out
+          {t("signOut")}
         </button>
       )}
     </div>

@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { avatarColors, resizeImageFile } from "../lib/avatar";
+import { useI18n } from "../store/i18n";
 
 type Props = {
   previewUrl: string | null;
@@ -14,6 +15,7 @@ export function ProfilePhotoUpload({
   initial,
   onChange,
 }: Props) {
+  const { t } = useI18n();
   const inputRef = useRef<HTMLInputElement>(null);
   const [err, setErr] = useState<string | null>(null);
   const colors = avatarColors(seed || initial);
@@ -24,7 +26,7 @@ export function ProfilePhotoUpload({
     try {
       onChange(await resizeImageFile(file, 480));
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Could not save that photo.");
+      setErr(e instanceof Error ? e.message : t("photoError"));
     }
   }
 
@@ -60,7 +62,7 @@ export function ProfilePhotoUpload({
             className="btn ghost photo-btn"
             onClick={() => openPicker(false)}
           >
-            Change photo
+            {t("changePhoto")}
           </button>
           <button
             type="button"
@@ -70,7 +72,7 @@ export function ProfilePhotoUpload({
               onChange(null);
             }}
           >
-            Remove
+            {t("remove")}
           </button>
         </div>
       ) : (
@@ -80,14 +82,14 @@ export function ProfilePhotoUpload({
             className="btn ghost photo-btn"
             onClick={() => openPicker(true)}
           >
-            Camera
+            {t("camera")}
           </button>
           <button
             type="button"
             className="btn ghost photo-btn"
             onClick={() => openPicker(false)}
           >
-            Gallery
+            {t("gallery")}
           </button>
         </div>
       )}

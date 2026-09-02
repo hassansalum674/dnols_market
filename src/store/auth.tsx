@@ -20,7 +20,8 @@ import {
 } from "../lib/authActions";
 import { initFirebase } from "../lib/firebase";
 import { mergeAnonymousSearchHistory } from "../store/persist";
-import { mergeCheckoutPhonesToProfile } from "../lib/profile";
+import { mergeCheckoutPhonesToProfile, loadProfile, saveProfile } from "../lib/profile";
+import { loadSettings, saveSettings } from "./settings";
 
 type AuthState = {
   user: AuthUser | null;
@@ -50,6 +51,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user?.uid) {
       mergeAnonymousSearchHistory(user.uid);
       mergeCheckoutPhonesToProfile(user.uid);
+      const p = loadProfile(user.uid);
+      if (p.language) {
+        saveSettings({ language: p.language });
+      } else {
+        saveProfile(user.uid, { language: loadSettings().language });
+      }
     }
   }, [user?.uid]);
 

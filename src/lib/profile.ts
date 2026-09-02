@@ -9,6 +9,7 @@ export type UserProfile = {
   avatarDataUrl?: string;
   /** When true, ignore Google photoURL and show the letter avatar. */
   preferLetterAvatar?: boolean;
+  language?: "en" | "sw";
 };
 
 function key(uid: string): string {

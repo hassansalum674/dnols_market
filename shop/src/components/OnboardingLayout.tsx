@@ -3,6 +3,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { ProgressBar } from "./ProgressBar";
 import { SellHeader } from "./SellHeader";
 import { TOTAL_STEPS } from "../lib/onboarding";
+import { shopT, shopTf } from "../lib/i18n";
+import type { PreferredLanguage } from "../types";
 
 type Props = {
   step: number;
@@ -11,6 +13,8 @@ type Props = {
   onBack?: () => void;
   backTo?: string;
   draftSaved?: boolean;
+  language: PreferredLanguage;
+  onLanguageChange: (lang: PreferredLanguage) => void;
 };
 
 export function OnboardingLayout({
@@ -20,6 +24,8 @@ export function OnboardingLayout({
   onBack,
   backTo,
   draftSaved,
+  language,
+  onLanguageChange,
 }: Props) {
   const navigate = useNavigate();
   const savedRef = useRef<HTMLSpanElement>(null);
@@ -49,12 +55,36 @@ export function OnboardingLayout({
       <SellHeader hideSellerCta />
       <div className="onboarding-body">
         <button type="button" className="back-link" onClick={handleBack}>
-          ← Back
+          ← {shopT(language, "back")}
         </button>
-        <ProgressBar current={step} total={TOTAL_STEPS} />
+        <p className="lbl">{shopT(language, "chooseLanguage")}</p>
+        <div className="lang-cards">
+          <button
+            type="button"
+            className={`lang-card ${language === "english" ? "on" : ""}`}
+            onClick={() => onLanguageChange("english")}
+          >
+            <strong>English</strong>
+            <span>English</span>
+          </button>
+          <button
+            type="button"
+            className={`lang-card ${language === "swahili" ? "on" : ""}`}
+            onClick={() => onLanguageChange("swahili")}
+          >
+            <strong>Kiswahili</strong>
+            <span>Swahili</span>
+          </button>
+        </div>
+        <p className="hint">{shopT(language, "languageHint")}</p>
+        <ProgressBar
+          current={step}
+          total={TOTAL_STEPS}
+          label={shopTf(language, "stepOf", { current: step, total: TOTAL_STEPS })}
+        />
         <h1 className="onboarding-title">{title}</h1>
         <span ref={savedRef} className="draft-saved" aria-live="polite">
-          Draft saved
+          {shopT(language, "draftSaved")}
         </span>
         {children}
       </div>
@@ -163,10 +193,10 @@ export function RadioGroup<T extends string>({
   );
 }
 
-export function ExitLink() {
+export function ExitLink({ language }: { language: PreferredLanguage }) {
   return (
     <Link to="/" className="exit-link">
-      Save & exit — resume anytime
+      {shopT(language, "saveExit")}
     </Link>
   );
 }

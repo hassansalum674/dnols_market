@@ -12,10 +12,12 @@ import {
 import { PhotoUpload } from "../components/PhotoUpload";
 import {
   emptyDraft,
-  stepTitle,
   TOTAL_STEPS,
   validateStep,
 } from "../lib/onboarding";
+import { stepTitleI18n, shopT } from "../lib/i18n";
+import { shopIdFromUid } from "../lib/accountId";
+import { useAuth } from "../store/auth";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { formatTzPhone } from "../lib/validation";
 import {
@@ -36,6 +38,7 @@ import {
 export function OnboardingPage() {
   const { step: stepParam } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const step = Math.min(
     TOTAL_STEPS,
     Math.max(1, Number(stepParam) || 1),
@@ -61,6 +64,11 @@ export function OnboardingPage() {
       navigate("/pending", { replace: true });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    document.documentElement.lang =
+      draft.step3.language === "english" ? "en" : "sw";
+  }, [draft.step3.language]);
 
   useEffect(() => {
     if (!stepParam) {
@@ -97,7 +105,9 @@ export function OnboardingPage() {
   }
 
   function submitApplication() {
-    const shopId = `shop_${Date.now().toString(36)}`;
+    const shopId = user?.uid
+      ? shopIdFromUid(user.uid)
+      : `shop_${Date.now().toString(36)}`;
     const profile = {
       ...draft,
       status: "pending_review" as const,
@@ -114,8 +124,10 @@ export function OnboardingPage() {
   return (
     <OnboardingLayout
       step={step}
-      title={stepTitle(step)}
+      title={stepTitleI18n(step, draft.step3.language)}
       draftSaved={saved}
+      language={draft.step3.language}
+      onLanguageChange={(language) => updateStep("step3", { language })}
       onBack={() => {
         if (step > 1) navigate(`/onboarding/${step - 1}`);
         else navigate("/");
@@ -169,7 +181,7 @@ export function OnboardingPage() {
           onNext={goNext}
         />
       )}
-      <ExitLink />
+      <ExitLink language={draft.step3.language} />
     </OnboardingLayout>
   );
 }
@@ -186,6 +198,7 @@ type StepProps = {
 
 function Step1({ draft, updateStep, err, onNext }: StepProps) {
   const s = draft.step1;
+  const lang = draft.step3.language;
   return (
     <form
       className="onboarding-form"
@@ -194,16 +207,15 @@ function Step1({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <label className="lbl">Shop name *</label>
+      <label className="lbl">{shopT(lang, "shopName")}</label>
       <input
         className="field"
         value={s.shopName}
         onChange={(e) => updateStep("step1", { shopName: e.target.value })}
-        placeholder="e.g. Mama Asha's Fabrics"
         required
       />
 
-      <label className="lbl">Category (max 2) *</label>
+      <label className="lbl">{shopT(lang, "category")}</label>
       <ChipSelect
         options={SHOP_CATEGORIES}
         value={s.categories}
@@ -212,14 +224,14 @@ function Step1({ draft, updateStep, err, onNext }: StepProps) {
       />
 
       <PhotoUpload
-        label="Shop profile photo"
+        label={shopT(lang, "shopPhoto")}
         value={s.profilePhoto}
         onChange={(v) => updateStep("step1", { profilePhoto: v })}
         required
       />
 
       <label className="lbl">
-        Short description{" "}
+        {shopT(lang, "shortDesc")}{" "}
         <CharCount current={s.description.length} max={120} />
       </label>
       <textarea
@@ -227,12 +239,11 @@ function Step1({ draft, updateStep, err, onNext }: StepProps) {
         value={s.description}
         onChange={(e) => updateStep("step1", { description: e.target.value })}
         maxLength={130}
-        placeholder="What do you sell?"
       />
 
       {err && <p className="err">{err}</p>}
       <button type="submit" className="btn">
-        Continue
+        {shopT(lang, "continue")}
       </button>
     </form>
   );
@@ -240,6 +251,7 @@ function Step1({ draft, updateStep, err, onNext }: StepProps) {
 
 function Step2({ draft, updateStep, err, onNext }: StepProps) {
   const s = draft.step2;
+  const lang = draft.step3.language;
   return (
     <form
       className="onboarding-form"
@@ -248,27 +260,25 @@ function Step2({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <p className="hint">No GPS — we use your stall details inside Kariakoo.</p>
+      <p className="hint">{shopT(lang, "noGps")}</p>
 
-      <label className="lbl">Street / lane name *</label>
+      <label className="lbl">{shopT(lang, "street")}</label>
       <input
         className="field"
         value={s.street}
         onChange={(e) => updateStep("step2", { street: e.target.value })}
-        placeholder="e.g. Mchikichini Lane"
         required
       />
 
-      <label className="lbl">Stall or shop number *</label>
+      <label className="lbl">{shopT(lang, "stallNumber")}</label>
       <input
         className="field"
         value={s.stallNumber}
         onChange={(e) => updateStep("step2", { stallNumber: e.target.value })}
-        placeholder="e.g. B-42"
         required
       />
 
-      <label className="lbl">Floor *</label>
+      <label className="lbl">{shopT(lang, "floor")}</label>
       <RadioGroup
         name="floor"
         options={FLOORS}
@@ -276,29 +286,27 @@ function Step2({ draft, updateStep, err, onNext }: StepProps) {
         onChange={(v) => updateStep("step2", { floor: v })}
       />
 
-      <label className="lbl">Block or building name</label>
+      <label className="lbl">{shopT(lang, "block")}</label>
       <input
         className="field"
         value={s.blockName}
         onChange={(e) => updateStep("step2", { blockName: e.target.value })}
-        placeholder="Optional"
       />
 
       <label className="lbl">
-        Landmark hint{" "}
+        {shopT(lang, "landmark")}{" "}
         <CharCount current={s.landmark.length} max={80} />
       </label>
       <input
         className="field"
         value={s.landmark}
         onChange={(e) => updateStep("step2", { landmark: e.target.value })}
-        placeholder='e.g. "next to Vodacom kiosk"'
         maxLength={90}
       />
 
       {err && <p className="err">{err}</p>}
       <button type="submit" className="btn">
-        Continue
+        {shopT(lang, "continue")}
       </button>
     </form>
   );
@@ -306,6 +314,7 @@ function Step2({ draft, updateStep, err, onNext }: StepProps) {
 
 function Step3({ draft, updateStep, err, onNext }: StepProps) {
   const s = draft.step3;
+  const lang = s.language;
   return (
     <form
       className="onboarding-form"
@@ -314,14 +323,13 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <label className="lbl">Primary phone number *</label>
+      <label className="lbl">{shopT(lang, "primaryPhone")}</label>
       <input
         className="field"
         type="tel"
         inputMode="tel"
         value={s.primaryPhone}
         onChange={(e) => updateStep("step3", { primaryPhone: e.target.value })}
-        placeholder="+255 7XX XXX XXX"
         required
       />
       {s.primaryPhone && (
@@ -329,14 +337,14 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
       )}
 
       <Toggle
-        label="WhatsApp same as primary"
+        label={shopT(lang, "whatsappSame")}
         on={s.whatsappSame}
         onChange={(v) => updateStep("step3", { whatsappSame: v })}
       />
 
       {!s.whatsappSame && (
         <>
-          <label className="lbl">WhatsApp number *</label>
+          <label className="lbl">{shopT(lang, "whatsapp")}</label>
           <input
             className="field"
             type="tel"
@@ -345,25 +353,13 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
             onChange={(e) =>
               updateStep("step3", { whatsappPhone: e.target.value })
             }
-            placeholder="+255 7XX XXX XXX"
           />
         </>
       )}
 
-      <label className="lbl">Preferred language</label>
-      <RadioGroup
-        name="language"
-        options={[
-          { id: "english" as const, label: "English" },
-          { id: "swahili" as const, label: "Swahili" },
-        ]}
-        value={s.language}
-        onChange={(v) => updateStep("step3", { language: v })}
-      />
-
       {err && <p className="err">{err}</p>}
       <button type="submit" className="btn">
-        Continue
+        {shopT(lang, "continue")}
       </button>
     </form>
   );
@@ -371,6 +367,7 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
 
 function Step4({ draft, updateStep, err, onNext }: StepProps) {
   const s = draft.step4;
+  const lang = draft.step3.language;
   return (
     <form
       className="onboarding-form"
@@ -379,12 +376,9 @@ function Step4({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <Notice>
-        Your ID is used only for payment verification and fraud prevention. It
-        is never shown to buyers.
-      </Notice>
+      <Notice>{shopT(lang, "idNotice")}</Notice>
 
-      <label className="lbl">Full legal name (must match ID) *</label>
+      <label className="lbl">{shopT(lang, "legalName")}</label>
       <input
         className="field"
         value={s.legalName}
@@ -392,7 +386,7 @@ function Step4({ draft, updateStep, err, onNext }: StepProps) {
         required
       />
 
-      <label className="lbl">NIDA number (20 digits) *</label>
+      <label className="lbl">{shopT(lang, "nida")}</label>
       <input
         className="field"
         inputMode="numeric"
@@ -402,27 +396,26 @@ function Step4({ draft, updateStep, err, onNext }: StepProps) {
             nidaNumber: e.target.value.replace(/\D/g, "").slice(0, 20),
           })
         }
-        placeholder="XXXXXXXXXXXXXXXXXXXX"
         maxLength={20}
         required
       />
 
       <PhotoUpload
-        label="ID photo — front"
+        label={shopT(lang, "idFront")}
         value={s.idFront}
         onChange={(v) => updateStep("step4", { idFront: v })}
         required
       />
 
       <PhotoUpload
-        label="ID photo — back"
+        label={shopT(lang, "idBack")}
         value={s.idBack}
         onChange={(v) => updateStep("step4", { idBack: v })}
         required
       />
 
       <PhotoUpload
-        label="Selfie holding ID"
+        label={shopT(lang, "selfie")}
         value={s.selfieWithId}
         onChange={(v) => updateStep("step4", { selfieWithId: v })}
         cameraOnly
@@ -431,7 +424,7 @@ function Step4({ draft, updateStep, err, onNext }: StepProps) {
 
       {err && <p className="err">{err}</p>}
       <button type="submit" className="btn">
-        Continue
+        {shopT(lang, "continue")}
       </button>
     </form>
   );
@@ -444,6 +437,7 @@ function Step5({
   onNext,
 }: StepProps) {
   const s = draft.step5;
+  const lang = draft.step3.language;
   return (
     <form
       className="onboarding-form"
@@ -452,11 +446,9 @@ function Step5({
         onNext();
       }}
     >
-      <Notice>
-        Payments are released to this number after buyer confirms receipt.
-      </Notice>
+      <Notice>{shopT(lang, "payoutNotice")}</Notice>
 
-      <label className="lbl">Mobile money provider *</label>
+      <label className="lbl">{shopT(lang, "mmProvider")}</label>
       <RadioGroup
         name="provider"
         options={MOBILE_MONEY_PROVIDERS.map((p) => ({
@@ -467,7 +459,7 @@ function Step5({
         onChange={(v) => updateStep("step5", { provider: v })}
       />
 
-      <label className="lbl">Mobile money number *</label>
+      <label className="lbl">{shopT(lang, "mmNumber")}</label>
       <input
         className="field"
         type="tel"
@@ -476,22 +468,20 @@ function Step5({
         onChange={(e) =>
           updateStep("step5", { mobileMoneyNumber: e.target.value })
         }
-        placeholder="+255 7XX XXX XXX"
         required
       />
 
-      <label className="lbl">Account name (must match legal name) *</label>
+      <label className="lbl">{shopT(lang, "accountName")}</label>
       <input
         className="field"
         value={s.accountName}
         onChange={(e) => updateStep("step5", { accountName: e.target.value })}
-        placeholder={draft.step4.legalName || "As on ID"}
         required
       />
 
       {err && <p className="err">{err}</p>}
       <button type="submit" className="btn">
-        Continue
+        {shopT(lang, "continue")}
       </button>
     </form>
   );
@@ -499,6 +489,7 @@ function Step5({
 
 function Step6({ draft, updateStep, err, onNext }: StepProps) {
   const s = draft.step6;
+  const lang = draft.step3.language;
   return (
     <form
       className="onboarding-form"
@@ -507,14 +498,14 @@ function Step6({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <label className="lbl">Open days *</label>
+      <label className="lbl">{shopT(lang, "openDays")}</label>
       <ChipSelect
         options={DAYS}
         value={s.openDays}
         onChange={(v) => updateStep("step6", { openDays: v })}
       />
 
-      <label className="lbl">Opening time</label>
+      <label className="lbl">{shopT(lang, "openingTime")}</label>
       <input
         className="field"
         type="time"
@@ -522,7 +513,7 @@ function Step6({ draft, updateStep, err, onNext }: StepProps) {
         onChange={(e) => updateStep("step6", { openingTime: e.target.value })}
       />
 
-      <label className="lbl">Closing time</label>
+      <label className="lbl">{shopT(lang, "closingTime")}</label>
       <input
         className="field"
         type="time"
@@ -531,18 +522,16 @@ function Step6({ draft, updateStep, err, onNext }: StepProps) {
       />
 
       <Toggle
-        label="Closed on public holidays"
+        label={shopT(lang, "closedHolidays")}
         on={s.closedOnHolidays}
         onChange={(v) => updateStep("step6", { closedOnHolidays: v })}
       />
 
       {err && <p className="err">{err}</p>}
       <button type="submit" className="btn">
-        Submit for review
+        {shopT(lang, "submitReview")}
       </button>
-      <p className="hint">
-        Your shop will be reviewed within 24 hours. No auto-approval.
-      </p>
+      <p className="hint">{shopT(lang, "reviewHint")}</p>
     </form>
   );
 }

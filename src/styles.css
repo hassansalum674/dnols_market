@@ -3860,3 +3860,63 @@ img {
   min-height: 44px;
   border-radius: var(--radius);
 }
+
+.lang-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 8px 0 12px;
+}
+
+.lang-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  min-height: 72px;
+  padding: 12px;
+  border: 2px solid var(--faint);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--white);
+}
+
+.lang-card strong {
+  font-size: 16px;
+}
+
+.lang-card span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.lang-card.on {
+  border-color: var(--blue);
+  background: rgba(26, 111, 212, 0.12);
+}
+
+.profile-id-card {
+  border: 1px solid var(--faint);
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.profile-id-card .lbl {
+  margin-top: 0;
+}
+
+.profile-id-value {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  margin: 4px 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.account-id {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}

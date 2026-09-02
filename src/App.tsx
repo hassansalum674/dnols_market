@@ -4,6 +4,7 @@ import { AppLayout } from "./components/AppLayout";
 import { CartProvider } from "./store/cart";
 import { CheckoutSheetProvider } from "./store/checkoutSheet";
 import { AuthProvider } from "./store/auth";
+import { I18nProvider } from "./store/i18n";
 import { ServerErrorPage } from "./pages/errors";
 
 const HomePage = lazy(() =>
@@ -100,12 +101,14 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <CheckoutSheetProvider>
-          <RouterProvider router={router} />
-        </CheckoutSheetProvider>
-      </CartProvider>
-    </AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
+        <CartProvider>
+          <CheckoutSheetProvider>
+            <RouterProvider router={router} />
+          </CheckoutSheetProvider>
+        </CartProvider>
+      </AuthProvider>
+    </I18nProvider>
   );
 }
