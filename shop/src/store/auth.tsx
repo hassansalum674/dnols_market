@@ -24,7 +24,7 @@ type AuthState = {
   user: AuthUser | null;
   loading: boolean;
   configured: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: () => Promise<"popup" | "redirect">;
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;

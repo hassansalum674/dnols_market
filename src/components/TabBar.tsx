@@ -130,7 +130,7 @@ export function BuyerHeader({ children }: { children?: ReactNode }) {
     <header className="header">
       <div className="shell-inner header-row">
         <Link to="/" className="header-logo" aria-label="Dnols home">
-          <BrandLogo variant="dark" className="header-wordmark" height={36} />
+          <BrandLogo className="header-wordmark" height={36} />
         </Link>
         {children}
         <nav className="header-utils" aria-label="Account shortcuts">

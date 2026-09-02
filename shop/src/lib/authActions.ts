@@ -20,6 +20,11 @@ export type AuthUser = {
   provider: string;
 };
 
+export type GoogleSignInMethod = "popup" | "redirect";
+
+const AUTH_ERR_KEY = "dnols.auth.error";
+const AUTH_REDIRECT_KEY = "dnols.auth.redirect";
+
 function mapUser(u: User): AuthUser {
   return {
     uid: u.uid,
@@ -30,8 +35,79 @@ function mapUser(u: User): AuthUser {
   };
 }
 
-function isMobile(): boolean {
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+function authCode(e: unknown): string | null {
+  if (typeof e === "object" && e !== null && "code" in e) {
+    const code = (e as { code?: unknown }).code;
+    return typeof code === "string" ? code : null;
+  }
+  return null;
+}
+
+export function authErrorMessage(e: unknown): string {
+  switch (authCode(e)) {
+    case "auth/popup-blocked":
+      return "Your browser blocked the sign-in window. Allow popups for this site and try again.";
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+      return "Sign-in was cancelled.";
+    case "auth/operation-not-supported-in-this-environment":
+      return "Google sign-in is not available in this browser. Try Safari or Chrome, or sign in with email.";
+    case "auth/network-request-failed":
+      return "Network error. Check your connection and try again.";
+    case "auth/invalid-email":
+      return "Enter a valid email address.";
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+    case "auth/invalid-login-credentials":
+      return "Email or password is incorrect.";
+    case "auth/email-already-in-use":
+      return "An account with this email already exists. Sign in instead.";
+    case "auth/weak-password":
+      return "Password must be at least 6 characters.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Wait a moment and try again.";
+    case "auth/unauthorized-domain":
+      return "This domain is not authorized for sign-in.";
+    case "auth/account-exists-with-different-credential":
+      return "This email is already used with a different sign-in method.";
+    default:
+      return e instanceof Error ? e.message : "Sign-in failed";
+  }
+}
+
+export function storeAuthError(message: string) {
+  try {
+    sessionStorage.setItem(AUTH_ERR_KEY, message);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function consumeAuthError(): string | null {
+  try {
+    const v = sessionStorage.getItem(AUTH_ERR_KEY);
+    if (v) sessionStorage.removeItem(AUTH_ERR_KEY);
+    return v;
+  } catch {
+    return null;
+  }
+}
+
+function markRedirectPending() {
+  try {
+    sessionStorage.setItem(AUTH_REDIRECT_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+function clearRedirectPending() {
+  try {
+    sessionStorage.removeItem(AUTH_REDIRECT_KEY);
+  } catch {
+    /* ignore */
+  }
 }
 
 async function requireAuth() {
@@ -45,19 +121,32 @@ async function requireAuth() {
   return auth;
 }
 
-async function oauthSignIn(provider: GoogleAuthProvider) {
+function shouldFallbackToRedirect(e: unknown): boolean {
+  return (
+    authCode(e) === "auth/popup-blocked" ||
+    authCode(e) === "auth/operation-not-supported-in-this-environment"
+  );
+}
+
+async function oauthSignIn(
+  provider: GoogleAuthProvider,
+): Promise<GoogleSignInMethod> {
   const auth = await requireAuth();
-  if (isMobile()) {
-    await signInWithRedirect(auth, provider);
-  } else {
+  try {
     await signInWithPopup(auth, provider);
+    return "popup";
+  } catch (e) {
+    if (!shouldFallbackToRedirect(e)) throw e;
+    markRedirectPending();
+    await signInWithRedirect(auth, provider);
+    return "redirect";
   }
 }
 
-export async function signInWithGoogle(): Promise<void> {
+export async function signInWithGoogle(): Promise<GoogleSignInMethod> {
   const provider = new GoogleAuthProvider();
   provider.setCustomParameters({ prompt: "select_account" });
-  await oauthSignIn(provider);
+  return oauthSignIn(provider);
 }
 
 export async function signInWithEmail(email: string, password: string): Promise<void> {
@@ -93,27 +182,42 @@ export function subscribeAuth(
   onReady?: () => void,
 ): () => void {
   let unsub = () => {};
+  let ready = false;
+  const markReady = () => {
+    if (ready) return;
+    ready = true;
+    onReady?.();
+  };
 
-  void initFirebase().then((ready) => {
-    if (!ready) {
-      onReady?.();
+  void (async () => {
+    const ok = await initFirebase();
+    if (!ok) {
       onUser(null);
+      markReady();
       return;
     }
     const auth = getFirebaseAuth();
     if (!auth) {
-      onReady?.();
       onUser(null);
+      markReady();
       return;
     }
-    void getRedirectResult(auth).then((cred) => {
-      if (cred?.user) onUser(mapUser(cred.user));
-    });
+
+    try {
+      const redirect = await getRedirectResult(auth);
+      if (redirect?.user) onUser(mapUser(redirect.user));
+    } catch (e) {
+      console.error("Google redirect sign-in failed", e);
+      storeAuthError(authErrorMessage(e));
+    } finally {
+      clearRedirectPending();
+    }
+
     unsub = onAuthStateChanged(auth, (u) => {
       onUser(u ? mapUser(u) : null);
-      onReady?.();
+      markReady();
     });
-  });
+  })();
 
   return () => unsub();
 }

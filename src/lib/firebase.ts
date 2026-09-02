@@ -1,7 +1,10 @@
-import { initializeApp, type FirebaseApp } from "firebase/app";
+import { getApp, getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import {
   browserLocalPersistence,
+  browserPopupRedirectResolver,
   getAuth,
+  indexedDBLocalPersistence,
+  initializeAuth,
   setPersistence,
   type Auth,
 } from "firebase/auth";
@@ -28,13 +31,16 @@ function hasConfig(cfg: Partial<FirebaseConfig>): cfg is FirebaseConfig {
 }
 
 async function loadHostingConfig(): Promise<Partial<FirebaseConfig>> {
+  const ctrl = new AbortController();
+  const timer = window.setTimeout(() => ctrl.abort(), 1500);
   try {
-    const res = await fetch("/__/firebase/init.json");
+    const res = await fetch("/__/firebase/init.json", { signal: ctrl.signal });
     if (!res.ok) return {};
-    const json = (await res.json()) as Partial<FirebaseConfig>;
-    return json;
+    return (await res.json()) as Partial<FirebaseConfig>;
   } catch {
     return {};
+  } finally {
+    window.clearTimeout(timer);
   }
 }
 
@@ -43,7 +49,9 @@ export async function initFirebase(): Promise<boolean> {
   if (initPromise) return initPromise;
 
   initPromise = (async () => {
-    const hosting = await loadHostingConfig();
+    // Prefer baked-in env keys so sign-in is not blocked by a hanging
+    // /__/firebase/init.json fetch (common on mobile with the PWA service worker).
+    const hosting = hasConfig(envConfig) ? {} : await loadHostingConfig();
     const merged = {
       apiKey: envConfig.apiKey || hosting.apiKey,
       authDomain: envConfig.authDomain || hosting.authDomain,
@@ -53,12 +61,23 @@ export async function initFirebase(): Promise<boolean> {
     if (!hasConfig(merged)) return false;
 
     resolvedConfig = merged;
-    app = initializeApp(merged);
-    auth = getAuth(app);
+    app = getApps().length ? getApp() : initializeApp(merged);
     try {
-      await setPersistence(auth, browserLocalPersistence);
+      auth = initializeAuth(app, {
+        persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+        popupRedirectResolver: browserPopupRedirectResolver,
+      });
     } catch {
-      /* private mode / storage blocked — auth still works for this session */
+      auth = getAuth(app);
+      try {
+        await setPersistence(auth, indexedDBLocalPersistence);
+      } catch {
+        try {
+          await setPersistence(auth, browserLocalPersistence);
+        } catch {
+          /* private mode / storage blocked — auth still works for this session */
+        }
+      }
     }
     return true;
   })();

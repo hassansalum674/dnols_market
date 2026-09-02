@@ -60,7 +60,7 @@ export function AppLayout() {
         {shop && (
           <header className="header">
             <div className="shell-inner header-row">
-              <BrandLogo variant="dark" className="header-wordmark" height={32} />
+              <BrandLogo className="header-wordmark" height={32} />
               <span className="header-shop-label">Shop</span>
             </div>
           </header>

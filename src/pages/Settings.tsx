@@ -40,8 +40,8 @@ export function SettingsPage() {
         <div className="sheet-options">
           {(
             [
-              ["dark", "Dark"],
               ["light", "Light"],
+              ["dark", "Dark"],
               ["system", "System"],
             ] as const
           ).map(([value, label]) => (

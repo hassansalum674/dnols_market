@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { authErrorMessage, consumeAuthError } from "../lib/authActions";
 import { useAuth } from "../store/auth";
 
 type Mode = "signin" | "signup" | "reset";
@@ -28,18 +29,19 @@ export function SignInPanel({
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(() => consumeAuthError());
   const [msg, setMsg] = useState<string | null>(null);
 
-  async function run(provider: string, fn: () => Promise<void>) {
+  async function run(provider: string, fn: () => Promise<"popup" | "redirect" | void>) {
     setErr(null);
     setMsg(null);
     setBusy(provider);
     try {
-      await fn();
+      const method = await fn();
+      if (method === "redirect") return;
       onSuccess?.();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Sign-in failed");
+      setErr(authErrorMessage(e));
     } finally {
       setBusy(null);
     }

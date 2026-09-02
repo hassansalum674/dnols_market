@@ -47,8 +47,8 @@ export default defineConfig({
         name: "Dnols",
         short_name: "Dnols",
         description: "Shops you can walk to — Kariakoo and beyond",
-        theme_color: "#0D0D0D",
-        background_color: "#0D0D0D",
+        theme_color: "#ffffff",
+        background_color: "#ffffff",
         display: "standalone",
         orientation: "portrait",
         start_url: "/",
@@ -80,6 +80,10 @@ export default defineConfig({
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/__\//, /^\/api\//],
         runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith("/__/"),
+            handler: "NetworkOnly",
+          },
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/api"),
             handler: "NetworkFirst",

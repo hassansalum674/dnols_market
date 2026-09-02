@@ -9,6 +9,7 @@ const LINES = [
 
 export function Splash({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
+  const light = document.documentElement.dataset.theme !== "dark";
 
   useEffect(() => {
     const rotate = window.setInterval(
@@ -23,8 +24,16 @@ export function Splash({ onDone }: { onDone: () => void }) {
   }, [onDone]);
 
   return (
-    <div className="splash" role="dialog" aria-label="Welcome to Dnols">
-      <img className="splash-logo" src="/brand/logo6_dark.svg" alt="Dnols" />
+    <div
+      className={`splash ${light ? "splash--light" : ""}`}
+      role="dialog"
+      aria-label="Welcome to Dnols"
+    >
+      <img
+        className="splash-logo"
+        src={light ? "/brand/logo1_primary.svg" : "/brand/logo6_dark.svg"}
+        alt="Dnols"
+      />
       <p className="splash-line" key={i}>
         {LINES[i]}
       </p>

@@ -53,6 +53,10 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
+            urlPattern: ({ url }) => url.pathname.startsWith("/__/"),
+            handler: "NetworkOnly",
+          },
+          {
             urlPattern: ({ url }) => url.pathname.startsWith("/api"),
             handler: "NetworkFirst",
             options: {

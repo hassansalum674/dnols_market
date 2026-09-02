@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { authErrorMessage, consumeAuthError } from "../lib/authActions";
 import { useAuth } from "../store/auth";
 
 type Props = {
@@ -13,19 +14,20 @@ export function GoogleSignInButton({
   className = "",
   redirectTo = "/you",
 }: Props) {
-  const { signInWithGoogle, configured } = useAuth();
+  const { signInWithGoogle, configured, loading } = useAuth();
   const nav = useNavigate();
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(() => consumeAuthError());
 
   async function click() {
     setErr(null);
     setBusy(true);
     try {
-      await signInWithGoogle();
+      const method = await signInWithGoogle();
+      if (method === "redirect") return;
       nav(redirectTo, { replace: true });
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Sign-in failed");
+      setErr(authErrorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -36,7 +38,7 @@ export function GoogleSignInButton({
       <button
         type="button"
         className="btn-google"
-        disabled={busy || !configured}
+        disabled={busy || loading || !configured}
         onClick={() => void click()}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden>
@@ -59,7 +61,7 @@ export function GoogleSignInButton({
         </svg>
         {busy ? "Signing in…" : label}
       </button>
-      {!configured && (
+      {!configured && !loading && (
         <p className="hint google-hint">
           Google sign-in needs Firebase keys in production. See docs/auth.md.
         </p>

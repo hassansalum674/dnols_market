@@ -1,44 +1,29 @@
 import { useState } from "react";
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithRedirect,
-} from "firebase/auth";
-import { getFirebaseAuth, isFirebaseConfigured } from "../lib/firebase";
+import { authErrorMessage, consumeAuthError } from "../lib/authActions";
+import { useAuth } from "../store/auth";
 
 type Props = {
   label?: string;
   onSuccess?: (email: string, name: string | null) => void;
 };
 
-function isMobile(): boolean {
-  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-}
-
 export function GoogleSignInButton({
   label = "Continue with Google",
   onSuccess,
 }: Props) {
+  const { signInWithGoogle, configured, loading, user } = useAuth();
   const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
-  const configured = isFirebaseConfigured();
+  const [err, setErr] = useState<string | null>(() => consumeAuthError());
 
   async function click() {
     setErr(null);
     setBusy(true);
     try {
-      const auth = getFirebaseAuth();
-      if (!auth) throw new Error("Google sign-in not configured. See docs/auth.md");
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: "select_account" });
-      const cred = isMobile()
-        ? await signInWithRedirect(auth, provider).then(() => null)
-        : await signInWithPopup(auth, provider);
-      if (cred?.user?.email) {
-        onSuccess?.(cred.user.email, cred.user.displayName);
-      }
+      const method = await signInWithGoogle();
+      if (method === "redirect") return;
+      if (user?.email) onSuccess?.(user.email, user.displayName);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Sign-in failed");
+      setErr(authErrorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -49,12 +34,12 @@ export function GoogleSignInButton({
       <button
         type="button"
         className="btn-google"
-        disabled={busy || !configured}
+        disabled={busy || loading || !configured}
         onClick={() => void click()}
       >
         {busy ? "Signing in…" : label}
       </button>
-      {!configured && (
+      {!configured && !loading && (
         <p className="hint">Add Firebase keys to enable Google sign-in.</p>
       )}
       {err && <p className="err">{err}</p>}
