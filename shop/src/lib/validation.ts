@@ -6,9 +6,8 @@ export function tzLocalDigits(raw: string): string {
   let d = raw.replace(/\D/g, "");
   if (d.startsWith("255")) d = d.slice(3);
   if (d.startsWith("0")) d = d.slice(1);
-  const start = d.search(/[67]/);
-  if (start < 0) return "";
-  return d.slice(start, start + 9);
+  if (!d || (d[0] !== "6" && d[0] !== "7")) return "";
+  return d.slice(0, 9);
 }
 
 export function formatTzLocalMask(local: string): string {
