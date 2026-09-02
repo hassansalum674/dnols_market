@@ -480,6 +480,38 @@ img {
   border-color: var(--blue);
 }
 
+.tz-phone {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.tz-phone-cc {
+  flex: none;
+  padding-right: 10px;
+  margin-right: 10px;
+  border-right: 1px solid var(--faint);
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.tz-phone input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  outline: none;
+}
+
+.tz-phone:focus-within {
+  border-color: var(--blue);
+}
+
 textarea.field {
   min-height: 72px;
   resize: vertical;

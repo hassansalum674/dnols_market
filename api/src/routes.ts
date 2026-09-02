@@ -521,7 +521,7 @@ export function registerRoutes(
     if (!normalized) {
       return reply.code(400).send({
         error: "bad_phone",
-        message: "Enter a valid Tanzania mobile money number (+255 6XX or 7XX).",
+        message: "Enter a Tanzania mobile money number (+255 6XX XXX XXX or +255 7XX XXX XXX).",
       });
     }
     const deliveryRaw = String(body.deliveryPhone ?? body.phone ?? "").trim();
@@ -530,7 +530,7 @@ export function registerRoutes(
       return reply.code(400).send({
         error: "bad_delivery_phone",
         message:
-          "Enter a valid delivery contact number (+255 6XX or 7XX).",
+          "Enter a Tanzania delivery number (+255 6XX XXX XXX or +255 7XX XXX XXX).",
       });
     }
     try {
@@ -631,7 +631,7 @@ export function registerRoutes(
       if (!normalized) {
         return reply.code(400).send({
           error: "bad_phone",
-          message: "Enter a valid Tanzania mobile number (+255 6XX or 7XX).",
+          message: "Enter a Tanzania mobile number (+255 6XX XXX XXX or +255 7XX XXX XXX).",
         });
       }
       const orders = store.ordersForPhone(normalized).map(toBuyerOrder);

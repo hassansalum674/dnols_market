@@ -11,6 +11,7 @@ import {
 } from "../components/OnboardingLayout";
 import { PhotoUpload } from "../components/PhotoUpload";
 import { StallPin } from "../components/StallPin";
+import { TzPhoneField } from "../components/TzPhoneField";
 import {
   captureStallLocation,
   kariakooFallbackPin,
@@ -23,7 +24,6 @@ import {
 } from "../lib/onboarding";
 import { syncShopToApi } from "../lib/shopSync";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
-import { formatTzPhone } from "../lib/validation";
 import {
   clearDraft,
   loadDraft,
@@ -364,19 +364,16 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <label className="lbl">Primary phone number *</label>
-      <input
+      <label className="lbl" htmlFor="onboard-primary-phone">
+        Primary phone number *
+      </label>
+      <TzPhoneField
+        id="onboard-primary-phone"
         className="field"
-        type="tel"
-        inputMode="tel"
         value={s.primaryPhone}
-        onChange={(e) => updateStep("step3", { primaryPhone: e.target.value })}
-        placeholder="+255 7XX XXX XXX"
+        onChange={(next) => updateStep("step3", { primaryPhone: next })}
         required
       />
-      {s.primaryPhone && (
-        <p className="hint">{formatTzPhone(s.primaryPhone)}</p>
-      )}
 
       <Toggle
         label="WhatsApp same as primary"
@@ -386,16 +383,15 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
 
       {!s.whatsappSame && (
         <>
-          <label className="lbl">WhatsApp number *</label>
-          <input
+          <label className="lbl" htmlFor="onboard-whatsapp-phone">
+            WhatsApp number *
+          </label>
+          <TzPhoneField
+            id="onboard-whatsapp-phone"
             className="field"
-            type="tel"
-            inputMode="tel"
             value={s.whatsappPhone}
-            onChange={(e) =>
-              updateStep("step3", { whatsappPhone: e.target.value })
-            }
-            placeholder="+255 7XX XXX XXX"
+            onChange={(next) => updateStep("step3", { whatsappPhone: next })}
+            required
           />
         </>
       )}
@@ -517,16 +513,14 @@ function Step5({
         onChange={(v) => updateStep("step5", { provider: v })}
       />
 
-      <label className="lbl">Mobile money number *</label>
-      <input
+      <label className="lbl" htmlFor="onboard-momo-phone">
+        Mobile money number *
+      </label>
+      <TzPhoneField
+        id="onboard-momo-phone"
         className="field"
-        type="tel"
-        inputMode="tel"
         value={s.mobileMoneyNumber}
-        onChange={(e) =>
-          updateStep("step5", { mobileMoneyNumber: e.target.value })
-        }
-        placeholder="+255 7XX XXX XXX"
+        onChange={(next) => updateStep("step5", { mobileMoneyNumber: next })}
         required
       />
 

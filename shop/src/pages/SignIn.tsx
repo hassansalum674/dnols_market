@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { SignInPanel } from "../components/SignInPanel";
 import { SellHeader } from "../components/SellHeader";
+import { TzPhoneField } from "../components/TzPhoneField";
 import { isValidTzPhone, normalizeTzPhone } from "../lib/validation";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
 import { useAuth } from "../store/auth";
@@ -54,7 +55,7 @@ export function SignInPage() {
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!isValidTzPhone(phone)) {
-      setErr("Enter a valid +255 phone number.");
+      setErr("Enter a Tanzania number: +255 6XX XXX XXX or +255 7XX XXX XXX.");
       return;
     }
     afterAuth(normalizeTzPhone(phone));
@@ -72,17 +73,18 @@ export function SignInPage() {
         <p className="auth-divider">or use phone</p>
 
         <form onSubmit={submit}>
-          <label className="lbl">Phone number</label>
-          <input
+          <label className="lbl" htmlFor="seller-phone">
+            Phone number
+          </label>
+          <TzPhoneField
+            id="seller-phone"
             className="field"
-            type="tel"
-            inputMode="tel"
-            placeholder="+255 7XX XXX XXX"
             value={phone}
-            onChange={(e) => {
-              setPhone(e.target.value);
+            onChange={(next) => {
+              setPhone(next);
               setErr(null);
             }}
+            required
           />
           {err && <p className="err">{err}</p>}
           <button type="submit" className="btn" style={{ marginTop: 20 }}>

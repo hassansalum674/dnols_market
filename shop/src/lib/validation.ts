@@ -1,8 +1,32 @@
 import type { MobileMoneyProvider } from "../types";
 import { MOBILE_MONEY_PROVIDERS } from "../types";
 
-/** Normalize to digits only, strip leading +255 or 0 */
+/** 9 local digits starting with 6 or 7 (strips +255 / leading 0). */
+export function tzLocalDigits(raw: string): string {
+  let d = raw.replace(/\D/g, "");
+  if (d.startsWith("255")) d = d.slice(3);
+  if (d.startsWith("0")) d = d.slice(1);
+  const start = d.search(/[67]/);
+  if (start < 0) return "";
+  return d.slice(start, start + 9);
+}
+
+export function formatTzLocalMask(local: string): string {
+  const d = tzLocalDigits(local);
+  if (d.length <= 3) return d;
+  if (d.length <= 6) return `${d.slice(0, 3)} ${d.slice(3)}`;
+  return `${d.slice(0, 3)} ${d.slice(3, 6)} ${d.slice(6)}`;
+}
+
+export function toTzE164(raw: string): string {
+  const local = tzLocalDigits(raw);
+  return local ? `+255${local}` : "";
+}
+
+/** Normalize to 9 local digits, strip leading +255 or 0 */
 export function normalizeTzPhone(raw: string): string {
+  const local = tzLocalDigits(raw);
+  if (local) return local;
   const digits = raw.replace(/\D/g, "");
   if (digits.startsWith("255") && digits.length >= 12) {
     return digits.slice(3);
@@ -13,18 +37,16 @@ export function normalizeTzPhone(raw: string): string {
   return digits;
 }
 
-/** Format as +255 XXX XXX XXX for display */
+/** Format as +255 6XX XXX XXX for display */
 export function formatTzPhone(raw: string): string {
-  const d = normalizeTzPhone(raw);
-  if (d.length < 9) return raw;
-  const nine = d.slice(0, 9);
-  return `+255 ${nine.slice(0, 3)} ${nine.slice(3, 6)} ${nine.slice(6)}`;
+  const d = tzLocalDigits(raw) || normalizeTzPhone(raw);
+  if (!d) return "+255";
+  return `+255 ${formatTzLocalMask(d)}`;
 }
 
 /** Validate Tanzanian mobile: 9 digits starting with 6 or 7 */
 export function isValidTzPhone(raw: string): boolean {
-  const d = normalizeTzPhone(raw);
-  return /^[67]\d{8}$/.test(d);
+  return /^[67]\d{8}$/.test(tzLocalDigits(raw));
 }
 
 export function validateNida(raw: string): boolean {

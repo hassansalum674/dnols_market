@@ -19,6 +19,7 @@ import {
   PAY_METHODS,
   saveCheckoutPrefs,
 } from "../lib/checkout";
+import { TzPhoneField } from "./TzPhoneField";
 import {
   formatTzPhoneDisplay,
   isValidTzPhone,
@@ -128,13 +129,13 @@ export function CheckoutSheet() {
       return;
     }
     if (!isValidTzPhone(phone)) {
-      setErr("Enter a valid Tanzania mobile money number (+255 6XX or 7XX).");
+      setErr("Enter a Tanzania number: +255 6XX XXX XXX or +255 7XX XXX XXX.");
       return;
     }
     const normalizedPay = normalizeTzPhone(phone);
     const deliveryRaw = useCustomDelivery ? deliveryPhone : phone;
     if (!isValidTzPhone(deliveryRaw)) {
-      setErr("Enter a valid delivery contact number (+255 6XX or 7XX).");
+      setErr("Enter a Tanzania delivery number: +255 6XX XXX XXX or +255 7XX XXX XXX.");
       return;
     }
     const normalizedDelivery = normalizeTzPhone(deliveryRaw);
@@ -420,18 +421,15 @@ export function CheckoutSheet() {
               <label className="field-label" htmlFor="sheet-charge-phone">
                 Number to charge
               </label>
-              <input
+              <TzPhoneField
                 id="sheet-charge-phone"
                 className="sheet-field"
-                type="tel"
-                inputMode="tel"
                 autoComplete="tel"
-                placeholder="+255 6XX or 7XX XXX XXX"
                 value={phone}
-                onChange={(e) => {
+                onChange={(next) => {
                   setSelectedCardId(null);
-                  setPhone(e.target.value);
-                  if (!useCustomDelivery) setDeliveryPhone(e.target.value);
+                  setPhone(next);
+                  if (!useCustomDelivery) setDeliveryPhone(next);
                   setErr(null);
                 }}
               />
@@ -467,16 +465,13 @@ export function CheckoutSheet() {
                   <label className="field-label" htmlFor="sheet-delivery-phone">
                     Delivery phone number
                   </label>
-                  <input
+                  <TzPhoneField
                     id="sheet-delivery-phone"
                     className="sheet-field"
-                    type="tel"
-                    inputMode="tel"
                     autoComplete="tel"
-                    placeholder="+255 6XX or 7XX XXX XXX"
                     value={deliveryPhone}
-                    onChange={(e) => {
-                      setDeliveryPhone(e.target.value);
+                    onChange={(next) => {
+                      setDeliveryPhone(next);
                       setErr(null);
                     }}
                   />

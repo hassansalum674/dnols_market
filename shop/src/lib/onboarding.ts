@@ -92,12 +92,12 @@ export function validateStep(draft: OnboardingDraft, step: number): string | nul
     }
     case 3: {
       if (!isValidTzPhone(draft.step3.primaryPhone))
-        return "Enter a valid +255 phone number.";
+        return "Enter a Tanzania number: +255 6XX XXX XXX or +255 7XX XXX XXX.";
       if (
         !draft.step3.whatsappSame &&
         !isValidTzPhone(draft.step3.whatsappPhone)
       )
-        return "Enter a valid WhatsApp number.";
+        return "Enter a Tanzania WhatsApp number: +255 6XX XXX XXX or +255 7XX XXX XXX.";
       return null;
     }
     case 4: {
