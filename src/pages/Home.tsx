@@ -4,6 +4,7 @@ import { fetchListings } from "../api/client";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { StatusScreen } from "../components/EmptyState";
+import { useBuyerLocation } from "../store/buyerLocation";
 import { PLACE_LABEL } from "../lib/format";
 import { SELLER_URL } from "../lib/urls";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
@@ -56,6 +57,7 @@ export function HomePage() {
   const [listings, setListings] = useState<PublicListing[] | null>(null);
   const [source, setSource] = useState<"api" | "mock">("mock");
   const [err, setErr] = useState<"offline" | "500" | null>(null);
+  const { location: here, denied: locationDenied } = useBuyerLocation();
 
   useEffect(() => setDraft(filters), [filters]);
 
@@ -74,7 +76,7 @@ export function HomePage() {
     return () => {
       live = false;
     };
-  }, [filters]);
+  }, [filters, here?.lat, here?.lng]);
 
   const setFilters = (next: ListingFilters) => {
     setSp(toParams(next, sp), { replace: true });
@@ -100,7 +102,15 @@ export function HomePage() {
         <div className="home-hero-text">
           <h1>Welcome to dnols.com</h1>
           <p>
-            Browse stalls near {PLACE_LABEL()}, pay in the app, and pick up in person.
+            Browse stalls near {PLACE_LABEL()}. Nearby first — after you pay, you
+            see exactly where the product is.
+          </p>
+          <p className="hint" aria-live="polite">
+            {here
+              ? "Distances are from where you are now to each stall."
+              : locationDenied
+                ? "Turn on location to see how far each stall is from you."
+                : "Finding where you are so we can show the closest stalls…"}
           </p>
         </div>
         <a

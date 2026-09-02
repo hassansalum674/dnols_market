@@ -2,6 +2,9 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import { registerRoutes } from "./routes.js";
 import { registerPhotoRoutes } from "./photos/routes.js";
+import { flushStore, hydrateStore, persistPath } from "./persist.js";
+
+hydrateStore();
 
 const PORT = Number(process.env.PORT ?? 8787);
 const HOST = process.env.HOST ?? "0.0.0.0";
@@ -29,12 +32,18 @@ app.get("/openapi.json", async (_req, reply) => {
     paths: [
       "GET /health",
       "GET /places",
+      "POST /shops",
+      "PATCH /shops/:id",
       "GET /listings",
+      "POST /listings",
+      "PATCH /listings/:id",
       "GET /listings/:id",
+      "GET /search",
       "GET /cart",
       "POST /cart",
       "POST /orders/pay",
       "POST /orders/reserve",
+      "GET /orders",
       "GET /orders/:id",
       "POST /orders/:id/handover",
       "GET /trending",
@@ -43,6 +52,20 @@ app.get("/openapi.json", async (_req, reply) => {
     ],
   });
 });
+
+const shutdown = async (signal: string) => {
+  app.log.info({ signal, persist: persistPath() }, "flushing store");
+  flushStore();
+  try {
+    await app.close();
+  } catch {
+    /* ignore */
+  }
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => void shutdown("SIGTERM"));
+process.on("SIGINT", () => void shutdown("SIGINT"));
 
 try {
   await app.listen({ port: PORT, host: HOST });

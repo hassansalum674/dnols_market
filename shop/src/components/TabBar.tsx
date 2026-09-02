@@ -61,6 +61,11 @@ export function TabBar({ pickupCount }: { pickupCount: number }) {
           to={t.to}
           end={t.end}
           className={({ isActive }) => (isActive ? "active" : "")}
+          aria-label={
+            t.name === "Today" && pickupCount > 0
+              ? `Today, ${pickupCount} pickups waiting`
+              : t.label
+          }
         >
           <span className="tab-ico">
             <Ico name={t.name} />

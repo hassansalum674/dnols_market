@@ -42,8 +42,8 @@ Tokens: blue `#1A6FD4`, black `#0D0D0D`, white `#FFFFFF`. Type: self-hosted **Pl
 
 | Surface | Behavior |
 |---|---|
-| Listings, search suggest, trending, product detail | Tries `GET /api/listings`, `/api/listings/:id`, `/api/search`. If the API is down or empty, uses local Kariakoo mocks (fashion + electronics). Distances are meters only. |
-| Product address / lat / lng | Hidden until `paid: true` (after checkout token stored locally, or API `directions` on the listing). |
+| Listings, search suggest, trending, product detail | Tries `GET /api/listings`, `/api/listings/:id`, `/api/search`. If the API is down or empty, uses local Kariakoo mocks (fashion + electronics). Distances are meters from the buyer’s live location to the shop pin. |
+| Product address / lat / lng | Hidden until `paid: true` (after checkout token stored locally, or API `directions` on the listing). The pin comes from the shop's onboarding GPS capture. |
 | Cart | Local only (`localStorage`). |
 | Checkout pay | `POST /api/orders` when the API is up; otherwise a local paid_held stub + pickup code. |
 | Orders | Merges `GET /api/orders` with locally saved checkouts. |

@@ -7,6 +7,7 @@ import {
   productEditPath,
 } from "../lib/shopRoutes";
 import { loadPayouts, loadProducts, loadProfile } from "../storage";
+import { syncAllProductsToApi, syncShopToApi } from "../lib/shopSync";
 import { formatTzs } from "./errors";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -23,16 +24,26 @@ export function DashboardPage() {
   const payouts = loadPayouts();
 
   useEffect(() => {
-    if (!profile) {
+    const current = loadProfile();
+    if (!current) {
       navigate("/", { replace: true });
       return;
     }
-    if (profile.status === "pending_review") {
+    if (current.status === "pending_review") {
       navigate("/pending", { replace: true });
-    } else if (profile.status === "rejected") {
+    } else if (current.status === "rejected") {
       navigate("/rejected", { replace: true });
+    } else if (current.status === "active") {
+      void (async () => {
+        try {
+          await syncShopToApi(current);
+          await syncAllProductsToApi(current);
+        } catch {
+          /* keep local catalog; next visit retries */
+        }
+      })();
     }
-  }, [profile, navigate]);
+  }, [navigate, profile?.shopId, profile?.status]);
 
   const activeListings = useMemo(
     () => products.filter((p) => p.stock > 0),

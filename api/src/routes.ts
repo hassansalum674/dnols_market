@@ -1,11 +1,13 @@
 import type { FastifyInstance } from "fastify";
-import { PLACE_ID, type Category, type Sort } from "./types.js";
+import { PLACE_ID, type Category, type Listing, type Sort } from "./types.js";
 import { store } from "./store.js";
 import {
   distanceToShop,
+  toBuyerOrder,
   toDirections,
   toPublicDetail,
   toPublicListing,
+  toSellerOrder,
 } from "./serialize.js";
 
 const CATEGORIES = new Set<Category>(["fashion", "electronics"]);
@@ -35,13 +37,178 @@ function normalizeTzPhone(raw: string): string | null {
           ? `+255${phoneDigits}`
           : raw.trim();
   const phoneCheck = normalized.replace(/\D/g, "");
-  if (!/^2557\d{8}$/.test(phoneCheck)) return null;
+  if (!/^255[67]\d{8}$/.test(phoneCheck)) return null;
   return normalized;
 }
 
 function sessionId(req: { headers: Record<string, unknown> }): string {
   const h = req.headers["x-session-id"] ?? req.headers["x-cart-id"];
   return typeof h === "string" && h.trim() ? h.trim() : "anon";
+}
+
+function queryListings(
+  q: Record<string, string | undefined>,
+  defaults: { buyerLat: number; buyerLng: number },
+):
+  | { error: { code: number; body: Record<string, string> } }
+  | {
+      rows: Listing[];
+      buyerLat: number;
+      buyerLng: number;
+      placeId: string;
+    } {
+  const placeId = q.placeId;
+  if (placeId && placeId !== PLACE_ID) {
+    return {
+      error: {
+        code: 400,
+        body: {
+          error: "unknown_place",
+          message: `Use placeId=${PLACE_ID} (Kariakoo).`,
+        },
+      },
+    };
+  }
+  if (q.category && !CATEGORIES.has(q.category as Category)) {
+    return {
+      error: {
+        code: 400,
+        body: {
+          error: "bad_category",
+          message: "category must be fashion|electronics",
+        },
+      },
+    };
+  }
+  const sort = (q.sort as Sort | undefined) ?? "nearest";
+  if (!SORTS.has(sort)) {
+    return {
+      error: {
+        code: 400,
+        body: {
+          error: "bad_sort",
+          message: "sort must be nearest|price_asc|price_desc|newest",
+        },
+      },
+    };
+  }
+
+  const buyerLat = num(q.buyerLat) ?? defaults.buyerLat;
+  const buyerLng = num(q.buyerLng) ?? defaults.buyerLng;
+  const search = (q.q ?? "").trim().toLowerCase();
+  const category = q.category as Category | undefined;
+  const maxDistanceMeters = num(q.maxDistanceMeters) ?? num(q.maxDistance);
+  const minPrice = num(q.minPrice);
+  const maxPrice = num(q.maxPrice);
+  const inStock = parseBool(q.inStock);
+
+  let rows = store.allListings();
+  if (category) rows = rows.filter((l) => l.category === category);
+  if (search) {
+    rows = rows.filter(
+      (l) =>
+        l.title.toLowerCase().includes(search) ||
+        l.description.toLowerCase().includes(search) ||
+        (l.brand ?? "").toLowerCase().includes(search),
+    );
+  }
+  if (inStock !== undefined) {
+    rows = rows.filter((l) => l.inStock === inStock);
+  }
+  if (minPrice !== undefined) {
+    rows = rows.filter((l) => l.priceTzs >= minPrice);
+  }
+  if (maxPrice !== undefined) {
+    rows = rows.filter((l) => l.priceTzs <= maxPrice);
+  }
+  if (maxDistanceMeters !== undefined) {
+    rows = rows.filter((l) => {
+      const shop = store.shop(l.shopId)!;
+      return distanceToShop(shop, buyerLat, buyerLng) <= maxDistanceMeters;
+    });
+  }
+
+  rows.sort((a, b) => {
+    if (sort === "price_asc") return a.priceTzs - b.priceTzs;
+    if (sort === "price_desc") return b.priceTzs - a.priceTzs;
+    if (sort === "newest") {
+      return Date.parse(b.createdAt) - Date.parse(a.createdAt);
+    }
+    const da = distanceToShop(store.shop(a.shopId)!, buyerLat, buyerLng);
+    const db = distanceToShop(store.shop(b.shopId)!, buyerLat, buyerLng);
+    return da - db;
+  });
+
+  return { rows, buyerLat, buyerLng, placeId: PLACE_ID };
+}
+
+type ListingBody = {
+  id?: string;
+  shopId?: string;
+  title?: string;
+  priceTzs?: number;
+  category?: string;
+  photoUrl?: string;
+  inStock?: boolean;
+  description?: string;
+  sizes?: string[];
+  brand?: string;
+};
+
+function upsertListingFromBody(body: ListingBody, existingShopId?: string) {
+  const shopId = String(body.shopId ?? existingShopId ?? "").trim();
+  if (!shopId || !store.shop(shopId)) {
+    return {
+      ok: false as const,
+      error: {
+        code: 400,
+        body: {
+          error: "unknown_shop",
+          message: "Register the shop location before listing products.",
+        },
+      },
+    };
+  }
+  const title = String(body.title ?? "").trim();
+  const photoUrl = String(body.photoUrl ?? "").trim();
+  const priceTzs = num(body.priceTzs);
+  if (!title || !photoUrl || priceTzs === undefined || priceTzs < 0) {
+    return {
+      ok: false as const,
+      error: {
+        code: 400,
+        body: {
+          error: "bad_body",
+          message: "title, photoUrl, and priceTzs are required.",
+        },
+      },
+    };
+  }
+  if (body.category && !CATEGORIES.has(body.category as Category)) {
+    return {
+      ok: false as const,
+      error: {
+        code: 400,
+        body: {
+          error: "bad_category",
+          message: "category must be fashion|electronics",
+        },
+      },
+    };
+  }
+  const listing = store.upsertListing({
+    id: body.id,
+    shopId,
+    title,
+    priceTzs,
+    category: (body.category as Category) ?? "fashion",
+    photoUrl,
+    inStock: body.inStock !== false,
+    description: String(body.description ?? "").trim(),
+    sizes: Array.isArray(body.sizes) ? body.sizes : undefined,
+    brand: body.brand,
+  });
+  return { ok: true as const, listing };
 }
 
 export function registerRoutes(
@@ -69,77 +236,182 @@ export function registerRoutes(
 
   app.get("/listings", async (req, reply) => {
     const q = req.query as Record<string, string | undefined>;
-    const placeId = q.placeId;
-    if (placeId && placeId !== PLACE_ID) {
-      return reply.code(400).send({
-        error: "unknown_place",
-        message: `Use placeId=${PLACE_ID} (Kariakoo).`,
-      });
+    const result = queryListings(q, defaults);
+    if ("error" in result) {
+      return reply.code(result.error.code).send(result.error.body);
     }
-    if (q.category && !CATEGORIES.has(q.category as Category)) {
-      return reply.code(400).send({
-        error: "bad_category",
-        message: "category must be fashion|electronics",
-      });
-    }
-    const sort = (q.sort as Sort | undefined) ?? "nearest";
-    if (!SORTS.has(sort)) {
-      return reply.code(400).send({
-        error: "bad_sort",
-        message: "sort must be nearest|price_asc|price_desc|newest",
-      });
-    }
-
-    const buyerLat = num(q.buyerLat) ?? defaults.buyerLat;
-    const buyerLng = num(q.buyerLng) ?? defaults.buyerLng;
-    const search = (q.q ?? "").trim().toLowerCase();
-    const category = q.category as Category | undefined;
-    const maxDistanceMeters = num(q.maxDistanceMeters);
-    const minPrice = num(q.minPrice);
-    const maxPrice = num(q.maxPrice);
-    const inStock = parseBool(q.inStock);
-
-    let rows = store.allListings();
-    if (category) rows = rows.filter((l) => l.category === category);
-    if (search) {
-      rows = rows.filter(
-        (l) =>
-          l.title.toLowerCase().includes(search) ||
-          l.description.toLowerCase().includes(search) ||
-          (l.brand ?? "").toLowerCase().includes(search),
-      );
-    }
-    if (inStock !== undefined) {
-      rows = rows.filter((l) => l.inStock === inStock);
-    }
-    if (minPrice !== undefined) {
-      rows = rows.filter((l) => l.priceTzs >= minPrice);
-    }
-    if (maxPrice !== undefined) {
-      rows = rows.filter((l) => l.priceTzs <= maxPrice);
-    }
-    if (maxDistanceMeters !== undefined) {
-      rows = rows.filter((l) => {
-        const shop = store.shop(l.shopId)!;
-        return distanceToShop(shop, buyerLat, buyerLng) <= maxDistanceMeters;
-      });
-    }
-
-    rows.sort((a, b) => {
-      if (sort === "price_asc") return a.priceTzs - b.priceTzs;
-      if (sort === "price_desc") return b.priceTzs - a.priceTzs;
-      if (sort === "newest") {
-        return Date.parse(b.createdAt) - Date.parse(a.createdAt);
-      }
-      const da = distanceToShop(store.shop(a.shopId)!, buyerLat, buyerLng);
-      const db = distanceToShop(store.shop(b.shopId)!, buyerLat, buyerLng);
-      return da - db;
-    });
-
     return {
-      placeId: PLACE_ID,
-      count: rows.length,
-      items: rows.map((l) => toPublicListing(l, buyerLat, buyerLng)),
+      placeId: result.placeId,
+      count: result.rows.length,
+      items: result.rows.map((l) =>
+        toPublicListing(l, result.buyerLat, result.buyerLng),
+      ),
+    };
+  });
+
+  app.get("/search", async (req, reply) => {
+    const q = req.query as Record<string, string | undefined>;
+    const search = (q.q ?? "").trim();
+    if (search.length < 1) {
+      return { items: [] };
+    }
+    const result = queryListings({ ...q, q: search }, defaults);
+    if ("error" in result) {
+      return reply.code(result.error.code).send(result.error.body);
+    }
+    return {
+      items: result.rows
+        .slice(0, 8)
+        .map((l) => toPublicListing(l, result.buyerLat, result.buyerLng)),
+    };
+  });
+
+  app.post("/shops", async (req, reply) => {
+    const body = (req.body ?? {}) as {
+      id?: string;
+      shopName?: string;
+      lat?: number;
+      lng?: number;
+      streetAddress?: string;
+      stallNumber?: string;
+      floor?: string;
+      landmark?: string;
+      locationCapturedAt?: string;
+      placeId?: string;
+    };
+    const shopName = String(body.shopName ?? "").trim();
+    const streetAddress = String(body.streetAddress ?? "").trim();
+    const lat = num(body.lat);
+    const lng = num(body.lng);
+    if (!shopName) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "shopName is required.",
+      });
+    }
+    if (lat === undefined || lng === undefined) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "lat and lng are required so buyers can find the stall.",
+      });
+    }
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return reply.code(400).send({ error: "bad_coords" });
+    }
+    if (!streetAddress) {
+      return reply.code(400).send({
+        error: "bad_body",
+        message: "streetAddress is required.",
+      });
+    }
+    const shop = store.upsertShop({
+      id: body.id,
+      shopName,
+      lat,
+      lng,
+      streetAddress,
+      stallNumber: body.stallNumber,
+      floor: body.floor,
+      landmark: body.landmark,
+      locationCapturedAt: body.locationCapturedAt,
+      placeId: body.placeId,
+    });
+    return {
+      shopId: shop.id,
+      shopName: shop.shopName,
+      lat: shop.lat,
+      lng: shop.lng,
+      streetAddress: shop.streetAddress,
+      placeId: shop.placeId,
+    };
+  });
+
+  app.patch("/shops/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const existing = store.shop(id);
+    if (!existing) return reply.code(404).send({ error: "not_found" });
+    const body = (req.body ?? {}) as {
+      shopName?: string;
+      lat?: number;
+      lng?: number;
+      streetAddress?: string;
+      stallNumber?: string;
+      floor?: string;
+      landmark?: string;
+      locationCapturedAt?: string;
+    };
+    const lat = num(body.lat) ?? existing.lat;
+    const lng = num(body.lng) ?? existing.lng;
+    if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return reply.code(400).send({ error: "bad_coords" });
+    }
+    const shop = store.upsertShop({
+      id,
+      shopName: String(body.shopName ?? existing.shopName).trim() || existing.shopName,
+      lat,
+      lng,
+      streetAddress:
+        String(body.streetAddress ?? existing.streetAddress).trim() ||
+        existing.streetAddress,
+      stallNumber: body.stallNumber ?? existing.stallNumber,
+      floor: body.floor ?? existing.floor,
+      landmark: body.landmark ?? existing.landmark,
+      locationCapturedAt:
+        body.locationCapturedAt ?? existing.locationCapturedAt,
+    });
+    return {
+      shopId: shop.id,
+      shopName: shop.shopName,
+      lat: shop.lat,
+      lng: shop.lng,
+      streetAddress: shop.streetAddress,
+      placeId: shop.placeId,
+    };
+  });
+
+  app.post("/listings", async (req, reply) => {
+    const result = upsertListingFromBody((req.body ?? {}) as ListingBody);
+    if (!result.ok) {
+      return reply.code(result.error.code).send(result.error.body);
+    }
+    const listing = result.listing;
+    return {
+      id: listing.id,
+      shopId: listing.shopId,
+      title: listing.title,
+      inStock: listing.inStock,
+    };
+  });
+
+  app.patch("/listings/:id", async (req, reply) => {
+    const { id } = req.params as { id: string };
+    const existing = store.listing(id);
+    if (!existing) return reply.code(404).send({ error: "not_found" });
+    const body = (req.body ?? {}) as ListingBody;
+    const result = upsertListingFromBody(
+      {
+        id,
+        shopId: body.shopId ?? existing.shopId,
+        title: body.title ?? existing.title,
+        photoUrl: body.photoUrl ?? existing.photoUrl,
+        priceTzs: body.priceTzs ?? existing.priceTzs,
+        category: body.category ?? existing.category,
+        inStock: body.inStock ?? existing.inStock,
+        description: body.description ?? existing.description,
+        sizes: body.sizes ?? existing.sizes,
+        brand: body.brand ?? existing.brand,
+      },
+      existing.shopId,
+    );
+    if (!result.ok) {
+      return reply.code(result.error.code).send(result.error.body);
+    }
+    const listing = result.listing;
+    return {
+      id: listing.id,
+      shopId: listing.shopId,
+      title: listing.title,
+      inStock: listing.inStock,
     };
   });
 
@@ -158,10 +430,9 @@ export function registerRoutes(
       buyerLng,
     );
 
-    const paidFlag = q.paid === "1" || q.paid === "true";
     const tok = q.token ?? q.accessToken;
     const unlocked =
-      paidFlag && typeof tok === "string" && store.tokenUnlocksListing(tok, id);
+      typeof tok === "string" && store.tokenUnlocksListing(tok, id);
 
     if (unlocked) {
       const shop = store.shop(listing.shopId)!;
@@ -250,7 +521,7 @@ export function registerRoutes(
     if (!normalized) {
       return reply.code(400).send({
         error: "bad_phone",
-        message: "Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).",
+        message: "Enter a Tanzania mobile money number (+255 6XX XXX XXX or +255 7XX XXX XXX).",
       });
     }
     const deliveryRaw = String(body.deliveryPhone ?? body.phone ?? "").trim();
@@ -259,7 +530,7 @@ export function registerRoutes(
       return reply.code(400).send({
         error: "bad_delivery_phone",
         message:
-          "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+          "Enter a Tanzania delivery number (+255 6XX XXX XXX or +255 7XX XXX XXX).",
       });
     }
     try {
@@ -342,6 +613,31 @@ export function registerRoutes(
       }
       throw e;
     }
+  });
+
+  app.get("/orders", async (req, reply) => {
+    const q = req.query as Record<string, string | undefined>;
+    const shopId = (q.shopId ?? "").trim();
+    const phoneRaw = (q.phone ?? "").trim();
+    if (shopId) {
+      if (!store.shop(shopId)) {
+        return reply.code(404).send({ error: "not_found" });
+      }
+      const orders = store.ordersForShop(shopId).map(toSellerOrder);
+      return { shopId, count: orders.length, orders };
+    }
+    if (phoneRaw) {
+      const normalized = normalizeTzPhone(phoneRaw);
+      if (!normalized) {
+        return reply.code(400).send({
+          error: "bad_phone",
+          message: "Enter a Tanzania mobile number (+255 6XX XXX XXX or +255 7XX XXX XXX).",
+        });
+      }
+      const orders = store.ordersForPhone(normalized).map(toBuyerOrder);
+      return { count: orders.length, orders };
+    }
+    return { orders: [] };
   });
 
   app.get("/orders/:id", async (req, reply) => {

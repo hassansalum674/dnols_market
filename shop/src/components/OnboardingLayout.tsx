@@ -147,7 +147,7 @@ export function RadioGroup<T extends string>({
   name: string;
 }) {
   return (
-    <div className="radio-group">
+    <div className="radio-group" role="radiogroup" aria-label={name}>
       {options.map((opt) => (
         <label key={opt.id} className="radio-row">
           <input

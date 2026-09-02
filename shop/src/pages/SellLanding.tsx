@@ -47,7 +47,7 @@ export function SellLandingPage() {
         <div className="sell-brief">
           <p>
             We verify every shop — you will need your <strong>NIDA or passport</strong>,
-            stall location in Kariakoo, and a <strong>mobile money payout</strong> number.
+            stall location pin in Kariakoo, and a <strong>mobile money payout</strong> number.
             Review usually takes up to 24 hours.
           </p>
           <p className="muted">

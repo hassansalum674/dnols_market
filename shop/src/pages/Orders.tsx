@@ -1,41 +1,35 @@
 import { useCallback, useEffect, useState } from "react";
-import { getOrder, handoverOrder, payOrder, rejectOrder } from "../api";
+import { handoverOrder, payOrder, rejectOrder } from "../api";
 import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
+import { loadShopOrderRows, type OrderRow } from "../lib/shopOrders";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
-import type { OrderView, SavedOrder } from "../types";
 import { formatTzs } from "./errors";
 
 const DEMO_LISTING = "lst_kitenge_maxi_01";
 
-type Row = { saved: SavedOrder; live: OrderView | null; err?: string };
-
 export function OrdersPage() {
   const { saved, remember, refresh } = useShopData();
-  const [rows, setRows] = useState<Row[] | null>(null);
+  const [rows, setRows] = useState<OrderRow[] | null>(null);
   const [demoMsg, setDemoMsg] = useState<string | null>(null);
   const [demoErr, setDemoErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    const next = await Promise.all(
-      saved.map(async (s) => {
-        try {
-          return { saved: s, live: await getOrder(s.orderId) };
-        } catch (e) {
-          return {
-            saved: s,
-            live: null,
-            err: e instanceof Error ? e.message : "unavailable",
-          };
-        }
-      }),
-    );
-    setRows(next);
+    setRows(await loadShopOrderRows(saved));
   }, [saved]);
 
   useEffect(() => {
     void load();
+    const tick = window.setInterval(() => void load(), 12000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") void load();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => {
+      window.clearInterval(tick);
+      document.removeEventListener("visibilitychange", onVis);
+    };
   }, [load]);
 
   async function trySampleOrder() {
@@ -115,7 +109,7 @@ export function OrdersPage() {
   );
 }
 
-function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
+function EscrowCard({ row, onChange }: { row: OrderRow; onChange: () => void }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -164,6 +158,12 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
           {row.saved.listingIds.length === 1 ? "" : "s"}
         </span>
       </div>
+      {row.live?.listingTitles && row.live.listingTitles.length > 0 && (
+        <p className="hint">{row.live.listingTitles.join(" · ")}</p>
+      )}
+      {(row.live?.deliveryPhone || row.live?.payPhone) && (
+        <p className="hint">Buyer · {row.live.deliveryPhone || row.live.payPhone}</p>
+      )}
       {!live && (
         <p className="hint">
           This order could not be loaded. It may have expired — try the sample

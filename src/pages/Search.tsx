@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { fetchListings } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
+import { useBuyerLocation } from "../store/buyerLocation";
 import type { PublicListing } from "../types";
 
 export function SearchPage() {
   const [sp] = useSearchParams();
   const q = sp.get("q") || "";
+  const { location: here } = useBuyerLocation();
   const [listings, setListings] = useState<PublicListing[] | null>(null);
 
   useEffect(() => {
@@ -18,7 +20,7 @@ export function SearchPage() {
     return () => {
       live = false;
     };
-  }, [q]);
+  }, [q, here?.lat, here?.lng]);
 
   return (
     <div className="page">

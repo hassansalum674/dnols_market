@@ -1,3 +1,4 @@
+import { haversineMeters } from "../lib/geo";
 import type {
   Category,
   DirectionsPayload,
@@ -469,20 +470,36 @@ const SEED: Seed[] = [
   },
 ];
 
-function toPublic(s: Seed): PublicListing {
+function toPublic(
+  s: Seed,
+  buyer?: { lat: number; lng: number } | null,
+): PublicListing {
   return {
     id: s.id,
     title: s.title,
     priceTzs: s.priceTzs,
     category: s.category,
     photoUrl: s.photoUrl,
-    distanceMeters: s.distanceMeters,
+    distanceMeters: buyer
+      ? haversineMeters(buyer.lat, buyer.lng, s.lat, s.lng)
+      : s.distanceMeters,
     inStock: s.inStock,
   };
 }
 
-export function filterListings(filters: ListingFilters): PublicListing[] {
-  let rows = SEED.filter((s) => {
+export function filterListings(
+  filters: ListingFilters,
+  buyer?: { lat: number; lng: number } | null,
+): PublicListing[] {
+  const located = SEED.map((s) =>
+    buyer
+      ? {
+          ...s,
+          distanceMeters: haversineMeters(buyer.lat, buyer.lng, s.lat, s.lng),
+        }
+      : s,
+  );
+  let rows = located.filter((s) => {
     if (filters.category && s.category !== filters.category) return false;
     if (filters.maxDistance && s.distanceMeters > Number(filters.maxDistance))
       return false;
@@ -508,22 +525,26 @@ export function filterListings(filters: ListingFilters): PublicListing[] {
     return a.distanceMeters - b.distanceMeters;
   });
 
-  return rows.map(toPublic);
+  return rows.map((s) => toPublic(s, buyer));
 }
 
-export function mockSuggest(q: string): PublicListing[] {
+export function mockSuggest(
+  q: string,
+  buyer?: { lat: number; lng: number } | null,
+): PublicListing[] {
   if (!q.trim()) return [];
-  return filterListings({ q, sort: "nearest" }).slice(0, 6);
+  return filterListings({ q, sort: "nearest" }, buyer).slice(0, 6);
 }
 
 export function mockDetail(
   id: string,
   paid: boolean,
+  buyer?: { lat: number; lng: number } | null,
 ): PublicListingDetail | null {
   const s = SEED.find((x) => x.id === id);
   if (!s) return null;
   const base: PublicListingDetail = {
-    ...toPublic(s),
+    ...toPublic(s, buyer),
     description: s.description,
     sizes: s.sizes,
     brand: s.brand,
@@ -541,18 +562,23 @@ export function mockDetail(
   return base;
 }
 
-export function mockTrending(): PublicListing[] {
+export function mockTrending(
+  buyer?: { lat: number; lng: number } | null,
+): PublicListing[] {
   return [...SEED]
     .sort((a, b) => b.trendingScore - a.trendingScore)
     .slice(0, 6)
-    .map(toPublic);
+    .map((s) => toPublic(s, buyer));
 }
 
-export function mockByIds(ids: string[]): PublicListing[] {
+export function mockByIds(
+  ids: string[],
+  buyer?: { lat: number; lng: number } | null,
+): PublicListing[] {
   return ids
     .map((id) => SEED.find((s) => s.id === id))
     .filter(Boolean)
-    .map((s) => toPublic(s!));
+    .map((s) => toPublic(s!, buyer));
 }
 
 /** Shop pickup coords unlocked after pay — one entry per stall. */

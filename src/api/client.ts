@@ -14,6 +14,7 @@ import type {
   PublicListing,
   PublicListingDetail,
 } from "../types";
+import { loadBuyerLocation } from "../lib/buyerLocation";
 import { generatePickupCode } from "../lib/pickupCode";
 import { apiBase } from "../lib/apiBase";
 
@@ -32,10 +33,22 @@ async function getJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+function withBuyerGeo(params: URLSearchParams): URLSearchParams {
+  const loc = loadBuyerLocation();
+  if (loc) {
+    params.set("buyerLat", String(loc.lat));
+    params.set("buyerLng", String(loc.lng));
+  }
+  return params;
+}
+
 function qs(filters: ListingFilters): string {
   const p = new URLSearchParams();
   if (filters.category) p.set("category", filters.category);
-  if (filters.maxDistance) p.set("maxDistance", String(filters.maxDistance));
+  if (filters.maxDistance) {
+    p.set("maxDistanceMeters", String(filters.maxDistance));
+    p.set("maxDistance", String(filters.maxDistance));
+  }
   if (filters.sort) p.set("sort", filters.sort);
   if (filters.inStock) p.set("inStock", "1");
   if (filters.minPrice !== "" && filters.minPrice != null)
@@ -43,6 +56,7 @@ function qs(filters: ListingFilters): string {
   if (filters.maxPrice !== "" && filters.maxPrice != null)
     p.set("maxPrice", String(filters.maxPrice));
   if (filters.q) p.set("q", filters.q);
+  withBuyerGeo(p);
   const s = p.toString();
   return s ? `?${s}` : "";
 }
@@ -72,7 +86,10 @@ export async function fetchListings(
     }
     return { listings, source: "api" };
   } catch {
-    return { listings: filterListings(filters), source: "mock" };
+    return {
+      listings: filterListings(filters, loadBuyerLocation()),
+      source: "mock",
+    };
   }
 }
 
@@ -81,7 +98,12 @@ export async function fetchListingDetail(
   paidToken?: string | null,
 ): Promise<{ detail: PublicListingDetail | null; source: DataSource; status?: number }> {
   try {
-    const q = paidToken ? `?token=${encodeURIComponent(paidToken)}` : "";
+    const params = withBuyerGeo(new URLSearchParams());
+    if (paidToken) {
+      params.set("token", paidToken);
+      params.set("paid", "1");
+    }
+    const q = params.toString() ? `?${params}` : "";
     const data = await getJson<PublicListingDetail & { paid?: boolean }>(
       `/listings/${encodeURIComponent(id)}${q}`,
     );
@@ -95,7 +117,7 @@ export async function fetchListingDetail(
     if (status === 404) return { detail: null, source: "api", status: 404 };
     if (status === 500) return { detail: null, source: "api", status: 500 };
     const paid = Boolean(paidToken);
-    const detail = mockDetail(id, paid);
+    const detail = mockDetail(id, paid, loadBuyerLocation());
     if (!detail) return { detail: null, source: "mock", status: status ?? 404 };
     return { detail, source: "mock", status };
   }
@@ -103,21 +125,23 @@ export async function fetchListingDetail(
 
 export async function fetchSuggest(q: string): Promise<PublicListing[]> {
   try {
-    const data = await getJson<unknown>(`/search?q=${encodeURIComponent(q)}`);
+    const params = withBuyerGeo(new URLSearchParams());
+    params.set("q", q);
+    const data = await getJson<unknown>(`/search?${params.toString()}`);
     const listings = asList(data);
     return listings.slice(0, 6);
   } catch {
-    return mockSuggest(q);
+    return mockSuggest(q, loadBuyerLocation());
   }
 }
 
 export async function fetchTrending(): Promise<PublicListing[]> {
   try {
-    const data = await getJson<unknown>("/listings?sort=newest");
+    const data = await getJson<unknown>(`/listings${qs({ sort: "newest" })}`);
     const listings = asList(data);
     return listings.slice(0, 6);
   } catch {
-    return mockTrending();
+    return mockTrending(loadBuyerLocation());
   }
 }
 
@@ -184,9 +208,12 @@ export async function payOrder(input: {
   }
 }
 
-export async function fetchOrders(): Promise<Order[]> {
+export async function fetchOrders(opts?: { phone?: string }): Promise<Order[]> {
   try {
-    const data = await getJson<unknown>("/orders");
+    const params = new URLSearchParams();
+    if (opts?.phone) params.set("phone", opts.phone);
+    const q = params.toString() ? `?${params.toString()}` : "";
+    const data = await getJson<unknown>(`/orders${q}`);
     if (Array.isArray(data)) return data as Order[];
     if (data && typeof data === "object" && Array.isArray((data as { orders?: unknown }).orders)) {
       return (data as { orders: Order[] }).orders;

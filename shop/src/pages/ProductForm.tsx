@@ -5,6 +5,7 @@ import { ProductPhotoUpload } from "../components/ProductPhotoUpload";
 import { isCdnPhoto } from "../lib/photoPipeline";
 import { PRODUCTS_PATH } from "../lib/productRoutes";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
+import { syncProductToApi } from "../lib/shopSync";
 import { loadProducts, loadProfile, upsertProduct } from "../storage";
 import { useAuth } from "../store/auth";
 import type { ProductCondition, SellerProduct, ShopCategory } from "../types";
@@ -62,6 +63,7 @@ export function ProductFormPage() {
   const [customVariant, setCustomVariant] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [addingPhoto, setAddingPhoto] = useState(false);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     if (profile?.status === "rejected") {
@@ -149,7 +151,7 @@ export function ProductFormPage() {
     setCustomVariant("");
   }
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!product.name.trim()) {
       setErr("Product name is required.");
@@ -177,12 +179,32 @@ export function ProductFormPage() {
       return;
     }
 
-    upsertProduct({
+    const saved = {
       ...product,
       name: product.name.trim(),
       priceTzs: price,
+      liveOnDnols: false,
       updatedAt: new Date().toISOString(),
-    });
+    };
+    upsertProduct(saved);
+
+    if (profile?.status === "active") {
+      setPublishing(true);
+      setErr(null);
+      try {
+        await syncProductToApi(saved, profile);
+      } catch (e) {
+        setPublishing(false);
+        setErr(
+          e instanceof Error
+            ? e.message
+            : "Saved on this phone, but it did not reach dnols.com. Try again.",
+        );
+        return;
+      }
+      setPublishing(false);
+    }
+
     navigate("/stall/stock");
   }
 
@@ -435,8 +457,16 @@ export function ProductFormPage() {
               )}
 
               {err && <p className="err">{err}</p>}
-              <button type="submit" className="btn product-form-submit">
-                {isEdit ? "Save product" : "Add product"}
+              <button
+                type="submit"
+                className="btn product-form-submit"
+                disabled={publishing}
+              >
+                {publishing
+                  ? "Publishing to dnols.com…"
+                  : isEdit
+                    ? "Save product"
+                    : "Add product"}
               </button>
             </section>
           </div>

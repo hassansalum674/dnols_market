@@ -53,12 +53,51 @@ export async function getListing(id: string): Promise<PublicListing> {
 export async function payOrder(listingIds: string[]): Promise<PayResponse> {
   return json("/orders/pay", {
     method: "POST",
-    body: JSON.stringify({ listingIds }),
+    body: JSON.stringify({
+      listingIds,
+      payMethod: "mpesa",
+      phone: "255712000000",
+      deliveryPhone: "255712000000",
+    }),
   });
 }
 
 export async function getOrder(id: string): Promise<OrderView> {
   return json(`/orders/${encodeURIComponent(id)}`);
+}
+
+export async function fetchShopOrders(shopId: string): Promise<OrderView[]> {
+  const data = await json<{
+    orders?: Array<{
+      orderId: string;
+      escrow: OrderView["escrow"];
+      listingIds: string[];
+      listingTitles?: string[];
+      totalTzs: number;
+      createdAt: string;
+      paidAt: string | null;
+      handedOverAt: string | null;
+      pickupCode?: string;
+      handoverPin?: string;
+      payPhone?: string;
+      deliveryPhone?: string;
+    }>;
+  }>(`/orders?shopId=${encodeURIComponent(shopId)}`);
+  return (data.orders ?? []).map((o) => ({
+    orderId: o.orderId,
+    escrow: o.escrow,
+    listingIds: o.listingIds,
+    listingTitles: o.listingTitles,
+    totalTzs: o.totalTzs,
+    createdAt: o.createdAt,
+    paidAt: o.paidAt,
+    handedOverAt: o.handedOverAt,
+    locationUnlocked: o.escrow === "paid_held" || o.escrow === "handed_over",
+    pickupCode: o.pickupCode,
+    handoverPin: o.handoverPin,
+    payPhone: o.payPhone,
+    deliveryPhone: o.deliveryPhone,
+  }));
 }
 
 export async function handoverOrder(
@@ -80,6 +119,67 @@ export async function rejectOrder(id: string): Promise<HandoverResponse> {
 
 export async function getTrending(): Promise<{ items: PublicListing[] }> {
   return json("/trending");
+}
+
+export type ShopRegistration = {
+  id?: string;
+  shopName: string;
+  lat: number | null;
+  lng: number | null;
+  streetAddress: string;
+  stallNumber?: string;
+  floor?: string;
+  landmark?: string;
+  locationCapturedAt?: string;
+};
+
+export type RegisteredShop = {
+  shopId: string;
+  shopName: string;
+  lat: number;
+  lng: number;
+  streetAddress: string;
+  placeId: string;
+};
+
+export async function registerShop(
+  shop: ShopRegistration,
+): Promise<RegisteredShop> {
+  return json("/shops", {
+    method: "POST",
+    body: JSON.stringify(shop),
+  });
+}
+
+export async function updateShopLocation(
+  shopId: string,
+  shop: ShopRegistration,
+): Promise<RegisteredShop> {
+  return json(`/shops/${encodeURIComponent(shopId)}`, {
+    method: "PATCH",
+    body: JSON.stringify(shop),
+  });
+}
+
+export type CreateListingInput = {
+  id?: string;
+  shopId: string;
+  title: string;
+  priceTzs: number;
+  category: "fashion" | "electronics";
+  photoUrl: string;
+  inStock: boolean;
+  description: string;
+  sizes?: string[];
+};
+
+export async function createListing(
+  listing: CreateListingInput,
+): Promise<{ id: string; shopId: string }> {
+  return json("/listings", {
+    method: "POST",
+    body: JSON.stringify(listing),
+  });
 }
 
 export type ProcessedPhotoResponse = {

@@ -36,8 +36,8 @@ export function SettingsPage() {
       <section className="account-section">
         <h2>Appearance</h2>
         <p className="section-desc">Theme and text size apply across the app.</p>
-        <p className="field-label">Theme</p>
-        <div className="sheet-options">
+        <p className="field-label" id="settings-theme">Theme</p>
+        <div className="sheet-options" role="radiogroup" aria-labelledby="settings-theme">
           {(
             [
               ["dark", "Dark"],
@@ -48,6 +48,8 @@ export function SettingsPage() {
             <button
               key={value}
               type="button"
+              role="radio"
+              aria-checked={settings.theme === value}
               className={`sheet-chip ${settings.theme === value ? "on" : ""}`}
               onClick={() => patchTheme(value)}
             >
@@ -55,8 +57,8 @@ export function SettingsPage() {
             </button>
           ))}
         </div>
-        <p className="field-label">Text size</p>
-        <div className="sheet-options">
+        <p className="field-label" id="settings-text">Text size</p>
+        <div className="sheet-options" role="radiogroup" aria-labelledby="settings-text">
           {(
             [
               ["normal", "Normal"],
@@ -66,6 +68,8 @@ export function SettingsPage() {
             <button
               key={value}
               type="button"
+              role="radio"
+              aria-checked={settings.textSize === value}
               className={`sheet-chip ${settings.textSize === value ? "on" : ""}`}
               onClick={() => patchTextSize(value)}
             >
@@ -95,6 +99,15 @@ export function SettingsPage() {
           </button>
         </section>
       )}
+
+      <section className="account-section">
+        <h2>Location</h2>
+        <p className="section-desc">
+          Each time you open Dnols, the app reads your location in the background
+          and compares it with each stall pin. That difference is the distance
+          shown on products. Exact stall coordinates stay hidden until you pay.
+        </p>
+      </section>
 
       <section className="account-section">
         <h2>Legal</h2>

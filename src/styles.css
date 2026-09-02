@@ -58,6 +58,39 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: -80px;
+  z-index: 200;
+  background: var(--white);
+  color: var(--black);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 12px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 h1,
 h2,
 h3,
@@ -1375,6 +1408,38 @@ img {
 }
 
 .sheet-field:focus {
+  border-color: var(--blue);
+}
+
+.tz-phone {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.tz-phone-cc {
+  flex: none;
+  padding-right: 10px;
+  margin-right: 10px;
+  border-right: 1px solid var(--faint);
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.tz-phone input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  outline: none;
+}
+
+.tz-phone:focus-within {
   border-color: var(--blue);
 }
 

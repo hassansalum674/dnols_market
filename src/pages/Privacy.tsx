@@ -54,10 +54,11 @@ export function PrivacyPage() {
                   status (reserved, paid, handed over).
                 </li>
                 <li>
-                  <strong>Location-related data</strong> — Approximate distance to
-                  a listing (calculated from a market-area reference point) and,
-                  after payment, stall directions needed for pickup. Exact shop
-                  coordinates are hidden until you pay.
+                  <strong>Location-related data</strong> — While you use the app
+                  we read your device location in the background so we can
+                  measure the distance between you and each stall. After
+                  payment, we also show stall directions needed for pickup.
+                  Exact shop coordinates are hidden until you pay.
                 </li>
                 <li>
                   <strong>Seller information</strong> — Shop name, stall location
@@ -90,6 +91,10 @@ export function PrivacyPage() {
               <p>We use your information to:</p>
               <ul>
                 <li>Provide the marketplace, cart, checkout, and order tracking</li>
+                <li>
+                  Measure how far you are from each stall so nearby products
+                  appear first
+                </li>
                 <li>Hold buyer payments in escrow until the buyer receives the product</li>
                 <li>Release seller payouts only after handover is confirmed</li>
                 <li>Release stall addresses and pickup codes after payment</li>
@@ -116,8 +121,8 @@ export function PrivacyPage() {
               Where data-protection law requires a legal basis, we rely on:{" "}
               <strong>contract</strong> (to fulfil orders you place),{" "}
               <strong>legitimate interests</strong> (security, fraud prevention,
-              service improvement), <strong>consent</strong> (where we ask for it
-              explicitly, such as optional marketing), and{" "}
+              service improvement),               <strong>consent</strong> (the browser location permission, and
+              where we ask for it explicitly such as optional marketing), and{" "}
               <strong>legal obligation</strong> (tax, regulatory, or law-enforcement
               requirements in Tanzania).
             </p>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { fetchSuggest } from "../api/client";
 import { useAuth } from "../store/auth";
+import { useBuyerLocation } from "../store/buyerLocation";
 import {
   clearHistory,
   getHistory,
@@ -19,6 +20,7 @@ export function HeaderSearch({
 }) {
   const nav = useNavigate();
   const { user } = useAuth();
+  const { location: here } = useBuyerLocation();
   const [q, setQ] = useState(initial);
   const [open, setOpen] = useState(false);
   const [suggest, setSuggest] = useState<PublicListing[]>([]);
@@ -37,7 +39,7 @@ export function HeaderSearch({
       void fetchSuggest(q).then(setSuggest);
     }, 160);
     return () => window.clearTimeout(t);
-  }, [q]);
+  }, [q, here?.lat, here?.lng]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {

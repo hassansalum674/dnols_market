@@ -15,6 +15,10 @@ export type Shop = {
   lng: number;
   streetAddress: string;
   placeId: string;
+  stallNumber?: string;
+  floor?: string;
+  landmark?: string;
+  locationCapturedAt?: string;
 };
 
 export type Listing = {

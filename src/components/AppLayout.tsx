@@ -7,6 +7,7 @@ import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
 import { CheckoutSheet } from "./CheckoutSheet";
 import { SiteFooter } from "./SiteFooter";
+import { startBuyerLocationTracking } from "../lib/buyerLocation";
 
 const SPLASH_KEY = "dnols.splash.session";
 
@@ -34,6 +35,10 @@ export function AppLayout() {
   }, []);
 
   useEffect(() => {
+    startBuyerLocationTracking();
+  }, []);
+
+  useEffect(() => {
     const onOff = () => {
       /* layout watches online in pages */
     };
@@ -48,6 +53,9 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
+      <a className="skip-link" href="#main">
+        Skip to listings
+      </a>
       <div className={`app-shell ${legal ? "no-tabs" : ""}`}>
         {!shop && (
           <>
@@ -65,7 +73,7 @@ export function AppLayout() {
             </div>
           </header>
         )}
-        <main className="shell-main">
+        <main id="main" className="shell-main" tabIndex={-1}>
           {nav.state === "loading" ? (
             <RoutePulse />
           ) : (

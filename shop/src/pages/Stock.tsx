@@ -18,8 +18,9 @@ export function StockPage() {
         <div>
           <h1 className="stall-page-title">Your products</h1>
           <p className="muted stall-page-desc">
-            Add photos, prices, and details buyers see on dnols.com. Tap a product
-            to edit it. View shop stats on{" "}
+            Add photos, prices, and details buyers see on dnols.com. Active
+            listings publish to the marketplace when you save. View shop stats
+            on{" "}
             <Link to={DASHBOARD_PATH} className="text-link">
               Overview
             </Link>
@@ -69,6 +70,11 @@ export function StockPage() {
                   <div className="muted">
                     Stock: {p.stock}
                     {p.negotiable && " · Negotiable"}
+                    {profile?.status === "active"
+                      ? p.liveOnDnols
+                        ? " · Live on dnols.com"
+                        : " · Not listed on dnols.com yet"
+                      : " · Goes live after approval"}
                   </div>
                 </div>
                 <span className="stock-row-action">Edit</span>

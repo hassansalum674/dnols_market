@@ -10,14 +10,20 @@ import {
   Toggle,
 } from "../components/OnboardingLayout";
 import { PhotoUpload } from "../components/PhotoUpload";
+import { StallPin } from "../components/StallPin";
+import { TzPhoneField } from "../components/TzPhoneField";
+import {
+  captureStallLocation,
+  kariakooFallbackPin,
+} from "../lib/geo";
 import {
   emptyDraft,
   stepTitle,
   TOTAL_STEPS,
   validateStep,
 } from "../lib/onboarding";
+import { syncShopToApi } from "../lib/shopSync";
 import { DASHBOARD_PATH } from "../lib/shopRoutes";
-import { formatTzPhone } from "../lib/validation";
 import {
   clearDraft,
   loadDraft,
@@ -80,7 +86,7 @@ export function OnboardingPage() {
     });
   }
 
-  function goNext() {
+  async function goNext() {
     const validationErr = validateStep(draft, step);
     if (validationErr) {
       setErr(validationErr);
@@ -92,11 +98,11 @@ export function OnboardingPage() {
       persist(next);
       navigate(`/onboarding/${step + 1}`);
     } else {
-      submitApplication();
+      await submitApplication();
     }
   }
 
-  function submitApplication() {
+  async function submitApplication() {
     const shopId = `shop_${Date.now().toString(36)}`;
     const profile = {
       ...draft,
@@ -107,6 +113,11 @@ export function OnboardingPage() {
       viewsThisWeek: 0,
     };
     saveProfile(profile);
+    try {
+      await syncShopToApi(profile);
+    } catch {
+      /* Local profile keeps the pin; sync retries when the shop is approved or a product is listed. */
+    }
     clearDraft();
     navigate("/pending");
   }
@@ -240,6 +251,29 @@ function Step1({ draft, updateStep, err, onNext }: StepProps) {
 
 function Step2({ draft, updateStep, err, onNext }: StepProps) {
   const s = draft.step2;
+  const [capturing, setCapturing] = useState(false);
+  const [geoErr, setGeoErr] = useState<string | null>(null);
+  const [showFallback, setShowFallback] = useState(false);
+
+  async function pinHere() {
+    setCapturing(true);
+    setGeoErr(null);
+    try {
+      const fix = await captureStallLocation();
+      updateStep("step2", fix);
+      setShowFallback(false);
+    } catch (e) {
+      setGeoErr(
+        e instanceof Error
+          ? e.message
+          : "Could not pin location.",
+      );
+      setShowFallback(true);
+    } finally {
+      setCapturing(false);
+    }
+  }
+
   return (
     <form
       className="onboarding-form"
@@ -248,7 +282,23 @@ function Step2({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <p className="hint">No GPS — we use your stall details inside Kariakoo.</p>
+      <Notice>
+        Stand at your stall and pin this location. Nearby buyers find you by
+        this pin. After they pay, they see exactly where the product is.
+      </Notice>
+
+      <label className="lbl">Stall pin *</label>
+      <StallPin
+        location={s}
+        capturing={capturing}
+        error={geoErr}
+        onCapture={() => void pinHere()}
+        showFallback={showFallback}
+        onFallback={() => {
+          updateStep("step2", kariakooFallbackPin());
+          setGeoErr(null);
+        }}
+      />
 
       <label className="lbl">Street / lane name *</label>
       <input
@@ -314,19 +364,16 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
         onNext();
       }}
     >
-      <label className="lbl">Primary phone number *</label>
-      <input
+      <label className="lbl" htmlFor="onboard-primary-phone">
+        Primary phone number *
+      </label>
+      <TzPhoneField
+        id="onboard-primary-phone"
         className="field"
-        type="tel"
-        inputMode="tel"
         value={s.primaryPhone}
-        onChange={(e) => updateStep("step3", { primaryPhone: e.target.value })}
-        placeholder="+255 7XX XXX XXX"
+        onChange={(next) => updateStep("step3", { primaryPhone: next })}
         required
       />
-      {s.primaryPhone && (
-        <p className="hint">{formatTzPhone(s.primaryPhone)}</p>
-      )}
 
       <Toggle
         label="WhatsApp same as primary"
@@ -336,16 +383,15 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
 
       {!s.whatsappSame && (
         <>
-          <label className="lbl">WhatsApp number *</label>
-          <input
+          <label className="lbl" htmlFor="onboard-whatsapp-phone">
+            WhatsApp number *
+          </label>
+          <TzPhoneField
+            id="onboard-whatsapp-phone"
             className="field"
-            type="tel"
-            inputMode="tel"
             value={s.whatsappPhone}
-            onChange={(e) =>
-              updateStep("step3", { whatsappPhone: e.target.value })
-            }
-            placeholder="+255 7XX XXX XXX"
+            onChange={(next) => updateStep("step3", { whatsappPhone: next })}
+            required
           />
         </>
       )}
@@ -467,16 +513,14 @@ function Step5({
         onChange={(v) => updateStep("step5", { provider: v })}
       />
 
-      <label className="lbl">Mobile money number *</label>
-      <input
+      <label className="lbl" htmlFor="onboard-momo-phone">
+        Mobile money number *
+      </label>
+      <TzPhoneField
+        id="onboard-momo-phone"
         className="field"
-        type="tel"
-        inputMode="tel"
         value={s.mobileMoneyNumber}
-        onChange={(e) =>
-          updateStep("step5", { mobileMoneyNumber: e.target.value })
-        }
-        placeholder="+255 7XX XXX XXX"
+        onChange={(next) => updateStep("step5", { mobileMoneyNumber: next })}
         required
       />
 

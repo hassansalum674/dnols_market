@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchTrending } from "../api/client";
 import { ProductCard } from "../components/ProductCard";
+import { useBuyerLocation } from "../store/buyerLocation";
 import { OfflinePage } from "./errors";
 import type { PublicListing } from "../types";
 
 export function NotFoundPage({ soldOut = false }: { soldOut?: boolean }) {
+  const { location: here } = useBuyerLocation();
   const [row, setRow] = useState<PublicListing[]>([]);
 
   useEffect(() => {
     void fetchTrending().then(setRow);
-  }, []);
+  }, [here?.lat, here?.lng]);
 
   if (!navigator.onLine) return <OfflinePage />;
 

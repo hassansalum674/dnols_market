@@ -30,6 +30,7 @@ export type OrderView = {
   orderId: string;
   escrow: EscrowStatus;
   listingIds: string[];
+  listingTitles?: string[];
   totalTzs: number;
   createdAt: string;
   paidAt: string | null;
@@ -38,6 +39,8 @@ export type OrderView = {
   pickupCode?: string;
   handoverPin?: string;
   accessToken?: string;
+  payPhone?: string;
+  deliveryPhone?: string;
 };
 
 export type PayResponse = {
@@ -167,6 +170,12 @@ export type OnboardingDraft = {
     floor: Floor | "";
     blockName: string;
     landmark: string;
+    /** GPS pin captured at the stall — buyers see this after they pay. */
+    lat: number | null;
+    lng: number | null;
+    accuracyMeters: number | null;
+    capturedAt: string | null;
+    locationSource: "gps" | "kariakoo_fallback" | "";
   };
   step3: {
     primaryPhone: string;
@@ -233,6 +242,8 @@ export type SellerProduct = {
   skuCode: string;
   createdAt: string;
   updatedAt: string;
+  /** True after POST /listings succeeds — buyers can see it on dnols.com */
+  liveOnDnols?: boolean;
 };
 
 export type SellerSession = {

@@ -4,8 +4,9 @@ info:
   version: 0.1.0
   description: |
     Shop-only marketplace stub for Kariakoo (Dar es Salaam, Tanzania).
-    Distance is computed on the server. Exact shopName, street, lat, and lng
-    are withheld until mock mobile-money payment succeeds.
+    Distance is computed on the server from the shop pin captured during
+    seller onboarding. Exact shopName, street, lat, and lng are withheld
+    until mock mobile-money payment succeeds.
 
     Escrow mock: reserved → paid_held → handed_over | rejected_refund
 
@@ -28,6 +29,40 @@ paths:
       responses:
         "200":
           description: placeId for listings
+  /shops:
+    post:
+      summary: Register a stall pin from seller onboarding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shopName, lat, lng, streetAddress]
+              properties:
+                id: { type: string }
+                shopName: { type: string }
+                lat: { type: number }
+                lng: { type: number }
+                streetAddress: { type: string }
+                stallNumber: { type: string }
+                floor: { type: string }
+                landmark: { type: string }
+                locationCapturedAt: { type: string }
+      responses:
+        "200":
+          description: shopId plus stored pin
+  /shops/{id}:
+    patch:
+      summary: Update a registered stall pin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: updated pin
   /listings:
     get:
       summary: Search listings (no exact location)
@@ -67,6 +102,30 @@ paths:
       responses:
         "200":
           description: items without lat/lng/address/shopName
+    post:
+      summary: Create a listing on a registered shop pin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shopId, title, priceTzs, photoUrl]
+              properties:
+                id: { type: string }
+                shopId: { type: string }
+                title: { type: string }
+                priceTzs: { type: number }
+                category: { type: string, enum: [fashion, electronics] }
+                photoUrl: { type: string }
+                inStock: { type: boolean }
+                description: { type: string }
+                sizes:
+                  type: array
+                  items: { type: string }
+      responses:
+        "200":
+          description: listing id tied to the shop pin
   /listings/{id}:
     get:
       summary: Listing detail
@@ -84,6 +143,28 @@ paths:
       responses:
         "200":
           description: description + sizes or brand; directions only if paid+token
+    patch:
+      summary: Update an existing listing (same fields as POST /listings)
+      responses:
+        "200":
+          description: listing id
+  /search:
+    get:
+      summary: Autocomplete listings by title (no shop name or coords)
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+        - in: query
+          name: buyerLat
+          schema: { type: number }
+        - in: query
+          name: buyerLng
+          schema: { type: number }
+      responses:
+        "200":
+          description: items[] without lat/lng/address/shopName
   /cart:
     get:
       summary: In-memory cart (header X-Session-Id optional)
@@ -103,6 +184,24 @@ paths:
                 listingIds:
                   type: array
                   items: { type: string }
+                payMethod: { type: string, enum: [mpesa, tigo, airtel] }
+                phone: { type: string, description: Tanzania 6xx or 7xx mobile }
+                deliveryPhone: { type: string }
+  /orders:
+    get:
+      summary: List orders for a stall (shopId) or a buyer phone
+      parameters:
+        - in: query
+          name: shopId
+          schema: { type: string }
+          description: Seller inbox — handover pins, no access tokens
+        - in: query
+          name: phone
+          schema: { type: string }
+          description: Buyer history for a Tanzania 6xx/7xx number
+      responses:
+        "200":
+          description: orders[] for the stall or phone; empty list if neither is set
   /orders/reserve:
     post:
       summary: Optional unpaid order for demo
