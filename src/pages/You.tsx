@@ -45,7 +45,7 @@ export function YouPage() {
         <p className="muted">Loading…</p>
       ) : user ? (
         <div className="account-profile account-profile--signed-in">
-          <UserAvatar user={user} size="lg" />
+          <UserAvatar user={user} size="xl" editable />
           <div className="account-profile-body">
             <p className="account-name">{displayName}</p>
             {user.email && (
@@ -70,6 +70,18 @@ export function YouPage() {
               <span className="account-detail-label">Signed in with</span>
               <span>{providerLabel(user.provider)}</span>
             </p>
+            <div className="account-profile-actions">
+              <Link to="/you/settings" className="btn account-edit-btn">
+                Edit my profile
+              </Link>
+              <button
+                type="button"
+                className="text-link-btn"
+                onClick={() => void signOut()}
+              >
+                Sign out
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -92,7 +104,7 @@ export function YouPage() {
         <Link to="/orders" className="account-tile">
           <span className="account-tile-label">Orders</span>
           <span className="muted">
-            {user ? "Delivery & escrow" : "Sign in to view"}
+            {user ? "Pickup, delivery & escrow" : "Sign in to view"}
           </span>
         </Link>
         <button type="button" className="account-tile" onClick={() => openBasket()}>

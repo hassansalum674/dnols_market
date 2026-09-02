@@ -15,6 +15,13 @@ export function haversineMeters(
   return Math.round(2 * EARTH_M * Math.asin(Math.min(1, Math.sqrt(a))));
 }
 
-export function sellerStallHint(shopName: string, streetAddress: string): string {
-  return `${shopName} · ${streetAddress}. Dnols notifies the seller and coordinates delivery to you — you do not travel here or use outside map apps.`;
+export function sellerStallHint(
+  shopName: string,
+  streetAddress: string,
+  fulfillment?: "pickup" | "delivery",
+): string {
+  if (fulfillment === "pickup") {
+    return `${shopName} · ${streetAddress}. Walk here with your pickup code after you pay.`;
+  }
+  return `${shopName} · ${streetAddress}. Dnols notifies the seller and coordinates delivery to you.`;
 }

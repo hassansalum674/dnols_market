@@ -10,10 +10,16 @@ import type { Order } from "../types";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
   reserved: "Reserved — pay to confirm",
-  paid_held: "Paid · Dnols coordinating delivery",
-  handed_over: "Delivered",
+  paid_held: "Paid · held in escrow",
+  handed_over: "Received",
   rejected_refund: "Refunded",
 };
+
+function fulfillmentLabel(order: Order): string | null {
+  if (order.fulfillment === "pickup") return "Self pickup";
+  if (order.fulfillment === "delivery") return "Delivery";
+  return null;
+}
 
 function payMethodLabel(id?: string): string | null {
   if (!id) return null;
@@ -67,7 +73,7 @@ export function OrdersPage() {
     <div className="page">
       <h1 className="product-title">Orders</h1>
       <p className="section-desc">
-        Checkout codes and delivery status appear here after you pay.
+        Checkout codes, pickup, and delivery status appear here after you pay.
       </p>
       {orders.map((o) => (
         <article key={o.id} className="order-card">
@@ -85,9 +91,19 @@ export function OrdersPage() {
             </div>
           )}
 
+          {fulfillmentLabel(o) && (
+            <p className="hint">
+              {fulfillmentLabel(o)}
+              {o.fulfillment === "delivery" && o.deliveryAddress
+                ? ` · ${o.deliveryAddress}`
+                : ""}
+            </p>
+          )}
+
           {o.deliveryPhone && (
             <p className="hint">
-              Delivery contact · {formatTzPhoneDisplay(o.deliveryPhone)}
+              {o.fulfillment === "pickup" ? "Contact" : "Delivery contact"} ·{" "}
+              {formatTzPhoneDisplay(o.deliveryPhone)}
             </p>
           )}
 

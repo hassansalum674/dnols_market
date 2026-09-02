@@ -230,6 +230,8 @@ export function registerRoutes(
       payMethod?: string;
       phone?: string;
       deliveryPhone?: string;
+      fulfillment?: string;
+      deliveryAddress?: string;
     };
     const listingIds = body.listingIds;
     if (!Array.isArray(listingIds) || listingIds.length === 0) {
@@ -253,13 +255,24 @@ export function registerRoutes(
         message: "Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).",
       });
     }
+    const fulfillment =
+      body.fulfillment === "pickup" ? "pickup" : "delivery";
     const deliveryRaw = String(body.deliveryPhone ?? body.phone ?? "").trim();
     const deliveryNormalized = normalizeTzPhone(deliveryRaw);
     if (!deliveryNormalized) {
       return reply.code(400).send({
         error: "bad_delivery_phone",
         message:
-          "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+          fulfillment === "pickup"
+            ? "Enter a valid contact number (+255 7XX XXX XXX)."
+            : "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+      });
+    }
+    const deliveryAddress = String(body.deliveryAddress ?? "").trim();
+    if (fulfillment === "delivery" && deliveryAddress.length < 4) {
+      return reply.code(400).send({
+        error: "bad_delivery_address",
+        message: "Enter the area or street where we should deliver.",
       });
     }
     try {
@@ -267,9 +280,11 @@ export function registerRoutes(
         payMethod,
         payPhone: normalized,
         deliveryPhone: deliveryNormalized,
+        fulfillment,
+        deliveryAddress: fulfillment === "delivery" ? deliveryAddress : undefined,
       });
       const directions = order.shopIds.map((sid) =>
-        toDirections(store.shop(sid)!),
+        toDirections(store.shop(sid)!, fulfillment),
       );
       const providerLabel =
         payMethod === "mpesa"
@@ -292,9 +307,14 @@ export function registerRoutes(
         totalTzs: order.totalTzs,
         listingIds: order.listingIds,
         deliveryPhone: order.deliveryPhone,
+        fulfillment: order.fulfillment,
+        deliveryAddress: order.deliveryAddress,
         sellerNotification: {
           status: "queued",
-          note: "Dnols notified the seller. Your delivery number was shared with the seller through Dnols only — not for direct personal contact.",
+          note:
+            fulfillment === "pickup"
+              ? "Dnols notified the seller. Bring your pickup code to the stall."
+              : "Dnols notified the seller. Your delivery number was shared with the seller through Dnols only — not for direct personal contact.",
           deliveryPhone: deliveryNormalized,
         },
         // Seller stall coords for buyer preview only — Dnols handles delivery.
@@ -375,7 +395,12 @@ export function registerRoutes(
       pickupCode: order.pickupCode,
       handoverPin: order.handoverPin,
       accessToken: order.accessToken,
-      directions: order.shopIds.map((sid) => toDirections(store.shop(sid)!)),
+      fulfillment: order.fulfillment,
+      deliveryAddress: order.deliveryAddress,
+      deliveryPhone: order.deliveryPhone,
+      directions: order.shopIds.map((sid) =>
+        toDirections(store.shop(sid)!, order.fulfillment),
+      ),
     };
   });
 

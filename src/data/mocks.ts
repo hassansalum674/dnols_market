@@ -535,7 +535,7 @@ export function mockDetail(
       lat: s.lat,
       lng: s.lng,
       streetAddress: s.streetAddress,
-      mapsHint: `${s.shopName} · ${s.streetAddress}. Dnols coordinates delivery — you do not travel here.`,
+      mapsHint: `${s.shopName} · ${s.streetAddress}.`,
     };
   }
   return base;
@@ -568,7 +568,7 @@ export function mockDirectionsForListingIds(ids: string[]): DirectionsPayload[] 
       lat: s.lat,
       lng: s.lng,
       streetAddress: s.streetAddress,
-      mapsHint: `${s.shopName} · ${s.streetAddress}. Dnols coordinates delivery — you do not travel here.`,
+      mapsHint: `${s.shopName} · ${s.streetAddress}.`,
     });
   }
   return out;

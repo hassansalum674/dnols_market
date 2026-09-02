@@ -79,7 +79,7 @@ export function SettingsPage() {
         <section className="account-section">
           <h2>Account</h2>
           <div className="settings-profile">
-            <UserAvatar user={user} size="lg" />
+            {user && <UserAvatar user={user} size="xl" editable />}
             <div>
               <p className="account-name">{userDisplayName(user)}</p>
               {user.email && <p className="muted">{user.email}</p>}
@@ -88,6 +88,7 @@ export function SettingsPage() {
                   {formatTzPhoneDisplay(loadProfile(user.uid).phone!)}
                 </p>
               )}
+              <p className="hint">Tap the camera to add or change your photo.</p>
             </div>
           </div>
           <button type="button" className="btn ghost account-menu-btn" onClick={() => void signOut()}>

@@ -46,12 +46,15 @@ export function toPublicDetail(
   };
 }
 
-export function toDirections(shop: Shop): DirectionsPayload {
+export function toDirections(
+  shop: Shop,
+  fulfillment?: "pickup" | "delivery",
+): DirectionsPayload {
   return {
     shopName: shop.shopName,
     lat: shop.lat,
     lng: shop.lng,
     streetAddress: shop.streetAddress,
-    mapsHint: sellerStallHint(shop.shopName, shop.streetAddress),
+    mapsHint: sellerStallHint(shop.shopName, shop.streetAddress, fulfillment),
   };
 }

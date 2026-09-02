@@ -126,6 +126,8 @@ export async function payOrder(input: {
   payMethod: string;
   phone: string;
   deliveryPhone: string;
+  fulfillment: "pickup" | "delivery";
+  deliveryAddress?: string;
 }): Promise<Order> {
   try {
     const res = await fetch(`${BASE}/orders/pay`, {
@@ -143,6 +145,8 @@ export async function payOrder(input: {
       accessToken?: string;
       shops?: DirectionsPayload[];
       deliveryPhone?: string;
+      fulfillment?: "pickup" | "delivery";
+      deliveryAddress?: string;
       message?: string;
       error?: string;
     };
@@ -161,6 +165,8 @@ export async function payOrder(input: {
       payMethod: input.payMethod,
       payPhone: input.phone,
       deliveryPhone: data.deliveryPhone ?? input.deliveryPhone,
+      fulfillment: data.fulfillment ?? input.fulfillment,
+      deliveryAddress: data.deliveryAddress ?? input.deliveryAddress,
       createdAt: new Date().toISOString(),
       paidAt: new Date().toISOString(),
     };
@@ -180,6 +186,8 @@ export async function payOrder(input: {
       payMethod: input.payMethod,
       payPhone: input.phone,
       deliveryPhone: input.deliveryPhone,
+      fulfillment: input.fulfillment,
+      deliveryAddress: input.deliveryAddress,
     };
   }
 }
