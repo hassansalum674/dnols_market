@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { payOrder } from "../api/client";
 import { SellerStallPreview } from "./SellerStallPreview";
@@ -59,9 +59,15 @@ export function CheckoutSheet() {
   const [billingCards, setBillingCards] = useState<BillingCard[]>([]);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  const prefsHydrated = useRef(false);
 
   useEffect(() => {
-    if (step === "closed") return;
+    if (step === "closed") {
+      prefsHydrated.current = false;
+      return;
+    }
+    if (prefsHydrated.current) return;
+    prefsHydrated.current = true;
     setMethod(loadLastPayMethod());
     const savedPay = loadLastPayPhone();
     const savedDelivery = loadLastDeliveryPhone();
@@ -97,6 +103,13 @@ export function CheckoutSheet() {
       return () => {
         document.body.style.overflow = "";
       };
+    }
+  }, [step]);
+
+  useEffect(() => {
+    if (step === "pay" || step === "basket" || step === "success") {
+      const el = document.querySelector(".checkout-sheet");
+      if (el) el.scrollTop = 0;
     }
   }, [step]);
 

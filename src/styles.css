@@ -2785,7 +2785,7 @@ img {
   align-items: flex-start;
   gap: 4px;
   text-align: left;
-  min-height: 88px;
+  min-height: 76px;
   padding: 12px;
   border: 2px solid var(--faint);
   border-radius: var(--radius);
@@ -2812,12 +2812,6 @@ img {
   width: 100%;
   min-height: 72px;
   resize: vertical;
-}
-
-@media (max-width: 480px) {
-  .fulfillment-cards {
-    grid-template-columns: 1fr;
-  }
 }
 
 .account-detail {
