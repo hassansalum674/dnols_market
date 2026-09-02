@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { getSavedIds } from "../store/persist";
+import { useBuyerLocation } from "../store/buyerLocation";
 import type { PublicListing } from "../types";
 
 export function SavedPage() {
+  const { location: here } = useBuyerLocation();
   const [saved, setSaved] = useState<PublicListing[] | null>(null);
 
   useEffect(() => {
@@ -21,7 +23,7 @@ export function SavedPage() {
           .filter((d): d is NonNullable<typeof d> => Boolean(d)),
       );
     });
-  }, []);
+  }, [here?.lat, here?.lng]);
 
   return (
     <div className="page account-page">

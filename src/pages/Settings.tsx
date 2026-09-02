@@ -97,6 +97,15 @@ export function SettingsPage() {
       )}
 
       <section className="account-section">
+        <h2>Location</h2>
+        <p className="section-desc">
+          Each time you open Dnols, the app reads your location in the background
+          and compares it with each stall pin. That difference is the distance
+          shown on products. Exact stall coordinates stay hidden until you pay.
+        </p>
+      </section>
+
+      <section className="account-section">
         <h2>Legal</h2>
         <nav className="account-menu" aria-label="Legal">
           <Link to="/terms" className="account-menu-item">

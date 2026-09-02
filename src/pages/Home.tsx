@@ -4,11 +4,7 @@ import { fetchListings } from "../api/client";
 import { FilterSheet } from "../components/FilterSheet";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { StatusScreen } from "../components/EmptyState";
-import {
-  loadBuyerLocation,
-  requestBuyerLocation,
-  type BuyerLocation,
-} from "../lib/buyerLocation";
+import { useBuyerLocation } from "../store/buyerLocation";
 import { PLACE_LABEL } from "../lib/format";
 import { SELLER_URL } from "../lib/urls";
 import type { Category, ListingFilters, PublicListing, Sort } from "../types";
@@ -61,15 +57,9 @@ export function HomePage() {
   const [listings, setListings] = useState<PublicListing[] | null>(null);
   const [source, setSource] = useState<"api" | "mock">("mock");
   const [err, setErr] = useState<"offline" | "500" | null>(null);
-  const [here, setHere] = useState<BuyerLocation | null>(() =>
-    loadBuyerLocation(),
-  );
+  const { location: here, denied: locationDenied } = useBuyerLocation();
 
   useEffect(() => setDraft(filters), [filters]);
-
-  useEffect(() => {
-    void requestBuyerLocation().then(setHere);
-  }, []);
 
   useEffect(() => {
     let live = true;
@@ -117,8 +107,10 @@ export function HomePage() {
           </p>
           <p className="hint">
             {here
-              ? "Using your location to show the closest stalls."
-              : "Allow location to see what's closest to you."}
+              ? "Distances are from where you are now to each stall."
+              : locationDenied
+                ? "Turn on location to see how far each stall is from you."
+                : "Finding where you are so we can show the closest stalls…"}
           </p>
         </div>
         <a

@@ -7,12 +7,14 @@ import { SellerStallPreview } from "../components/SellerStallPreview";
 import { RoutePulse } from "../components/Splash";
 import { formatDistance, formatTsh } from "../lib/format";
 import { getPaidTokens, toggleSaved, getSavedIds } from "../store/persist";
+import { useBuyerLocation } from "../store/buyerLocation";
 import type { PublicListingDetail } from "../types";
 import { ServerErrorPage } from "./errors";
 import { NotFoundPage } from "./NotFound";
 
 export function ProductPage() {
   const { id = "" } = useParams();
+  const { location: here } = useBuyerLocation();
   const [detail, setDetail] = useState<PublicListingDetail | null | undefined>(
     undefined,
   );
@@ -25,7 +27,7 @@ export function ProductPage() {
       setFail(status ?? null);
       setDetail(d);
     });
-  }, [id]);
+  }, [id, here?.lat, here?.lng]);
 
   if (detail === undefined) return <RoutePulse />;
   if (detail === null && fail === 500) return <ServerErrorPage />;

@@ -117,7 +117,7 @@ export async function fetchListingDetail(
     if (status === 404) return { detail: null, source: "api", status: 404 };
     if (status === 500) return { detail: null, source: "api", status: 500 };
     const paid = Boolean(paidToken);
-    const detail = mockDetail(id, paid);
+    const detail = mockDetail(id, paid, loadBuyerLocation());
     if (!detail) return { detail: null, source: "mock", status: status ?? 404 };
     return { detail, source: "mock", status };
   }
@@ -129,17 +129,17 @@ export async function fetchSuggest(q: string): Promise<PublicListing[]> {
     const listings = asList(data);
     return listings.slice(0, 6);
   } catch {
-    return mockSuggest(q);
+    return mockSuggest(q, loadBuyerLocation());
   }
 }
 
 export async function fetchTrending(): Promise<PublicListing[]> {
   try {
-    const data = await getJson<unknown>("/listings?sort=newest");
+    const data = await getJson<unknown>(`/listings${qs({ sort: "newest" })}`);
     const listings = asList(data);
     return listings.slice(0, 6);
   } catch {
-    return mockTrending();
+    return mockTrending(loadBuyerLocation());
   }
 }
 

@@ -7,6 +7,7 @@ import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
 import { CheckoutSheet } from "./CheckoutSheet";
 import { SiteFooter } from "./SiteFooter";
+import { startBuyerLocationTracking } from "../lib/buyerLocation";
 
 const SPLASH_KEY = "dnols.splash.session";
 
@@ -31,6 +32,10 @@ export function AppLayout() {
       /* ignore */
     }
     setSplash(false);
+  }, []);
+
+  useEffect(() => {
+    startBuyerLocationTracking();
   }, []);
 
   useEffect(() => {
