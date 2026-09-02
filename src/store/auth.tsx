@@ -13,13 +13,15 @@ import {
   resetPassword,
   signInWithEmail,
   signInWithGoogle,
-  signUpWithEmail,
+  signUpWithEmail as persistSignUp,
   subscribeAuth,
+  updateDisplayName as persistDisplayName,
   type AuthUser,
 } from "../lib/authActions";
 import { initFirebase } from "../lib/firebase";
 import { mergeAnonymousSearchHistory } from "../store/persist";
-import { mergeCheckoutPhonesToProfile } from "../lib/profile";
+import { mergeCheckoutPhonesToProfile, loadProfile, saveProfile } from "../lib/profile";
+import { loadSettings, saveSettings } from "./settings";
 
 type AuthState = {
   user: AuthUser | null;
@@ -30,6 +32,7 @@ type AuthState = {
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateDisplayName: (name: string) => Promise<void>;
 };
 
 const Ctx = createContext<AuthState | null>(null);
@@ -48,12 +51,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (user?.uid) {
       mergeAnonymousSearchHistory(user.uid);
       mergeCheckoutPhonesToProfile(user.uid);
+      const p = loadProfile(user.uid);
+      if (p.language) {
+        saveSettings({ language: p.language });
+      } else {
+        saveProfile(user.uid, { language: loadSettings().language });
+      }
     }
   }, [user?.uid]);
 
   const doSignOut = useCallback(async () => {
     await authSignOut();
     setUser(null);
+  }, []);
+
+  const doSignUp = useCallback(async (email: string, password: string, name?: string) => {
+    const next = await persistSignUp(email, password, name);
+    setUser(next);
+  }, []);
+
+  const doUpdateDisplayName = useCallback(async (name: string) => {
+    const next = await persistDisplayName(name);
+    setUser(next);
   }, []);
 
   const value = useMemo(
@@ -63,11 +82,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       configured,
       signInWithGoogle,
       signInWithEmail,
-      signUpWithEmail,
+      signUpWithEmail: doSignUp,
       resetPassword,
       signOut: doSignOut,
+      updateDisplayName: doUpdateDisplayName,
     }),
-    [user, loading, configured, doSignOut],
+    [user, loading, configured, doSignOut, doSignUp, doUpdateDisplayName],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

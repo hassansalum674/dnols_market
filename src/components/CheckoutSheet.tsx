@@ -488,7 +488,7 @@ export function CheckoutSheet() {
                     id="sheet-delivery-address"
                     className="sheet-field fulfillment-address"
                     rows={2}
-                    placeholder="Area and street, e.g. Kariakoo, Uhuru Street"
+                    placeholder=""
                     value={deliveryAddress}
                     onChange={(e) => {
                       setDeliveryAddress(e.target.value);

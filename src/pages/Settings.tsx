@@ -1,19 +1,19 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { LanguagePicker } from "../components/LanguagePicker";
 import {
   loadSettings,
   saveSettings,
   type TextSize,
   type ThemeMode,
 } from "../store/settings";
-import { UserAvatar } from "../components/UserAvatar";
-import { userDisplayName } from "../lib/userDisplay";
-import { loadProfile } from "../lib/profile";
-import { formatTzPhoneDisplay } from "../lib/phone";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
+import { saveProfile } from "../lib/profile";
 
 export function SettingsPage() {
   const { user, signOut } = useAuth();
+  const { t, lang, setLang } = useI18n();
   const [settings, setSettings] = useState(loadSettings);
 
   function patchTheme(theme: ThemeMode) {
@@ -28,21 +28,33 @@ export function SettingsPage() {
     <div className="page account-page">
       <div className="account-top">
         <Link to="/you" className="back-link">
-          ← My Account
+          ← {t("myAccount")}
         </Link>
-        <h1>Settings</h1>
+        <h1>{t("settings")}</h1>
       </div>
 
       <section className="account-section">
-        <h2>Appearance</h2>
+        <h2>{t("language")}</h2>
+        <p className="section-desc">{t("languageHint")}</p>
+        <LanguagePicker
+          value={lang}
+          onChange={(next) => {
+            setLang(next);
+            if (user) saveProfile(user.uid, { language: next });
+          }}
+        />
+      </section>
+
+      <section className="account-section">
+        <h2>{t("appearance")}</h2>
         <p className="section-desc">Theme and text size apply across the app.</p>
-        <p className="field-label">Theme</p>
+        <p className="field-label">{t("theme")}</p>
         <div className="sheet-options">
           {(
             [
-              ["light", "Light"],
-              ["dark", "Dark"],
-              ["system", "System"],
+              ["light", t("light")],
+              ["dark", t("dark")],
+              ["system", t("system")],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -55,12 +67,12 @@ export function SettingsPage() {
             </button>
           ))}
         </div>
-        <p className="field-label">Text size</p>
+        <p className="field-label">{t("textSize")}</p>
         <div className="sheet-options">
           {(
             [
-              ["normal", "Normal"],
-              ["large", "Large"],
+              ["normal", t("normal")],
+              ["large", t("large")],
             ] as const
           ).map(([value, label]) => (
             <button
@@ -77,28 +89,20 @@ export function SettingsPage() {
 
       {user && (
         <section className="account-section">
-          <h2>Account</h2>
-          <div className="settings-profile">
-            {user && <UserAvatar user={user} size="xl" editable />}
-            <div>
-              <p className="account-name">{userDisplayName(user)}</p>
-              {user.email && <p className="muted">{user.email}</p>}
-              {loadProfile(user.uid).phone && (
-                <p className="muted">
-                  {formatTzPhoneDisplay(loadProfile(user.uid).phone!)}
-                </p>
-              )}
-              <p className="hint">Tap the camera to add or change your photo.</p>
-            </div>
-          </div>
+          <h2>{t("account")}</h2>
+          <nav className="account-menu" aria-label={t("account")}>
+            <Link to="/you/profile" className="account-menu-item">
+              {t("editProfile")}
+            </Link>
+          </nav>
           <button type="button" className="btn ghost account-menu-btn" onClick={() => void signOut()}>
-            Sign out
+            {t("signOut")}
           </button>
         </section>
       )}
 
       <section className="account-section">
-        <h2>Legal</h2>
+        <h2>{t("legal")}</h2>
         <nav className="account-menu" aria-label="Legal">
           <Link to="/terms" className="account-menu-item">
             Terms of Use

@@ -1,9 +1,12 @@
+import type { AppLanguage } from "../lib/i18n";
+
 export type ThemeMode = "dark" | "light" | "system";
 export type TextSize = "normal" | "large";
 
 export type AppSettings = {
   theme: ThemeMode;
   textSize: TextSize;
+  language: AppLanguage;
 };
 
 const KEY = "dnols.settings.v1";
@@ -11,6 +14,7 @@ const KEY = "dnols.settings.v1";
 const DEFAULTS: AppSettings = {
   theme: "light",
   textSize: "normal",
+  language: "en",
 };
 
 const LIGHT_THEME_COLOR = "#ffffff";
@@ -30,6 +34,7 @@ export function saveSettings(patch: Partial<AppSettings>): AppSettings {
   const next = { ...loadSettings(), ...patch };
   localStorage.setItem(KEY, JSON.stringify(next));
   applySettings(next);
+  window.dispatchEvent(new Event("dnols-settings"));
   return next;
 }
 
@@ -69,6 +74,7 @@ export function applySettings(s: AppSettings = loadSettings()) {
   const theme = resolvedTheme(s.theme);
   document.documentElement.dataset.theme = theme;
   document.documentElement.dataset.textSize = s.textSize;
+  document.documentElement.lang = s.language === "sw" ? "sw" : "en";
   setThemeColor(theme);
 }
 

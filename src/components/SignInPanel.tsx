@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { authErrorMessage, consumeAuthError } from "../lib/authActions";
 import { useAuth } from "../store/auth";
+import { useI18n } from "../store/i18n";
 
 type Mode = "signin" | "signup" | "reset";
 
@@ -11,10 +12,11 @@ type Props = {
 };
 
 export function SignInPanel({
-  title = "Sign in to Dnols",
-  subtitle = "Use Google or email. Your orders and escrow pickups are tied to your account.",
+  title,
+  subtitle,
   onSuccess,
 }: Props) {
+  const { t } = useI18n();
   const {
     configured,
     loading,
@@ -50,19 +52,19 @@ export function SignInPanel({
   async function submitEmail(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) {
-      setErr("Enter your email.");
+      setErr(t("enterEmail"));
       return;
     }
     if (mode === "reset") {
       await run("reset", async () => {
         await resetPassword(email);
-        setMsg("Password reset email sent. Check your inbox.");
+        setMsg(t("resetSent"));
         setMode("signin");
       });
       return;
     }
     if (password.length < 6) {
-      setErr("Password must be at least 6 characters.");
+      setErr(t("passwordMin"));
       return;
     }
     if (mode === "signup") {
@@ -74,8 +76,8 @@ export function SignInPanel({
 
   return (
     <div className="signin-panel">
-      <h2 className="signin-title">{title}</h2>
-      <p className="section-desc">{subtitle}</p>
+      <h2 className="signin-title">{title ?? t("signInTitle")}</h2>
+      <p className="section-desc">{subtitle ?? t("signInSubtitle")}</p>
 
       {!loading && !configured && (
         <p className="hint auth-setup-hint">
@@ -90,11 +92,11 @@ export function SignInPanel({
         onClick={() => void run("google", signInWithGoogle)}
       >
         <GoogleIcon />
-        {busy === "google" ? "Signing in…" : "Continue with Google"}
+        {busy === "google" ? t("signingIn") : t("continueGoogle")}
       </button>
 
       <p className="auth-divider">
-        <span>or use email</span>
+        <span>{t("orUseEmail")}</span>
       </p>
 
       <div className="signin-tabs" role="tablist" aria-label="Sign-in mode">
@@ -109,7 +111,7 @@ export function SignInPanel({
             setMsg(null);
           }}
         >
-          Sign in
+            {t("signIn")}
         </button>
         <button
           type="button"
@@ -122,7 +124,7 @@ export function SignInPanel({
             setMsg(null);
           }}
         >
-          Create account
+            {t("createAccount")}
         </button>
       </div>
 
@@ -130,21 +132,21 @@ export function SignInPanel({
         {mode === "signup" && (
           <div className="signin-field">
             <label className="field-label" htmlFor="auth-name">
-              Full name
+              {t("fullName")}
             </label>
             <input
               id="auth-name"
               className="sheet-field"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder=""
               autoComplete="name"
             />
           </div>
         )}
         <div className="signin-field">
           <label className="field-label" htmlFor="auth-email">
-            Email
+              {t("email")}
           </label>
           <input
             id="auth-email"
@@ -154,14 +156,14 @@ export function SignInPanel({
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder=""
             required
           />
         </div>
         {mode !== "reset" && (
           <div className="signin-field">
             <label className="field-label" htmlFor="auth-pass">
-              Password
+              {t("password")}
             </label>
             <input
               id="auth-pass"
@@ -170,7 +172,7 @@ export function SignInPanel({
               autoComplete={mode === "signup" ? "new-password" : "current-password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
+              placeholder=""
               required
               minLength={6}
             />
@@ -180,12 +182,12 @@ export function SignInPanel({
         {msg && <p className="ok">{msg}</p>}
         <button type="submit" className="btn signin-submit" disabled={Boolean(busy)}>
           {busy === "email"
-            ? "Please wait…"
+            ? t("pleaseWait")
             : mode === "signup"
-              ? "Create account"
+              ? t("createAccount")
               : mode === "reset"
-                ? "Send reset link"
-                : "Sign in with email"}
+                ? t("sendReset")
+                : t("signInEmail")}
         </button>
       </form>
 
@@ -199,7 +201,7 @@ export function SignInPanel({
             setMsg(null);
           }}
         >
-          Forgot password?
+          {t("forgotPassword")}
         </button>
       )}
       {mode === "reset" && (
@@ -208,7 +210,7 @@ export function SignInPanel({
           className="text-link-btn signin-forgot"
           onClick={() => setMode("signin")}
         >
-          Back to sign in
+          {t("backToSignIn")}
         </button>
       )}
     </div>

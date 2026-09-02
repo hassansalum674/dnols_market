@@ -27,7 +27,7 @@ export function emptyDraft(): OnboardingDraft {
       primaryPhone: "",
       whatsappSame: true,
       whatsappPhone: "",
-      language: "swahili",
+      language: "english",
     },
     step4: {
       legalName: "",

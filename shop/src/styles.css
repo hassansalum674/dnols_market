@@ -791,6 +791,41 @@ label.lbl {
   gap: 4px;
 }
 
+.lang-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 4px 0 8px;
+}
+
+.lang-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  min-height: 72px;
+  padding: 12px;
+  border: 2px solid var(--faint);
+  border-radius: var(--btn-radius);
+  background: transparent;
+  color: var(--white);
+}
+
+.lang-card strong {
+  font-size: 16px;
+}
+
+.lang-card span {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.lang-card.on {
+  border-color: var(--blue);
+  background: rgba(26, 111, 212, 0.15);
+}
+
 .progress-wrap {
   margin: 8px 0 4px;
 }

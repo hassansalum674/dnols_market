@@ -21,6 +21,11 @@ export function PendingReviewPage() {
           <p>
             <strong>Status:</strong> PENDING_REVIEW
           </p>
+          {profile?.shopId && (
+            <p>
+              <strong>Shop ID:</strong> {profile.shopId}
+            </p>
+          )}
           {profile?.submittedAt && (
             <p className="hint">
               Submitted {new Date(profile.submittedAt).toLocaleString()}

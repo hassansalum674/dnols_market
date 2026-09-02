@@ -137,7 +137,7 @@ export function SignInPanel({
               className="field"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder=""
               autoComplete="name"
             />
           </div>
@@ -154,7 +154,7 @@ export function SignInPanel({
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
+            placeholder=""
             required
           />
         </div>
