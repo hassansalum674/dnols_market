@@ -1,11 +1,14 @@
 import { loadLastDeliveryPhone, loadLastPayPhone } from "./checkout";
 
 export type UserProfile = {
+  displayName?: string;
   phone?: string;
   deliveryPhone?: string;
   deliveryAddress?: string;
   fulfillment?: "pickup" | "delivery";
   avatarDataUrl?: string;
+  /** When true, ignore Google photoURL and show the letter avatar. */
+  preferLetterAvatar?: boolean;
 };
 
 function key(uid: string): string {
@@ -25,6 +28,7 @@ export function saveProfile(uid: string, patch: UserProfile): void {
     const cur = loadProfile(uid);
     const next = { ...cur, ...patch };
     if (patch.avatarDataUrl === "") delete next.avatarDataUrl;
+    if (patch.displayName === "") delete next.displayName;
     localStorage.setItem(key(uid), JSON.stringify(next));
   } catch {
     /* ignore */

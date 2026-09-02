@@ -31,6 +31,7 @@ export function UserAvatar({
   const inputId = useId();
   const [imgFailed, setImgFailed] = useState(false);
   const [customUrl, setCustomUrl] = useState<string | null>(null);
+  const [hideRemote, setHideRemote] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const initial = userInitial(user);
@@ -39,21 +40,23 @@ export function UserAvatar({
 
   useEffect(() => {
     const sync = () => {
-      setCustomUrl(loadProfile(user.uid).avatarDataUrl ?? null);
+      const p = loadProfile(user.uid);
+      setCustomUrl(p.avatarDataUrl ?? null);
+      setHideRemote(Boolean(p.preferLetterAvatar));
       setImgFailed(false);
     };
     sync();
     return onAvatarChange(sync);
   }, [user.uid]);
 
-  const photo = customUrl || (!imgFailed && user.photoURL) || null;
+  const photo = customUrl || (!hideRemote && !imgFailed && user.photoURL) || null;
 
   async function onFile(file: File | undefined) {
     if (!file) return;
     setErr(null);
     try {
       const dataUrl = await resizeImageFile(file);
-      saveProfile(user.uid, { avatarDataUrl: dataUrl });
+      saveProfile(user.uid, { avatarDataUrl: dataUrl, preferLetterAvatar: false });
       setCustomUrl(dataUrl);
       notifyAvatarChange();
     } catch (e) {

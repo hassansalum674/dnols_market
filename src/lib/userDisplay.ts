@@ -1,8 +1,15 @@
-import type { AuthUser } from "../store/auth";
+import type { AuthUser } from "./authActions";
+import { loadProfile } from "./profile";
 
 export function userDisplayName(user: AuthUser | null): string {
   if (!user) return "Guest";
-  return user.displayName?.trim() || user.email?.split("@")[0] || "Account";
+  const local = user.uid ? loadProfile(user.uid).displayName?.trim() : "";
+  return (
+    user.displayName?.trim() ||
+    local ||
+    user.email?.split("@")[0] ||
+    "Account"
+  );
 }
 
 export function userInitial(user: AuthUser | null): string {

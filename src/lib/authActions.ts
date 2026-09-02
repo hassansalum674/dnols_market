@@ -177,6 +177,17 @@ export async function authSignOut(): Promise<void> {
   if (auth) await signOut(auth);
 }
 
+export async function updateDisplayName(name: string): Promise<AuthUser> {
+  const auth = await requireAuth();
+  const u = auth.currentUser;
+  if (!u) throw new Error("Sign in first.");
+  const trimmed = name.trim();
+  if (trimmed.length < 2) throw new Error("Enter your name (at least 2 letters).");
+  const { updateProfile } = await import("firebase/auth");
+  await updateProfile(u, { displayName: trimmed });
+  return mapUser(u);
+}
+
 export function subscribeAuth(
   onUser: (user: AuthUser | null) => void,
   onReady?: () => void,

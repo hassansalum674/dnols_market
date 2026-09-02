@@ -15,6 +15,7 @@ import {
   signInWithGoogle,
   signUpWithEmail,
   subscribeAuth,
+  updateDisplayName as persistDisplayName,
   type AuthUser,
 } from "../lib/authActions";
 import { initFirebase } from "../lib/firebase";
@@ -30,6 +31,7 @@ type AuthState = {
   signUpWithEmail: (email: string, password: string, name?: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateDisplayName: (name: string) => Promise<void>;
 };
 
 const Ctx = createContext<AuthState | null>(null);
@@ -56,6 +58,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const doUpdateDisplayName = useCallback(async (name: string) => {
+    const next = await persistDisplayName(name);
+    setUser(next);
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
@@ -66,8 +73,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signUpWithEmail,
       resetPassword,
       signOut: doSignOut,
+      updateDisplayName: doUpdateDisplayName,
     }),
-    [user, loading, configured, doSignOut],
+    [user, loading, configured, doSignOut, doUpdateDisplayName],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

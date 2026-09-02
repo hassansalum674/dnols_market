@@ -45,7 +45,20 @@ export function YouPage() {
         <p className="muted">Loading…</p>
       ) : user ? (
         <div className="account-profile account-profile--signed-in">
-          <UserAvatar user={user} size="xl" editable />
+          <Link to="/you/profile" className="account-avatar-link" aria-label="Edit my profile">
+            <UserAvatar user={user} size="xl" />
+            <span className="user-avatar-camera" aria-hidden>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 8.5h3.2l1.3-2.2h7L16.8 8.5H20v10H4V8.5z"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  strokeLinejoin="round"
+                />
+                <circle cx="12" cy="13.2" r="3.2" stroke="currentColor" strokeWidth="1.8" />
+              </svg>
+            </span>
+          </Link>
           <div className="account-profile-body">
             <p className="account-name">{displayName}</p>
             {user.email && (
@@ -71,7 +84,7 @@ export function YouPage() {
               <span>{providerLabel(user.provider)}</span>
             </p>
             <div className="account-profile-actions">
-              <Link to="/you/settings" className="btn account-edit-btn">
+              <Link to="/you/profile" className="btn account-edit-btn">
                 Edit my profile
               </Link>
               <button

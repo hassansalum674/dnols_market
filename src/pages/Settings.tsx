@@ -6,10 +6,6 @@ import {
   type TextSize,
   type ThemeMode,
 } from "../store/settings";
-import { UserAvatar } from "../components/UserAvatar";
-import { userDisplayName } from "../lib/userDisplay";
-import { loadProfile } from "../lib/profile";
-import { formatTzPhoneDisplay } from "../lib/phone";
 import { useAuth } from "../store/auth";
 
 export function SettingsPage() {
@@ -78,19 +74,11 @@ export function SettingsPage() {
       {user && (
         <section className="account-section">
           <h2>Account</h2>
-          <div className="settings-profile">
-            {user && <UserAvatar user={user} size="xl" editable />}
-            <div>
-              <p className="account-name">{userDisplayName(user)}</p>
-              {user.email && <p className="muted">{user.email}</p>}
-              {loadProfile(user.uid).phone && (
-                <p className="muted">
-                  {formatTzPhoneDisplay(loadProfile(user.uid).phone!)}
-                </p>
-              )}
-              <p className="hint">Tap the camera to add or change your photo.</p>
-            </div>
-          </div>
+          <nav className="account-menu" aria-label="Profile">
+            <Link to="/you/profile" className="account-menu-item">
+              Edit my profile
+            </Link>
+          </nav>
           <button type="button" className="btn ghost account-menu-btn" onClick={() => void signOut()}>
             Sign out
           </button>

@@ -2791,6 +2791,17 @@ img {
   display: block;
 }
 
+.account-avatar-link {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.account-avatar-link .user-avatar-camera {
+  pointer-events: none;
+}
+
 .account-profile--signed-in {
   align-items: flex-start;
 }
@@ -3700,4 +3711,152 @@ img {
 .site-footer-links a:hover {
   color: var(--white);
   text-decoration: underline;
+}
+
+/* Buyer profile editor — same form language as seller onboarding */
+.profile-onboard {
+  max-width: 520px;
+  padding-bottom: 48px;
+}
+
+.profile-onboard .onboarding-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 12px 0 16px;
+}
+
+.profile-onboard .onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-onboard .progress-wrap {
+  margin: 8px 0 4px;
+}
+
+.profile-onboard .progress-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.profile-onboard .progress-track {
+  height: 4px;
+  background: var(--faint);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.profile-onboard .progress-fill {
+  height: 100%;
+  background: var(--blue);
+  transition: width 0.3s ease;
+}
+
+.profile-onboard .draft-saved {
+  display: inline-block;
+  font-size: 12px;
+  color: var(--blue);
+  opacity: 0;
+  transition: opacity 0.3s;
+  margin-bottom: 8px;
+  min-height: 1em;
+}
+
+.profile-onboard .draft-saved.visible {
+  opacity: 1;
+}
+
+.profile-notice {
+  background: rgba(26, 111, 212, 0.12);
+  border: 1px solid rgba(26, 111, 212, 0.35);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+
+.profile-onboard .lbl {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--white);
+  margin: 16px 0 6px;
+}
+
+.profile-onboard .field {
+  width: 100%;
+  background: var(--surface);
+  border: 2px solid var(--faint);
+  border-radius: var(--radius);
+  color: var(--white);
+  font-size: 18px;
+  padding: 12px 14px;
+  outline: none;
+}
+
+.profile-onboard .field:focus {
+  border-color: var(--blue);
+}
+
+.profile-onboard-btn {
+  margin-top: 16px;
+  border-radius: var(--radius);
+}
+
+.profile-switch-account {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.profile-signed-as {
+  margin: 28px 0 0;
+  text-align: center;
+}
+
+.profile-photo-upload {
+  margin: 8px 0 12px;
+}
+
+.profile-photo-preview {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.profile-photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-photo-fallback {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: lowercase;
+}
+
+.profile-onboard .photo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-onboard .photo-btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: var(--radius);
 }

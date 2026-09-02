@@ -30,6 +30,9 @@ const YouPage = lazy(() =>
 const SettingsPage = lazy(() =>
   import("./pages/Settings").then((m) => ({ default: m.SettingsPage })),
 );
+const EditProfilePage = lazy(() =>
+  import("./pages/EditProfile").then((m) => ({ default: m.EditProfilePage })),
+);
 const SavedPage = lazy(() =>
   import("./pages/Saved").then((m) => ({ default: m.SavedPage })),
 );
@@ -74,6 +77,7 @@ const router = createBrowserRouter([
       { path: "checkout", element: <CheckoutPage /> },
       { path: "orders", element: <OrdersPage /> },
       { path: "you", element: <YouPage /> },
+      { path: "you/profile", element: <EditProfilePage /> },
       { path: "you/settings", element: <SettingsPage /> },
       { path: "you/saved", element: <SavedPage /> },
       { path: "signin", element: <SignInPage /> },
