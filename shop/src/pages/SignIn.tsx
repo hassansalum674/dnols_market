@@ -71,10 +71,10 @@ export function SignInPage() {
           subtitle={t("sellerSignInSub")}
         />
 
-        <p className="auth-divider">or use phone</p>
+        <p className="auth-divider">{t("orUsePhone")}</p>
 
         <form onSubmit={submit}>
-          <label className="lbl">Phone number</label>
+          <label className="lbl">{t("phoneNumber")}</label>
           <input
             className="field"
             type="tel"
@@ -88,13 +88,13 @@ export function SignInPage() {
           />
           {err && <p className="err">{err}</p>}
           <button type="submit" className="btn" style={{ marginTop: 20 }}>
-            Continue with phone
+            {t("continuePhone")}
           </button>
         </form>
         <p className="hint" style={{ marginTop: 24 }}>
-          New seller?{" "}
+          {t("newSeller")}{" "}
           <Link to="/onboarding" className="text-link">
-            Start onboarding
+            {t("startOnboarding")}
           </Link>
         </p>
       </main>
