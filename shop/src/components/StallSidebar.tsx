@@ -6,12 +6,12 @@ import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 
 const links = [
-  { to: "/stall", label: "Today", end: true },
-  { to: "/stall/dashboard", label: "Overview", end: false },
-  { to: "/stall/stock", label: "Products", end: false },
-  { to: "/stall/orders", label: "Orders", end: false },
-  { to: "/stall/riders", label: "Riders", end: false },
-  { to: "/stall/shop", label: "Shop settings", end: false },
+  { to: "/stall", label: "Today", end: true, icon: "🏠" },
+  { to: "/stall/dashboard", label: "Overview", end: false, icon: "📊" },
+  { to: "/stall/stock", label: "Products", end: false, icon: "🏷️" },
+  { to: "/stall/orders", label: "Orders", end: false, icon: "📦" },
+  { to: "/stall/riders", label: "Riders", end: false, icon: "🛵" },
+  { to: "/stall/shop", label: "Shop settings", end: false, icon: "🏪" },
 ] as const;
 
 type Props = {
@@ -43,7 +43,9 @@ export function StallSidebar({ pickupCount }: Props) {
               `stall-sidebar-link ${isActive ? "active" : ""}`.trim()
             }
           >
-            <span>{link.label}</span>
+            <span>
+              <span aria-hidden>{link.icon}</span> {link.label}
+            </span>
             {link.label === "Today" && pickupCount > 0 && (
               <span className="stall-sidebar-badge">{pickupCount}</span>
             )}
