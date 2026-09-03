@@ -79,6 +79,7 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,ico}"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/__\//, /^\/api\//],
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname.startsWith("/__/"),

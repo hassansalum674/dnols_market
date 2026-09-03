@@ -14,7 +14,14 @@ import "./styles.css";
 initSettings();
 initPwaInstall();
 
-registerSW({ immediate: true });
+registerSW({
+  immediate: true,
+  onRegisteredSW(_swUrl, registration) {
+    if (registration) {
+      registration.update().catch(() => {});
+    }
+  },
+});
 void registerPushStub();
 
 createRoot(document.getElementById("root")!).render(

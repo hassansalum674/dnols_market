@@ -18,7 +18,7 @@ const ORDERS = "dnols.shop.orders";
 const SKUS = "dnols.shop.skus";
 const HOURS = "dnols.shop.hours";
 const PAYOUTS = "dnols.shop.payouts";
-const SPLASH = "dnols.shop.splash";
+const SPLASH = "dnols.shop.splash.v2";
 
 function read<T>(key: string, fallback: T): T {
   try {

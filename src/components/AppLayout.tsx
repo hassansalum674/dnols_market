@@ -9,7 +9,8 @@ import { CheckoutSheet } from "./CheckoutSheet";
 import { InstallAppPrompt } from "./InstallApp";
 import { SiteFooter } from "./SiteFooter";
 
-const SPLASH_KEY = "dnols.splash.session";
+const BUILD = typeof __BUILD_SHA__ !== "undefined" ? __BUILD_SHA__ : "dev";
+const SPLASH_KEY = `dnols.splash.${BUILD}`;
 
 export function AppLayout() {
   const loc = useLocation();
