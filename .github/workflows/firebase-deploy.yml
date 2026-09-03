@@ -63,11 +63,18 @@ jobs:
           fi
 
       - name: Deploy Firestore rules
+        id: firestore
+        continue-on-error: true
         uses: w9jds/firebase-action@master
         with:
-          args: deploy --only firestore --project dnols-2a394
+          args: deploy --only firestore:rules,firestore:indexes --project dnols-2a394
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Firestore rules deploy hint
+        if: steps.firestore.outcome == 'failure'
+        run: |
+          echo "::warning::Firestore rules were not deployed. If the log mentions billing/403 and Creating the new Firestore database, open Firebase Console → Firestore → Create database once (Spark is fine). Then re-run this workflow. Hosting deploy continues below."
 
       - name: Deploy to Firebase Hosting
         uses: w9jds/firebase-action@master

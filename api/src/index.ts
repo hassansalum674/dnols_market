@@ -39,6 +39,7 @@ app.get("/openapi.json", async (_req, reply) => {
       "POST /orders/:id/handover",
       "GET /trending",
       "POST /riders/invite",
+      "GET /riders/mine",
       "POST /riders/claim",
       "POST /call/token",
       "POST /photos/process",

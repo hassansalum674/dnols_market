@@ -1,16 +1,23 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { inviteRiderSms } from "../api";
-import {
-  formatTzMobile,
-  inviteRider,
-  isValidTzMobile,
-  listenSellerRiders,
-  type RiderDoc,
-} from "../lib/deliveryCloud";
-import { getFirebaseAuth, getFirebaseDb } from "../lib/firebase";
+import { inviteRiderSms, listMyRiders, type RiderDoc } from "../api";
+import { formatTzMobile, isValidTzMobile } from "../lib/deliveryCloud";
+import { getFirebaseAuth } from "../lib/firebase";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
+
+function riderErrMessage(e: unknown, t: (k: "riderFail" | "riderOffline") => string): string {
+  const msg = e instanceof Error ? e.message : "";
+  const status = (e as { status?: number }).status;
+  if (
+    status === 503 ||
+    /offline|firestore_unavailable|firestore_/i.test(msg) ||
+    /Failed to get document/i.test(msg)
+  ) {
+    return t("riderOffline");
+  }
+  return msg || t("riderFail");
+}
 
 export function RidersPage() {
   const { user } = useAuth();
@@ -22,11 +29,25 @@ export function RidersPage() {
   const [err, setErr] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
+  const loadRiders = useCallback(async () => {
+    const token = await getFirebaseAuth()?.currentUser?.getIdToken();
+    if (!token) return;
+    try {
+      const res = await listMyRiders(token);
+      setRiders(res.riders ?? []);
+      setErr(null);
+    } catch (e) {
+      setErr(riderErrMessage(e, t));
+    }
+  }, [t]);
+
   useEffect(() => {
-    const db = getFirebaseDb();
-    if (!db || !user?.uid) return;
-    return listenSellerRiders(db, user.uid, setRiders, (e) => setErr(e.message));
-  }, [user?.uid]);
+    if (!user?.uid) {
+      setRiders([]);
+      return;
+    }
+    void loadRiders();
+  }, [user?.uid, loadRiders]);
 
   async function addRider() {
     setErr(null);
@@ -36,25 +57,20 @@ export function RidersPage() {
       setErr(t("riderBadPhone"));
       return;
     }
-    const db = getFirebaseDb();
-    if (!db) {
-      setErr(t("riderNeedSignIn"));
-      return;
-    }
     setBusy(true);
     try {
-      await inviteRider(db, user.uid, phone, name);
       const token = await getFirebaseAuth()?.currentUser?.getIdToken();
-      if (token) {
-        const sms = await inviteRiderSms(phone, token);
-        setMsg(sms.sms === "sent" ? t("riderSmsSent") : t("riderSaved"));
-      } else {
-        setMsg(t("riderSaved"));
+      if (!token) {
+        setErr(t("riderNeedSignIn"));
+        return;
       }
+      const res = await inviteRiderSms(phone, token, name);
+      setMsg(res.sms === "sent" ? t("riderSmsSent") : t("riderSaved"));
       setPhone("");
       setName("");
+      await loadRiders();
     } catch (e) {
-      setErr(e instanceof Error ? e.message : t("riderFail"));
+      setErr(riderErrMessage(e, t));
     } finally {
       setBusy(false);
     }
