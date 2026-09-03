@@ -1245,7 +1245,11 @@ img {
   top: auto;
   bottom: 0;
   width: 100%;
-  max-height: min(640px, calc(100dvh - 24px));
+  max-height: min(92dvh, calc(100dvh - 8px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: 0;
   border-top-left-radius: 16px;
   border-top-right-radius: 16px;
   border-left: none;
@@ -1305,7 +1309,15 @@ img {
   position: sticky;
   top: 0;
   z-index: 2;
+  flex-shrink: 0;
   background: var(--surface);
+  padding: 0 0 8px;
+}
+
+.checkout-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
   padding-bottom: 8px;
 }
 
@@ -3052,8 +3064,8 @@ img {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  min-height: 92px;
-  padding: 10px 6px;
+  min-height: 76px;
+  padding: 8px 6px;
   border: 2px solid var(--faint);
   border-radius: var(--radius);
   background: var(--black);
@@ -3096,17 +3108,34 @@ img {
   margin: 0 0 8px;
 }
 
+.checkout-sheet .uc-panel {
+  padding: 12px;
+}
+
+.checkout-sheet .uc-panel-head {
+  margin-bottom: 8px;
+}
+
 .pay-saved {
   margin: 12px 0 4px;
 }
 
 .pay-footer {
-  margin-top: 4px;
-  padding-bottom: 8px;
+  flex-shrink: 0;
+  margin-top: 0;
+  padding: 10px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border-top: 1px solid var(--faint);
+}
+
+.pay-footer .uc-totals-total {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .pay-footer .checkout-sheet-continue {
-  margin-top: 16px;
+  margin-top: 10px;
 }
 
 .checkout-sheet .uc-use-saved {

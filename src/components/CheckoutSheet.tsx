@@ -271,6 +271,7 @@ export function CheckoutSheet() {
         {!needsSignIn && !authLoading && step === "basket" && (
           <>
             <div className="sheet-head">
+              <span aria-hidden />
               <h3>Your basket</h3>
               <button
                 type="button"
@@ -290,7 +291,7 @@ export function CheckoutSheet() {
                 </button>
               </div>
             ) : (
-              <>
+              <div className="checkout-body">
                 <ul className="uc-items">
                   {items.map((line) => (
                     <li key={line.listing.id} className="uc-item">
@@ -398,7 +399,7 @@ export function CheckoutSheet() {
                           style={{ background: m.accent }}
                           aria-hidden
                         >
-                          {m.label.charAt(0)}
+                          {m.mark}
                         </span>
                         {m.checkoutLabel}
                       </button>
@@ -411,7 +412,7 @@ export function CheckoutSheet() {
                     </Link>
                   </p>
                 </section>
-              </>
+              </div>
             )}
           </>
         )}
@@ -438,6 +439,7 @@ export function CheckoutSheet() {
               </button>
             </div>
 
+            <div className="checkout-body">
             {user && (
               <div className="checkout-signed-in">
                 <UserAvatar user={user} size="md" />
@@ -521,7 +523,7 @@ export function CheckoutSheet() {
                       style={{ background: m.accent }}
                       aria-hidden
                     >
-                      {m.label.charAt(0)}
+                      {m.mark}
                     </span>
                     <span className="pay-method-name">{m.label}</span>
                     <span className="pay-method-net">{m.network}</span>
@@ -565,8 +567,8 @@ export function CheckoutSheet() {
                 Mobile number
               </label>
               <p className="hint pay-hint">
-                The {selectedMethod.label} PIN prompt is sent here. The stall
-                can call the same number. Tanzania mobiles start with 6 or 7.
+                We send the PIN prompt here. The stall can call this number.
+                Starts with 6 or 7.
               </p>
               <input
                 id="sheet-charge-phone"
@@ -601,6 +603,8 @@ export function CheckoutSheet() {
                     setUseCustomDelivery(e.target.checked);
                     if (!e.target.checked) {
                       setDeliveryPhone(phone);
+                    } else {
+                      setDeliveryPhone("");
                     }
                     setErr(null);
                   }}
@@ -639,6 +643,7 @@ export function CheckoutSheet() {
                 </>
               )}
             </section>
+            </div>
 
             <div className="pay-footer">
               <div className="uc-totals-row uc-totals-total">
@@ -658,7 +663,7 @@ export function CheckoutSheet() {
         )}
 
         {step === "waiting" && (
-          <div className="checkout-waiting">
+          <div className="checkout-body checkout-waiting">
             <div className="stk-pulse" aria-hidden />
             <h2 className="checkout-title">Check your phone</h2>
             <p className="section-desc">
@@ -673,7 +678,7 @@ export function CheckoutSheet() {
         )}
 
         {step === "success" && order && (
-          <div className="checkout-sheet-success">
+          <div className="checkout-body checkout-sheet-success">
             <div className="checkout-success-badge" aria-hidden>
               ✓
             </div>
@@ -760,7 +765,7 @@ export function CheckoutSheet() {
                   style={{ background: selectedMethod.accent }}
                   aria-hidden
                 >
-                  {selectedMethod.label.charAt(0)}
+                  {selectedMethod.mark}
                 </span>
                 <div>
                   <p className="uc-panel-strong">{selectedMethod.label}</p>

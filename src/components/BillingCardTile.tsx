@@ -35,7 +35,7 @@ export function BillingCardTile({
             style={{ background: meta.accent }}
             aria-hidden
           >
-            {meta.label.charAt(0)}
+            {meta.mark}
           </span>
           <span className="billing-card-brand">{meta.label}</span>
         </div>
