@@ -5,7 +5,13 @@ import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
-import { getLocalOrders } from "../store/persist";
+import { useI18n } from "../store/i18n";
+import {
+  clearLocalOrders,
+  getLocalOrders,
+  hiddenOrderIds,
+  removeLocalOrder,
+} from "../store/persist";
 import type { Order } from "../types";
 
 const STATUS_LABEL: Record<Order["status"], string> = {
@@ -26,23 +32,40 @@ function payMethodLabel(id?: string): string | null {
   return PAY_METHODS.find((m) => m.id === id)?.label ?? id;
 }
 
+function mergeOrders(local: Order[], remote: Order[]): Order[] {
+  const hidden = new Set(hiddenOrderIds());
+  const map = new Map<string, Order>();
+  [...local, ...remote].forEach((o) => {
+    if (!hidden.has(o.id)) map.set(o.id, o);
+  });
+  return [...map.values()].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
 export function OrdersPage() {
   const { user } = useAuth();
+  const { t } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
     const local = getLocalOrders<Order>();
-    setOrders(local);
+    setOrders(mergeOrders(local, []));
     void fetchOrders().then((remote) => {
-      const map = new Map<string, Order>();
-      [...local, ...remote].forEach((o) => map.set(o.id, o));
-      setOrders(
-        [...map.values()].sort((a, b) =>
-          a.createdAt < b.createdAt ? 1 : -1,
-        ),
-      );
+      setOrders(mergeOrders(getLocalOrders<Order>(), remote));
     });
   }, []);
+
+  function deleteOne(id: string) {
+    if (!window.confirm(t("confirmDeleteOrder"))) return;
+    removeLocalOrder(id);
+    setOrders((cur) => cur.filter((o) => o.id !== id));
+  }
+
+  function deleteAll() {
+    if (!window.confirm(t("confirmDeleteAllOrders"))) return;
+    for (const o of orders) removeLocalOrder(o.id);
+    clearLocalOrders();
+    setOrders([]);
+  }
 
   if (!user) {
     return (
@@ -135,8 +158,21 @@ export function OrdersPage() {
           <p className="hint">
             {new Date(o.paidAt ?? o.createdAt).toLocaleString()}
           </p>
+
+          <div className="order-card-actions">
+            <button
+              type="button"
+              className="order-delete"
+              onClick={() => deleteOne(o.id)}
+            >
+              {t("deleteOrder")}
+            </button>
+          </div>
         </article>
       ))}
+      <button type="button" className="btn ghost" onClick={deleteAll}>
+        {t("deleteAllOrders")}
+      </button>
     </div>
   );
 }

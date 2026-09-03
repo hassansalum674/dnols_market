@@ -159,6 +159,17 @@ export function upsertSavedOrder(row: SavedOrder): SavedOrder[] {
   return next;
 }
 
+export function removeSavedOrder(orderId: string): SavedOrder[] {
+  const next = loadSavedOrders().filter((o) => o.orderId !== orderId);
+  write(ORDERS, next);
+  return next;
+}
+
+export function clearSavedOrders(): SavedOrder[] {
+  write(ORDERS, []);
+  return [];
+}
+
 export function loadSkus(): LocalSku[] {
   return read<LocalSku[]>(SKUS, []);
 }

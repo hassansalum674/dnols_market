@@ -3,6 +3,7 @@ import { getOrder, handoverOrder, payOrder, rejectOrder } from "../api";
 import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
+import { useI18n } from "../store/i18n";
 import type { OrderView, SavedOrder } from "../types";
 import { formatTzs } from "./errors";
 
@@ -11,7 +12,8 @@ const DEMO_LISTING = "lst_kitenge_maxi_01";
 type Row = { saved: SavedOrder; live: OrderView | null; err?: string };
 
 export function OrdersPage() {
-  const { saved, remember, refresh } = useShopData();
+  const { saved, remember, forget, refresh } = useShopData();
+  const { t } = useI18n();
   const [rows, setRows] = useState<Row[] | null>(null);
   const [demoMsg, setDemoMsg] = useState<string | null>(null);
   const [demoErr, setDemoErr] = useState<string | null>(null);
@@ -103,19 +105,44 @@ export function OrdersPage() {
             <EscrowCard
               key={r.saved.orderId}
               row={r}
+              deleteLabel={t("deleteOrder")}
+              confirmDelete={t("confirmDeleteOrder")}
+              onDelete={() => forget(r.saved.orderId)}
               onChange={() => {
                 refresh();
                 void load();
               }}
             />
           ))}
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => {
+              if (!window.confirm(t("confirmDeleteAllOrders"))) return;
+              for (const r of rows) forget(r.saved.orderId);
+            }}
+          >
+            {t("deleteAllOrders")}
+          </button>
         </div>
       )}
     </div>
   );
 }
 
-function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
+function EscrowCard({
+  row,
+  onChange,
+  onDelete,
+  deleteLabel,
+  confirmDelete,
+}: {
+  row: Row;
+  onChange: () => void;
+  onDelete: () => void;
+  deleteLabel: string;
+  confirmDelete: string;
+}) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -181,6 +208,19 @@ function EscrowCard({ row, onChange }: { row: Row; onChange: () => void }) {
         </div>
       )}
       {err && <p className="err">{err}</p>}
+      <div className="order-card-actions">
+        <button
+          type="button"
+          className="order-delete"
+          disabled={busy}
+          onClick={() => {
+            if (!window.confirm(confirmDelete)) return;
+            onDelete();
+          }}
+        >
+          {deleteLabel}
+        </button>
+      </div>
     </article>
   );
 }

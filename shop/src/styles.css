@@ -494,6 +494,27 @@ img {
   flex: 1;
 }
 
+.order-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.order-delete {
+  background: none;
+  border: none;
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-delete:hover,
+.order-delete:focus-visible {
+  color: var(--white);
+}
+
 .muted {
   color: var(--muted);
   font-size: 14px;

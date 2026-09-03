@@ -104,3 +104,43 @@ export function getLocalOrders<T>(): T[] {
     return [];
   }
 }
+
+const HIDDEN_ORDERS = "dnols.orders.hidden.v1";
+
+function hiddenIds(): Set<string> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(HIDDEN_ORDERS) || "[]") as unknown;
+    return new Set(Array.isArray(raw) ? raw.filter((id) => typeof id === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeHidden(ids: Set<string>) {
+  localStorage.setItem(HIDDEN_ORDERS, JSON.stringify([...ids]));
+}
+
+export function hiddenOrderIds(): string[] {
+  return [...hiddenIds()];
+}
+
+export function removeLocalOrder(id: string) {
+  const cur = getLocalOrders<{ id?: string }>();
+  localStorage.setItem(
+    ORDERS,
+    JSON.stringify(cur.filter((o) => o.id !== id)),
+  );
+  const hidden = hiddenIds();
+  hidden.add(id);
+  writeHidden(hidden);
+}
+
+export function clearLocalOrders() {
+  const cur = getLocalOrders<{ id?: string }>();
+  const hidden = hiddenIds();
+  for (const o of cur) {
+    if (o.id) hidden.add(o.id);
+  }
+  localStorage.setItem(ORDERS, "[]");
+  writeHidden(hidden);
+}
