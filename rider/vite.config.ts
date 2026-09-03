@@ -1,8 +1,23 @@
+import { createRequire } from "node:module";
+import path from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+const firebaseRoot = path.dirname(
+  createRequire(import.meta.url).resolve("firebase/package.json"),
+);
+
 export default defineConfig({
+  resolve: {
+    // Rider npm ci installs its own firebase; shared/ lives at repo root.
+    // One copy so collection(db) does not fail instanceof Firestore.
+    alias: { firebase: firebaseRoot },
+    dedupe: ["firebase"],
+  },
+  optimizeDeps: {
+    include: ["firebase/app", "firebase/auth", "firebase/firestore"],
+  },
   plugins: [
     react(),
     VitePWA({

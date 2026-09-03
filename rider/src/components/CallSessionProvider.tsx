@@ -11,7 +11,7 @@ import {
   type MarketOrderDoc,
 } from "../lib/deliveryCloud";
 import { apiBase } from "../lib/apiBase";
-import { getFirebaseAuth, getFirebaseDb } from "../lib/firebase";
+import { getFirebaseAuth, getFirebaseDb, initFirebase } from "../lib/firebase";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 import { useOrderVoiceCall } from "../../../shared/voiceCall/useOrderVoiceCall";
@@ -38,12 +38,24 @@ export function CallSessionProvider({ children }: { children: ReactNode }) {
   const riderId = rider?.riderId ?? "";
 
   useEffect(() => {
-    const db = getFirebaseDb();
-    if (!db || !uid) {
+    if (!uid) {
       setOrders([]);
       return;
     }
-    return listenRiderOrders(db, riderId || "__none__", uid, setOrders);
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+    void initFirebase().then(() => {
+      const db = getFirebaseDb();
+      if (!db || cancelled) {
+        setOrders([]);
+        return;
+      }
+      stop = listenRiderOrders(db, riderId || "__none__", uid, setOrders);
+    });
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
   }, [uid, riderId]);
 
   const labels = useMemo(

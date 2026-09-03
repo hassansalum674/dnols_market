@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
@@ -21,7 +22,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      firebase: path.dirname(
+        createRequire(import.meta.url).resolve("firebase/package.json"),
+      ),
     },
+    dedupe: ["firebase"],
   },
   plugins: [
     react(),
