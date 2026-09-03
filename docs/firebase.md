@@ -183,7 +183,14 @@ Your live rules may still be only `users` and `sellers`. Either:
 
 Check API is ready: `curl https://dnols-83jj.onrender.com/health` should include `"firestoreAdmin":true` after step 2.
 
-If the key is set but `firestoreAdmin` is **missing** from `/health`, Render is still running an **old deploy** — open Render → **Manual Deploy** → deploy latest `main`. If `firestoreAdmin` is `false`, check `firestoreAdminError` in the same response (usually invalid JSON in the env var).
+If `curl …/health` shows `"firestoreWriteError": "5 NOT_FOUND"` (or the shop shows the same), the **(default) Firestore database does not exist** in the project the service account uses — rules alone are not enough.
+
+1. Open the service account JSON on Render and note `"project_id"` (must be **`dnols-2a394`** for production).
+2. Firebase Console → that same project → **Build** → **Firestore Database**.
+3. If you see **Create database** (not a Data tab with collections), click it → pick a region → start in production mode → finish.
+4. On Render, remove a conflicting `FIREBASE_PROJECT_ID` or set it to the same `project_id` as the key.
+5. **Manual Deploy** the API, then `curl https://dnols-83jj.onrender.com/health` → expect `"firestoreWriteOk": true`.
+
 
 ---
 
