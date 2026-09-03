@@ -36,6 +36,7 @@ export default defineConfig({
     },
     VitePWA({
       registerType: "autoUpdate",
+      filename: "dnols-sw.js",
       minify: false,
       includeAssets: [
         "favicon.png",
