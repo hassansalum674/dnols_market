@@ -8,6 +8,7 @@ import {
   RiderDbException,
   type RidersDbError,
 } from "./ridersDb.js";
+import { firestoreProjectId } from "./firestoreAdmin.js";
 
 const INVITE_TEXT =
   "You have been added as a delivery rider on dnols. Download the app: rider.dnols.com";
@@ -160,7 +161,17 @@ function rulesHint(): string {
 }
 
 export function riderFirestoreHint(error: RidersDbError, detail?: string): string {
-  if (detail && detail.length > 3 && detail !== error) return detail;
+  const raw = detail && detail.length > 3 && detail !== error ? detail : "";
+  if (/NOT_FOUND/i.test(raw) || /^5(\s|:|$)/.test(raw)) {
+    const pid = firestoreProjectId() ?? "dnols-2a394";
+    return (
+      `Firestore (default) database not found in project "${pid}". ` +
+      `Open Firebase Console → project ${pid} → Build → Firestore Database → ` +
+      `Create database (if you only see Rules, the database was never created). ` +
+      `Also confirm FIREBASE_SERVICE_ACCOUNT_JSON is from the same project.`
+    );
+  }
+  if (raw) return raw;
   if (error === "permission_denied") {
     return `Firestore security rules are blocking rider access.${rulesHint()}`;
   }
