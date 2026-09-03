@@ -173,6 +173,16 @@ After the database exists, CI runs:
 
 If that step still fails, hosting (buyer / shop / rider) **still deploys** — only rules are skipped until the database exists.
 
+### Quick fix if My riders shows a database error
+
+Your live rules may still be only `users` and `sellers`. Either:
+
+1. **Paste rules** — Firebase Console → Firestore → **Rules** → replace with the contents of `firestore.rules` in this repo → **Publish**
+2. **Or set API admin** — Render → API service → add `FIREBASE_SERVICE_ACCOUNT_JSON` (service account private key JSON, one line) → redeploy API. The API then writes riders server-side and does not depend on client rules.
+3. **Re-run CI** — GitHub → Actions → **Deploy to Firebase** → Run workflow
+
+Check API is ready: `curl https://dnols-83jj.onrender.com/health` should include `"firestoreAdmin":true` after step 2.
+
 ---
 
 ## Troubleshooting

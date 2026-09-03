@@ -2,7 +2,16 @@ import type { FastifyInstance } from "fastify";
 import { PLACE_ID, type Category, type Sort } from "./types.js";
 import { store } from "./store.js";
 import { registerCallRoutes } from "./call.js";
-import { sendRiderInviteSms, verifyFirebaseBearer, claimRiderPhone, inviteRiderForSeller, listSellerRiders, bearerToken } from "./riders.js";
+import {
+  sendRiderInviteSms,
+  verifyFirebaseBearer,
+  claimRiderPhone,
+  inviteRiderForSeller,
+  listSellerRiders,
+  bearerToken,
+  riderFirestoreHint,
+  ridersUseAdmin,
+} from "./riders.js";
 import {
   distanceToShop,
   toDirections,
@@ -54,6 +63,7 @@ export function registerRoutes(
     ok: true,
     service: "dnols-api",
     place: PLACE_ID,
+    firestoreAdmin: ridersUseAdmin(),
     ts: new Date().toISOString(),
   }));
 
@@ -489,7 +499,10 @@ export function registerRoutes(
     const result = await listSellerRiders(token, caller.uid);
     if (!result.ok) {
       const code = result.error === "permission_denied" ? 403 : 503;
-      return reply.code(code).send({ error: result.error });
+      return reply.code(code).send({
+        error: result.error,
+        message: riderFirestoreHint(result.error),
+      });
     }
     return { ok: true, riders: result.riders };
   });
@@ -516,7 +529,10 @@ export function registerRoutes(
       const saved = await inviteRiderForSeller(token, caller.uid, phone, name);
       if (!saved.ok) {
         const code = saved.error === "permission_denied" ? 403 : 503;
-        return reply.code(code).send({ error: saved.error });
+        return reply.code(code).send({
+          error: saved.error,
+          message: riderFirestoreHint(saved.error),
+        });
       }
       const sms = await sendRiderInviteSms(phone);
       return {
@@ -559,7 +575,15 @@ export function registerRoutes(
               : result.error === "permission_denied"
                 ? 403
                 : 503;
-        return reply.code(code).send({ error: result.error });
+        const hint =
+          result.error === "permission_denied" ||
+          result.error === "firestore_unavailable"
+            ? riderFirestoreHint(result.error)
+            : undefined;
+        return reply.code(code).send({
+          error: result.error,
+          ...(hint ? { message: hint } : {}),
+        });
       }
       return { ok: true, rider: result.rider };
     } catch (e) {
