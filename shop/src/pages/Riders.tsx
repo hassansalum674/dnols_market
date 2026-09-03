@@ -13,6 +13,13 @@ function riderErrMessage(
   const msg = e instanceof Error ? e.message : "";
   const status = (e as { status?: number }).status;
   if (
+    msg.length > 24 &&
+    msg !== "firestore_unavailable" &&
+    msg !== "permission_denied"
+  ) {
+    return msg;
+  }
+  if (
     status === 403 ||
     msg === "permission_denied" ||
     /security rules are blocking/i.test(msg)
@@ -80,7 +87,11 @@ export function RidersPage() {
       setMsg(res.sms === "sent" ? t("riderSmsSent") : t("riderSaved"));
       setPhone("");
       setName("");
-      await loadRiders();
+      try {
+        await loadRiders();
+      } catch {
+        /* rider was saved; list refresh is best-effort */
+      }
     } catch (e) {
       setErr(riderErrMessage(e, t));
     } finally {
