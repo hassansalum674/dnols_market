@@ -53,6 +53,8 @@ export function registerRoutes(
 ): void {
   app.get("/health", async () => {
     const probe = firestoreWriteProbe();
+    const agoraAppId = process.env.AGORA_APP_ID?.trim();
+    const agoraCertificate = process.env.AGORA_APP_CERTIFICATE?.trim();
     return {
       ok: true,
       service: "dnols-api",
@@ -62,6 +64,7 @@ export function registerRoutes(
       firestoreProjectId: firestoreProjectId(),
       firestoreWriteOk: probe.ok,
       firestoreWriteError: probe.error,
+      agoraConfigured: Boolean(agoraAppId && agoraCertificate),
       ts: new Date().toISOString(),
     };
   });

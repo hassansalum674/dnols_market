@@ -15,6 +15,10 @@ function gitSha(): string {
 
 const BUILD_SHA = gitSha();
 
+const require = createRequire(import.meta.url);
+const firebaseRoot = path.dirname(require.resolve("firebase/package.json"));
+const agoraRoot = path.dirname(require.resolve("agora-rtc-sdk-ng"));
+
 export default defineConfig({
   define: {
     __BUILD_SHA__: JSON.stringify(BUILD_SHA),
@@ -22,11 +26,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
-      firebase: path.dirname(
-        createRequire(import.meta.url).resolve("firebase/package.json"),
-      ),
+      firebase: firebaseRoot,
+      "agora-rtc-sdk-ng": agoraRoot,
     },
-    dedupe: ["firebase"],
+    dedupe: ["firebase", "agora-rtc-sdk-ng"],
   },
   plugins: [
     react(),

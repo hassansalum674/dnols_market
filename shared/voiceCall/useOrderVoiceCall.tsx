@@ -199,6 +199,17 @@ export function useOrderVoiceCall(opts: {
         });
         await ensureJoined(order);
       } catch (e) {
+        if (e instanceof CallApiError && e.code === "not_configured") {
+          setError(e.message);
+          setFarewell(true);
+          window.setTimeout(() => {
+            setFarewell(false);
+            setError(null);
+            setBusyOrderId(null);
+            endingRef.current = false;
+          }, 3500);
+          return;
+        }
         if (e instanceof CallApiError && e.code === "delivered") {
           await hangup("delivered", order.orderId);
           return;
@@ -222,6 +233,17 @@ export function useOrderVoiceCall(opts: {
       await ensureJoined(order);
       await setOrderCallState(db, order.orderId, { callStatus: "in_call" });
     } catch (e) {
+      if (e instanceof CallApiError && e.code === "not_configured") {
+        setError(e.message);
+        setFarewell(true);
+        window.setTimeout(() => {
+          setFarewell(false);
+          setError(null);
+          setBusyOrderId(null);
+          endingRef.current = false;
+        }, 3500);
+        return;
+      }
       if (e instanceof CallApiError && e.code === "delivered") {
         await hangup("delivered", order.orderId);
         return;
@@ -337,7 +359,7 @@ export function useOrderVoiceCall(opts: {
   if (phase === "incoming" && orderShort) {
     subtitle = `${subtitle} · #${orderShort}`;
   } else if ((phase === "outgoing" || phase === "in_call") && orderShort) {
-    subtitle = `${role === "buyer" ? labels.incomingRider : labels.incomingBuyer} · #${orderShort}`;
+    subtitle = `${subtitle} · #${orderShort}`;
   }
 
   const timer =
