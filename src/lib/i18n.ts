@@ -93,6 +93,10 @@ const EN = {
   notNow: "Not now",
   gotIt: "Got it",
   splashMotto: "Pickup or delivery, nearby",
+  deleteOrder: "Delete",
+  deleteAllOrders: "Delete all",
+  confirmDeleteOrder: "Remove this order from your list?",
+  confirmDeleteAllOrders: "Remove all orders from this device?",
 };
 
 const SW: typeof EN = {
@@ -188,6 +192,10 @@ const SW: typeof EN = {
   notNow: "Si sasa",
   gotIt: "Sawa",
   splashMotto: "Chukua au pelekewe, karibu",
+  deleteOrder: "Futa",
+  deleteAllOrders: "Futa zote",
+  confirmDeleteOrder: "Ondoa oda hii kwenye orodha yako?",
+  confirmDeleteAllOrders: "Ondoa oda zote kwenye kifaa hiki?",
 };
 
 export const I18N = { en: EN, sw: SW } as const;

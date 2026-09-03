@@ -54,6 +54,10 @@ const EN = {
   signIn: "Sign in",
   loading: "Loading…",
   splashMotto: "Pickups and deliveries",
+  deleteOrder: "Delete",
+  deleteAllOrders: "Delete all",
+  confirmDeleteOrder: "Remove this order from your list?",
+  confirmDeleteAllOrders: "Remove all orders from this device?",
   myShop: "My shop",
   sellHeroTitle: "Sell from Kariakoo",
   sellHeroSub:
@@ -152,6 +156,10 @@ const SW: typeof EN = {
   signIn: "Ingia",
   loading: "Inapakia…",
   splashMotto: "Kuchukua na kupeleka",
+  deleteOrder: "Futa",
+  deleteAllOrders: "Futa zote",
+  confirmDeleteOrder: "Ondoa oda hii kwenye orodha yako?",
+  confirmDeleteAllOrders: "Ondoa oda zote kwenye kifaa hiki?",
   myShop: "Duka langu",
   sellHeroTitle: "Uza kutoka Kariakoo",
   sellHeroSub:
