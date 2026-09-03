@@ -17,6 +17,10 @@ services:
         value: https://dnols-83jj.onrender.com
       - key: CORS_ORIGIN
         value: "*"
+      - key: FIREBASE_PROJECT_ID
+        value: dnols-2a394
+      - key: FIREBASE_WEB_API_KEY
+        sync: false
       - key: FAPIAPI_API_KEY
         sync: false
 

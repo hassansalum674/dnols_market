@@ -20,7 +20,8 @@ import {
   loadRiderByAuthUid,
   type RiderDoc,
 } from "../lib/deliveryCloud";
-import { getFirebaseDb, initFirebase } from "../lib/firebase";
+import { getFirebaseAuth, getFirebaseDb, initFirebase } from "../lib/firebase";
+import { API_UNAVAILABLE, claimRiderViaApi } from "../lib/riderClaim";
 
 type AuthState = {
   user: AuthUser | null;
@@ -33,6 +34,11 @@ type AuthState = {
 };
 
 const Ctx = createContext<AuthState | null>(null);
+
+async function idToken(): Promise<string | null> {
+  const auth = getFirebaseAuth();
+  return (await auth?.currentUser?.getIdToken()) ?? null;
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -75,8 +81,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const linkPhone = useCallback(
     async (phone: string) => {
       await initFirebase();
+      if (!user?.uid) return false;
+      const token = await idToken();
+      if (token) {
+        try {
+          const viaApi = await claimRiderViaApi(token, phone);
+          setRider(viaApi);
+          return Boolean(viaApi);
+        } catch (e) {
+          if (!(e instanceof Error && e.message === API_UNAVAILABLE)) throw e;
+        }
+      }
       const db = getFirebaseDb();
-      if (!db || !user?.uid) return false;
+      if (!db) return false;
       const next = await claimRiderByPhone(db, user.uid, phone);
       setRider(next);
       return Boolean(next);

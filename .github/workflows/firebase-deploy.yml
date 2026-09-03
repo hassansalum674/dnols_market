@@ -63,7 +63,6 @@ jobs:
           fi
 
       - name: Deploy Firestore rules
-        continue-on-error: true
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only firestore --project dnols-2a394

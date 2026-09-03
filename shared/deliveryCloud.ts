@@ -5,6 +5,7 @@ import {
   doc,
   getDoc,
   getDocFromServer,
+  getFirestore,
   onSnapshot,
   query,
   serverTimestamp,
@@ -41,7 +42,7 @@ import {
  */
 function bindDb(passed: Firestore): Firestore {
   try {
-    if (getApps().length > 0) return openFirestore(getApp());
+    if (getApps().length > 0) return getFirestore(getApp());
     const options = (
       passed as unknown as { app?: { options?: { apiKey?: string; projectId?: string } } }
     ).app?.options;

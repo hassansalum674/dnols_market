@@ -21,7 +21,7 @@ service cloud.firestore {
     }
 
     function isUnclaimed(data) {
-      return data.authUid == null;
+      return !('authUid' in data) || data.authUid == null;
     }
 
     // Google (Spark) riders have no phone token. They claim by knowing

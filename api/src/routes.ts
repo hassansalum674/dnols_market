@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { PLACE_ID, type Category, type Sort } from "./types.js";
 import { store } from "./store.js";
 import { registerCallRoutes } from "./call.js";
-import { sendRiderInviteSms, verifyFirebaseBearer } from "./riders.js";
+import { sendRiderInviteSms, verifyFirebaseBearer, claimRiderPhone, bearerToken } from "./riders.js";
 import {
   distanceToShop,
   toDirections,
@@ -491,6 +491,42 @@ export function registerRoutes(
     } catch (e) {
       const message = e instanceof Error ? e.message : "invite_failed";
       return reply.code(422).send({ error: "invite_failed", message });
+    }
+  });
+
+  app.post("/riders/claim", async (req, reply) => {
+    const token = bearerToken(req.headers.authorization);
+    if (!token) {
+      return reply.code(401).send({
+        error: "auth_required",
+        message: "Sign in to link your rider number.",
+      });
+    }
+    const caller = await verifyFirebaseBearer(req.headers.authorization);
+    if (!caller) {
+      return reply.code(401).send({
+        error: "auth_required",
+        message: "Sign in to link your rider number.",
+      });
+    }
+    const body = (req.body ?? {}) as { phone?: string };
+    try {
+      const result = await claimRiderPhone(token, caller.uid, String(body.phone ?? ""));
+      if (!result.ok) {
+        const code =
+          result.error === "not_linked"
+            ? 404
+            : result.error === "rider_taken"
+              ? 409
+              : result.error === "permission_denied"
+                ? 403
+                : 503;
+        return reply.code(code).send({ error: result.error });
+      }
+      return { ok: true, rider: result.rider };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "claim_failed";
+      return reply.code(422).send({ error: "claim_failed", message });
     }
   });
 

@@ -1,3 +1,8 @@
+import {
+  fetchRiderDocFields,
+  patchRiderAuthUid,
+} from "./firestoreRest.js";
+
 const INVITE_TEXT =
   "You have been added as a delivery rider on dnols. Download the app: rider.dnols.com";
 
@@ -105,4 +110,74 @@ export async function verifyFirebaseBearer(
   const user = body.users?.[0];
   if (!res.ok || !user?.localId) return null;
   return { uid: user.localId, phone: user.phoneNumber };
+}
+
+export type ApiRiderRow = {
+  riderId: string;
+  name: string;
+  phone: string;
+  authUid: string | null;
+  linkedSellers: string[];
+  status: "idle" | "busy";
+  createdAt: string;
+};
+
+function riderIdFromPhone(phone: string): string {
+  return `rider_${phone.replace(/\D/g, "")}`;
+}
+
+function parseRiderRow(id: string, data: Record<string, unknown>): ApiRiderRow {
+  const linked = Array.isArray(data.linkedSellers)
+    ? data.linkedSellers.map((s) => String(s)).filter(Boolean)
+    : [];
+  return {
+    riderId: String(data.riderId ?? id),
+    name: String(data.name ?? "Rider"),
+    phone: String(data.phone ?? ""),
+    authUid:
+      typeof data.authUid === "string" && data.authUid.trim()
+        ? data.authUid
+        : null,
+    linkedSellers: linked,
+    status: data.status === "busy" ? "busy" : "idle",
+    createdAt: String(data.createdAt ?? new Date().toISOString()),
+  };
+}
+
+export type ClaimRiderResult =
+  | { ok: true; rider: ApiRiderRow }
+  | { ok: false; error: "not_linked" | "rider_taken" | "permission_denied" | "firestore_unavailable" };
+
+export async function claimRiderPhone(
+  idToken: string,
+  uid: string,
+  phoneRaw: string,
+): Promise<ClaimRiderResult> {
+  const phone = e164Tz(phoneRaw);
+  if (!phone) {
+    throw new Error("Enter a valid Tanzania number (+255 6… or 7…).");
+  }
+  const riderId = riderIdFromPhone(phone);
+  let fields: Record<string, unknown> | null;
+  try {
+    fields = await fetchRiderDocFields(idToken, riderId);
+  } catch (e) {
+    const status = (e as { status?: number }).status;
+    if (status === 403) return { ok: false, error: "permission_denied" };
+    return { ok: false, error: "firestore_unavailable" };
+  }
+  if (!fields) return { ok: false, error: "not_linked" };
+  const cur = parseRiderRow(riderId, fields);
+  if (cur.authUid && cur.authUid !== uid) {
+    return { ok: false, error: "rider_taken" };
+  }
+  if (cur.authUid === uid) return { ok: true, rider: cur };
+  try {
+    await patchRiderAuthUid(idToken, riderId, uid);
+  } catch (e) {
+    const status = (e as { status?: number }).status;
+    if (status === 403) return { ok: false, error: "permission_denied" };
+    return { ok: false, error: "firestore_unavailable" };
+  }
+  return { ok: true, rider: { ...cur, authUid: uid } };
 }
