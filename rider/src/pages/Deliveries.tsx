@@ -7,7 +7,7 @@ import {
   listenRiderOrders,
   type MarketOrderDoc,
 } from "../lib/deliveryCloud";
-import { getFirebaseDb } from "../lib/firebase";
+import { getFirebaseDb, initFirebase } from "../lib/firebase";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 import { SignInPage } from "./SignIn";
@@ -80,12 +80,24 @@ export function DeliveriesPage() {
   const [orders, setOrders] = useState<MarketOrderDoc[]>([]);
 
   useEffect(() => {
-    const db = getFirebaseDb();
-    if (!db || !rider) {
+    if (!rider) {
       setOrders([]);
       return;
     }
-    return listenRiderOrders(db, rider.riderId, rider.authUid, setOrders);
+    let stop: (() => void) | undefined;
+    let cancelled = false;
+    void initFirebase().then(() => {
+      const db = getFirebaseDb();
+      if (!db || cancelled) {
+        setOrders([]);
+        return;
+      }
+      stop = listenRiderOrders(db, rider.riderId, rider.authUid, setOrders);
+    });
+    return () => {
+      cancelled = true;
+      stop?.();
+    };
   }, [rider]);
 
   if (loading) {

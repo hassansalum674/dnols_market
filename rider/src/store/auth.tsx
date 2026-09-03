@@ -52,13 +52,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     let cancelled = false;
     void (async () => {
+      await initFirebase();
       const db = getFirebaseDb();
-      if (!db) return;
+      if (!db || cancelled) return;
       const phone = user.phone ?? "";
-      const claimed = phone
-        ? await claimRiderByPhone(db, user.uid, phone)
-        : await loadRiderByAuthUid(db, user.uid, phone);
-      if (!cancelled) setRider(claimed);
+      try {
+        const claimed = phone
+          ? await claimRiderByPhone(db, user.uid, phone)
+          : await loadRiderByAuthUid(db, user.uid, phone);
+        if (!cancelled) setRider(claimed);
+      } catch {
+        if (!cancelled) setRider(null);
+      }
     })();
     return () => {
       cancelled = true;
@@ -69,6 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const linkPhone = useCallback(
     async (phone: string) => {
+      await initFirebase();
       const db = getFirebaseDb();
       if (!db || !user?.uid) return false;
       const next = await claimRiderByPhone(db, user.uid, phone);

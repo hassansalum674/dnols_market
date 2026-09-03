@@ -1,8 +1,10 @@
+import { getApp, getApps, initializeApp } from "firebase/app";
 import {
   arrayUnion,
   collection,
   doc,
   getDoc,
+  getFirestore,
   onSnapshot,
   query,
   serverTimestamp,
@@ -27,6 +29,32 @@ import {
   type RiderDoc,
   type SellerRiderDoc,
 } from "./delivery";
+
+/**
+ * CI installs firebase inside rider/ and shop/, while this file lives at
+ * the repo root. Two copies of firebase/firestore make collection(db)
+ * throw: the db instance fails instanceof Firestore. Rebind onto this
+ * module's Firestore using the same app options.
+ */
+function bindDb(passed: Firestore): Firestore {
+  try {
+    if (getApps().length > 0) return getFirestore(getApp());
+    const options = (
+      passed as unknown as { app?: { options?: { apiKey?: string; projectId?: string } } }
+    ).app?.options;
+    if (
+      options &&
+      typeof options.apiKey === "string" &&
+      typeof options.projectId === "string"
+    ) {
+      initializeApp(options);
+      return getFirestore(getApp());
+    }
+  } catch {
+    /* use the instance the caller already created */
+  }
+  return passed;
+}
 
 export type {
   CallStatus,
@@ -158,6 +186,7 @@ export async function inviteRider(
   phoneRaw: string,
   name: string,
 ): Promise<RiderDoc> {
+  db = bindDb(db);
   const phone = toE164(phoneRaw);
   if (!isValidTzMobile(phone)) {
     throw new Error("Enter a valid Tanzania number (+255 6… or 7…).");
@@ -204,6 +233,7 @@ export function listenSellerRiders(
   onData: (riders: RiderDoc[]) => void,
   onError?: (e: Error) => void,
 ): Unsubscribe {
+  db = bindDb(db);
   const q = query(
     collection(db, SELLER_RIDERS_COL),
     where("sellerId", "==", sellerId),
@@ -251,6 +281,7 @@ export function listenSellerOrders(
   onData: (orders: MarketOrderDoc[]) => void,
   onError?: (e: Error) => void,
 ): Unsubscribe {
+  db = bindDb(db);
   const merged = new Map<string, MarketOrderDoc>();
   const emit = () =>
     onData(
@@ -298,6 +329,7 @@ export function listenRiderOrders(
   onData: (orders: MarketOrderDoc[]) => void,
   onError?: (e: Error) => void,
 ): Unsubscribe {
+  db = bindDb(db);
   const merged = new Map<string, MarketOrderDoc>();
   const emit = () =>
     onData(
@@ -341,6 +373,7 @@ export function listenBuyerOrders(
   onData: (orders: MarketOrderDoc[]) => void,
   onError?: (e: Error) => void,
 ): Unsubscribe {
+  db = bindDb(db);
   const q = query(collection(db, ORDERS_COL), where("buyerUid", "==", buyerUid));
   return onSnapshot(
     q,
@@ -361,6 +394,7 @@ export function listenOrder(
   onData: (order: MarketOrderDoc | null) => void,
   onError?: (e: Error) => void,
 ): Unsubscribe {
+  db = bindDb(db);
   return onSnapshot(
     doc(db, ORDERS_COL, orderId),
     (snap) => {
@@ -378,6 +412,7 @@ export async function publishMarketOrder(
   db: Firestore,
   order: MarketOrderDoc,
 ): Promise<void> {
+  db = bindDb(db);
   const ref = doc(db, ORDERS_COL, order.orderId);
   const payload = {
     ...order,
@@ -391,6 +426,7 @@ export async function assignRider(
   orderId: string,
   rider: RiderDoc,
 ): Promise<void> {
+  db = bindDb(db);
   const orderRef = doc(db, ORDERS_COL, orderId);
   const riderRef = doc(db, RIDERS_COL, rider.riderId);
   const at = nowIso();
@@ -414,6 +450,7 @@ export async function setOrderCallState(
     callStartedAt?: string | null;
   },
 ): Promise<void> {
+  db = bindDb(db);
   const patch: {
     callStatus: CallStatus;
     updatedAt: ReturnType<typeof serverTimestamp>;
@@ -442,6 +479,7 @@ export async function setOrderCallState(
 }
 
 export async function markPickedUp(db: Firestore, orderId: string): Promise<void> {
+  db = bindDb(db);
   await updateDoc(doc(db, ORDERS_COL, orderId), {
     deliveryStatus: "picked_up",
     pickedUpAt: nowIso(),
@@ -454,6 +492,7 @@ export async function markDelivered(
   orderId: string,
   riderId: string | null,
 ): Promise<void> {
+  db = bindDb(db);
   await updateDoc(doc(db, ORDERS_COL, orderId), {
     deliveryStatus: "delivered",
     deliveredAt: nowIso(),
@@ -468,6 +507,7 @@ export async function markDelivered(
 }
 
 async function riderHasOpenOrders(db: Firestore, riderId: string): Promise<boolean> {
+  db = bindDb(db);
   const { getDocs } = await import("firebase/firestore");
   const q = query(
     collection(db, ORDERS_COL),
@@ -483,6 +523,7 @@ export async function claimRiderByPhone(
   authUid: string,
   phoneRaw: string,
 ): Promise<RiderDoc | null> {
+  db = bindDb(db);
   const phone = toE164(phoneRaw);
   const riderId = riderIdFromPhone(phone);
   const ref = doc(db, RIDERS_COL, riderId);
@@ -497,6 +538,7 @@ export async function loadRiderByAuthUid(
   authUid: string,
   phoneRaw?: string,
 ): Promise<RiderDoc | null> {
+  db = bindDb(db);
   if (phoneRaw && isValidTzMobile(phoneRaw)) {
     const byPhone = await getDoc(doc(db, RIDERS_COL, riderIdFromPhone(phoneRaw)));
     if (byPhone.exists()) {

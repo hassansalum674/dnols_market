@@ -1,8 +1,26 @@
+import { createRequire } from "node:module";
+import path from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { VitePWA } from "vite-plugin-pwa";
 
+const require = createRequire(import.meta.url);
+const firebaseRoot = path.dirname(require.resolve("firebase/package.json"));
+const agoraRoot = path.dirname(require.resolve("agora-rtc-sdk-ng"));
+
 export default defineConfig({
+  resolve: {
+    // Rider npm ci installs its own firebase; shared/ lives at repo root.
+    // One copy so collection(db) does not fail instanceof Firestore.
+    alias: {
+      firebase: firebaseRoot,
+      "agora-rtc-sdk-ng": agoraRoot,
+    },
+    dedupe: ["firebase", "agora-rtc-sdk-ng"],
+  },
+  optimizeDeps: {
+    include: ["firebase/app", "firebase/auth", "firebase/firestore"],
+  },
   plugins: [
     react(),
     VitePWA({

@@ -1,6 +1,7 @@
 import { lazy } from "react";
 import { Navigate, createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
+import { AppErrorPage } from "./pages/errors";
 import { AuthProvider } from "./store/auth";
 import { I18nProvider } from "./store/i18n";
 import { InstallAppPrompt } from "./components/InstallApp";
@@ -18,6 +19,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <AppLayout />,
+    errorElement: <AppErrorPage />,
     children: [
       { index: true, element: <DeliveriesPage /> },
       { path: "delivery/:orderId", element: <ActiveDeliveryPage /> },
