@@ -1,6 +1,10 @@
 import {
+  createRiderDoc,
   fetchRiderDocFields,
   patchRiderAuthUid,
+  patchRiderDoc,
+  querySellerRiderIds,
+  upsertSellerRiderLink,
 } from "./firestoreRest.js";
 
 const INVITE_TEXT =
@@ -126,6 +130,10 @@ function riderIdFromPhone(phone: string): string {
   return `rider_${phone.replace(/\D/g, "")}`;
 }
 
+function sellerRiderDocId(sellerId: string, riderId: string): string {
+  return `${sellerId}_${riderId}`;
+}
+
 function parseRiderRow(id: string, data: Record<string, unknown>): ApiRiderRow {
   const linked = Array.isArray(data.linkedSellers)
     ? data.linkedSellers.map((s) => String(s)).filter(Boolean)
@@ -180,4 +188,86 @@ export async function claimRiderPhone(
     return { ok: false, error: "firestore_unavailable" };
   }
   return { ok: true, rider: { ...cur, authUid: uid } };
+}
+
+export type InviteRiderResult =
+  | { ok: true; rider: ApiRiderRow }
+  | { ok: false; error: "permission_denied" | "firestore_unavailable" };
+
+export async function inviteRiderForSeller(
+  idToken: string,
+  sellerId: string,
+  phoneRaw: string,
+  name: string,
+): Promise<InviteRiderResult> {
+  const phone = e164Tz(phoneRaw);
+  if (!phone) {
+    throw new Error("Enter a valid Tanzania number (+255 6… or 7…).");
+  }
+  const riderId = riderIdFromPhone(phone);
+  const display = name.trim() || "Rider";
+  const at = new Date().toISOString();
+  try {
+    const existing = await fetchRiderDocFields(idToken, riderId);
+    if (existing) {
+      const cur = parseRiderRow(riderId, existing);
+      const linkedSellers = [...new Set([...cur.linkedSellers, sellerId])];
+      const nextName = cur.name && cur.name !== "Rider" ? cur.name : display;
+      await patchRiderDoc(idToken, riderId, {
+        linkedSellers,
+        name: nextName,
+      });
+    } else {
+      await createRiderDoc(idToken, riderId, {
+        riderId,
+        name: display,
+        phone,
+        authUid: null,
+        linkedSellers: [sellerId],
+        status: "idle",
+        createdAt: at,
+      });
+    }
+    await upsertSellerRiderLink(
+      idToken,
+      sellerRiderDocId(sellerId, riderId),
+      {
+        sellerId,
+        riderId,
+        addedAt: at,
+        active: true,
+      },
+    );
+    const fields = await fetchRiderDocFields(idToken, riderId);
+    if (!fields) return { ok: false, error: "firestore_unavailable" };
+    return { ok: true, rider: parseRiderRow(riderId, fields) };
+  } catch (e) {
+    const status = (e as { status?: number }).status;
+    if (status === 403) return { ok: false, error: "permission_denied" };
+    return { ok: false, error: "firestore_unavailable" };
+  }
+}
+
+export type ListSellerRidersResult =
+  | { ok: true; riders: ApiRiderRow[] }
+  | { ok: false; error: "permission_denied" | "firestore_unavailable" };
+
+export async function listSellerRiders(
+  idToken: string,
+  sellerId: string,
+): Promise<ListSellerRidersResult> {
+  try {
+    const ids = await querySellerRiderIds(idToken, sellerId);
+    const riders: ApiRiderRow[] = [];
+    for (const id of ids) {
+      const fields = await fetchRiderDocFields(idToken, id);
+      if (fields) riders.push(parseRiderRow(id, fields));
+    }
+    riders.sort((a, b) => a.name.localeCompare(b.name));
+    return { ok: true, riders };
+  } catch (e) {
+    const status = (e as { status?: number }).status;
+    if (status === 403) return { ok: false, error: "permission_denied" };
+    return { ok: false, error: "firestore_unavailable" };
+  }
 }
