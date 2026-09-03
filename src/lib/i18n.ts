@@ -92,6 +92,7 @@ const EN = {
   installAppInstalled: "Dnols is installed on this device.",
   notNow: "Not now",
   gotIt: "Got it",
+  splashMotto: "Pickup or delivery, nearby",
 };
 
 const SW: typeof EN = {
@@ -186,6 +187,7 @@ const SW: typeof EN = {
   installAppInstalled: "Dnols imesakinishwa kwenye kifaa hiki.",
   notNow: "Si sasa",
   gotIt: "Sawa",
+  splashMotto: "Chukua au pelekewe, karibu",
 };
 
 export const I18N = { en: EN, sw: SW } as const;
