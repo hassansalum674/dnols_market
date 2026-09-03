@@ -63,6 +63,13 @@ export type Order = {
   fulfillment?: "pickup" | "delivery";
   /** Street / area for delivery to the buyer. */
   deliveryAddress?: string;
+  shopIds?: string[];
+  deliveryStatus?:
+    | "unassigned"
+    | "assigned"
+    | "picked_up"
+    | "delivered";
+  riderName?: string | null;
 };
 
 export type CartLine = {

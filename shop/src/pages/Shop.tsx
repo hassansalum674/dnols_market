@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { getHealth, getOrder, getPlaces } from "../api";
 import { BuyerPortalLink } from "../components/BuyerPortalLink";
 import { InstallAppSettings } from "../components/InstallApp";
@@ -81,6 +82,14 @@ export function ShopPage() {
       </header>
 
       <div className="shop-settings-grid">
+        <section className="block shop-panel">
+          <h2>{t("myRiders")}</h2>
+          <p className="muted">{t("myRidersHint")}</p>
+          <Link to="/stall/riders" className="btn">
+            {t("myRiders")}
+          </Link>
+        </section>
+
         <section className="block shop-panel">
           <h2>Stall location</h2>
           <p>

@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getOrder, handoverOrder, payOrder, rejectOrder } from "../api";
 import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
+import { shopIdFromUid } from "../lib/accountId";
+import {
+  assignRider,
+  listenSellerOrders,
+  listenSellerRiders,
+  publishMarketOrder,
+  type MarketOrderDoc,
+  type RiderDoc,
+} from "../lib/deliveryCloud";
+import { getFirebaseDb } from "../lib/firebase";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
+import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 import type { OrderView, SavedOrder } from "../types";
 import { formatTzs } from "./errors";
@@ -13,8 +25,11 @@ type Row = { saved: SavedOrder; live: OrderView | null; err?: string };
 
 export function OrdersPage() {
   const { saved, remember, forget, refresh } = useShopData();
+  const { user } = useAuth();
   const { t } = useI18n();
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [market, setMarket] = useState<MarketOrderDoc[]>([]);
+  const [riders, setRiders] = useState<RiderDoc[]>([]);
   const [demoMsg, setDemoMsg] = useState<string | null>(null);
   const [demoErr, setDemoErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,6 +55,18 @@ export function OrdersPage() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const db = getFirebaseDb();
+    if (!db || !user?.uid) return;
+    const shopId = shopIdFromUid(user.uid);
+    const stopOrders = listenSellerOrders(db, user.uid, shopId, setMarket);
+    const stopRiders = listenSellerRiders(db, user.uid, setRiders);
+    return () => {
+      stopOrders();
+      stopRiders();
+    };
+  }, [user?.uid]);
+
   async function trySampleOrder() {
     setBusy(true);
     setDemoErr(null);
@@ -55,6 +82,34 @@ export function OrdersPage() {
         totalTzs: pay.totalTzs,
         createdAt: new Date().toISOString(),
       });
+      const db = getFirebaseDb();
+      if (db && user?.uid) {
+        await publishMarketOrder(db, {
+          orderId: pay.orderId,
+          buyerUid: user.uid,
+          buyerName: "Sample buyer",
+          sellerIds: [user.uid],
+          shopIds: [shopIdFromUid(user.uid)],
+          listingIds: pay.listingIds,
+          items: [{ title: "Sample kitenge", qty: 1 }],
+          totalTzs: pay.totalTzs,
+          fulfillment: "delivery",
+          deliveryAddress: "Kariakoo sample drop-off",
+          deliveryPhone: "",
+          deliveryLat: null,
+          deliveryLng: null,
+          pickupCode: pay.pickupCode,
+          deliveryStatus: "unassigned",
+          riderId: null,
+          riderName: null,
+          riderAuthUid: null,
+          riderAssignedAt: null,
+          pickedUpAt: null,
+          deliveredAt: null,
+          createdAt: new Date().toISOString(),
+          paidAt: new Date().toISOString(),
+        });
+      }
       setDemoMsg(
         `Sample order ${shortOrderRef(pay.orderId)} is ready. Confirm pickup on Today.`,
       );
@@ -79,6 +134,9 @@ export function OrdersPage() {
             Payments held in escrow until you confirm the buyer received the item.
           </p>
         </div>
+        <Link to="/stall/riders" className="btn ghost">
+          {t("myRiders")}
+        </Link>
       </header>
 
       <details className="demo-panel">
@@ -95,7 +153,7 @@ export function OrdersPage() {
 
       {rows === null ? (
         <ShimmerList rows={3} />
-      ) : rows.length === 0 ? (
+      ) : rows.length === 0 && market.length === 0 ? (
         <div className="center-state">
           <p>No orders yet. When a buyer pays, the order appears here.</p>
         </div>
@@ -105,6 +163,8 @@ export function OrdersPage() {
             <EscrowCard
               key={r.saved.orderId}
               row={r}
+              market={market.find((m) => m.orderId === r.saved.orderId)}
+              riders={riders}
               deleteLabel={t("deleteOrder")}
               confirmDelete={t("confirmDeleteOrder")}
               onDelete={() => forget(r.saved.orderId)}
@@ -114,6 +174,23 @@ export function OrdersPage() {
               }}
             />
           ))}
+          {market
+            .filter((m) => !rows.some((r) => r.saved.orderId === m.orderId))
+            .map((m) => (
+              <article key={m.orderId} className="card order-card">
+                <span className="pill live">{m.deliveryStatus}</span>
+                <h2>{shortOrderRef(m.orderId)}</h2>
+                <p className="hint">
+                  {m.buyerName} · {m.deliveryAddress}
+                </p>
+                <div className="card-meta">
+                  <span className="price">{formatTzs(m.totalTzs)}</span>
+                </div>
+                {m.deliveryStatus !== "delivered" && (
+                  <AssignRiderBlock order={m} riders={riders} />
+                )}
+              </article>
+            ))}
           <button
             type="button"
             className="btn ghost"
@@ -136,12 +213,16 @@ function EscrowCard({
   onDelete,
   deleteLabel,
   confirmDelete,
+  market,
+  riders,
 }: {
   row: Row;
   onChange: () => void;
   onDelete: () => void;
   deleteLabel: string;
   confirmDelete: string;
+  market?: MarketOrderDoc;
+  riders: RiderDoc[];
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -183,6 +264,12 @@ function EscrowCard({
       <span className={live?.escrow === "paid_held" ? "pill live" : "pill"}>
         {escrowLabel(status)}
       </span>
+      {market && (
+        <p className="hint">
+          {market.deliveryStatus}
+          {market.riderName ? ` · ${market.riderName}` : ""}
+        </p>
+      )}
       <h2>{shortOrderRef(row.saved.orderId)}</h2>
       <div className="card-meta">
         <span className="price">{formatTzs(row.saved.totalTzs)}</span>
@@ -207,6 +294,10 @@ function EscrowCard({
           </button>
         </div>
       )}
+      {market?.fulfillment === "delivery" &&
+        market.deliveryStatus !== "delivered" && (
+          <AssignRiderBlock order={market} riders={riders} />
+        )}
       {err && <p className="err">{err}</p>}
       <div className="order-card-actions">
         <button
@@ -222,5 +313,75 @@ function EscrowCard({
         </button>
       </div>
     </article>
+  );
+}
+
+function AssignRiderBlock({
+  order,
+  riders,
+}: {
+  order: MarketOrderDoc;
+  riders: RiderDoc[];
+}) {
+  const { t } = useI18n();
+  const [riderId, setRiderId] = useState(order.riderId ?? "");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const idle = riders.filter((r) => r.status === "idle" || r.riderId === order.riderId);
+
+  async function assign() {
+    const rider = riders.find((r) => r.riderId === riderId);
+    const db = getFirebaseDb();
+    if (!db || !rider) return;
+    setBusy(true);
+    setErr(null);
+    try {
+      await assignRider(db, order.orderId, rider);
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : t("riderFail"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="assign-rider">
+      <p className="hint">{t("assignRiderHint")}</p>
+      {order.riderName && (
+        <p className="muted">
+          {t("assignedTo")}: {order.riderName}
+        </p>
+      )}
+      {idle.length === 0 ? (
+        <p className="hint">
+          {t("noIdleRiders")}{" "}
+          <Link to="/stall/riders">{t("myRiders")}</Link>
+        </p>
+      ) : (
+        <div className="btn-row">
+          <select
+            className="field"
+            value={riderId}
+            onChange={(e) => setRiderId(e.target.value)}
+          >
+            <option value="">{t("assignRider")}</option>
+            {idle.map((r) => (
+              <option key={r.riderId} value={r.riderId}>
+                {r.name} ({r.status === "idle" ? t("riderIdle") : t("riderBusy")})
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="btn"
+            disabled={busy || !riderId}
+            onClick={() => void assign()}
+          >
+            {t("assignRider")}
+          </button>
+        </div>
+      )}
+      {err && <p className="err">{err}</p>}
+    </div>
   );
 }

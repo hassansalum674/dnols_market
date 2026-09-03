@@ -10,6 +10,7 @@ const links = [
   { to: "/stall/dashboard", label: "Overview", end: false },
   { to: "/stall/stock", label: "Products", end: false },
   { to: "/stall/orders", label: "Orders", end: false },
+  { to: "/stall/riders", label: "Riders", end: false },
   { to: "/stall/shop", label: "Shop settings", end: false },
 ] as const;
 

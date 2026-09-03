@@ -10,5 +10,8 @@ api/dist
 shop/node_modules
 shop/dist
 shop/dev-dist
+rider/node_modules
+rider/dist
+rider/dev-dist
 *.tsbuildinfo
 dev-dist

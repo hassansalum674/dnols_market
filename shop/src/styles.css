@@ -2233,3 +2233,35 @@ select.field {
 [data-theme="light"] .err {
   color: #b42318;
 }
+
+.delivery-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+.delivery-step {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--faint);
+}
+
+.delivery-step.on {
+  color: var(--blue);
+  border-color: var(--blue);
+  background: var(--brand-soft);
+  font-weight: 700;
+}
+
+.assign-rider {
+  margin-top: 12px;
+}
+
+.assign-rider .field {
+  min-height: 44px;
+}

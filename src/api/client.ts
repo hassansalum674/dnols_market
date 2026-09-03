@@ -144,6 +144,7 @@ export async function payOrder(input: {
       totalTzs?: number;
       accessToken?: string;
       shops?: DirectionsPayload[];
+      shopIds?: string[];
       deliveryPhone?: string;
       fulfillment?: "pickup" | "delivery";
       deliveryAddress?: string;
@@ -167,6 +168,7 @@ export async function payOrder(input: {
       deliveryPhone: data.deliveryPhone ?? input.deliveryPhone,
       fulfillment: data.fulfillment ?? input.fulfillment,
       deliveryAddress: data.deliveryAddress ?? input.deliveryAddress,
+      shopIds: data.shopIds,
       createdAt: new Date().toISOString(),
       paidAt: new Date().toISOString(),
     };

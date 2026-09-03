@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { fetchOrders } from "../api/client";
 import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
+import { deliveryTrackLabel, listenBuyerOrders } from "../lib/deliveryCloud";
+import { getFirebaseDb } from "../lib/firebase";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
 import { useI18n } from "../store/i18n";
@@ -43,7 +45,7 @@ function mergeOrders(local: Order[], remote: Order[]): Order[] {
 
 export function OrdersPage() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -56,7 +58,40 @@ export function OrdersPage() {
     }
     reload();
     window.addEventListener("dnols-account-sync", reload);
-    return () => window.removeEventListener("dnols-account-sync", reload);
+    const db = getFirebaseDb();
+    const stop =
+      db && user?.uid
+        ? listenBuyerOrders(db, user.uid, (live) => {
+            setOrders((cur) => {
+              const map = new Map(cur.map((o) => [o.id, o]));
+              for (const m of live) {
+                const prev = map.get(m.orderId);
+                map.set(m.orderId, {
+                  ...(prev ?? {
+                    id: m.orderId,
+                    listingIds: m.listingIds,
+                    status: "paid_held",
+                    totalTzs: m.totalTzs,
+                    createdAt: m.createdAt,
+                    paidAt: m.paidAt,
+                  }),
+                  fulfillment: m.fulfillment,
+                  deliveryAddress: m.deliveryAddress,
+                  deliveryPhone: m.deliveryPhone,
+                  deliveryStatus: m.deliveryStatus,
+                  riderName: m.riderName,
+                });
+              }
+              return [...map.values()].sort((a, b) =>
+                a.createdAt < b.createdAt ? 1 : -1,
+              );
+            });
+          })
+        : undefined;
+    return () => {
+      window.removeEventListener("dnols-account-sync", reload);
+      stop?.();
+    };
   }, [user?.uid]);
 
   function deleteOne(id: string) {
@@ -125,6 +160,41 @@ export function OrdersPage() {
               {o.fulfillment === "delivery" && o.deliveryAddress
                 ? ` · ${o.deliveryAddress}`
                 : ""}
+            </p>
+          )}
+
+          {o.fulfillment === "delivery" && (
+            <ol className="delivery-track">
+              {(
+                [
+                  "unassigned",
+                  "assigned",
+                  "picked_up",
+                  "delivered",
+                ] as const
+              ).map((step) => {
+                const current = o.deliveryStatus ?? "unassigned";
+                const order = [
+                  "unassigned",
+                  "assigned",
+                  "picked_up",
+                  "delivered",
+                ] as const;
+                const on = order.indexOf(current) >= order.indexOf(step);
+                return (
+                  <li
+                    key={step}
+                    className={`delivery-step ${on ? "on" : ""}`}
+                  >
+                    {deliveryTrackLabel(step, lang)}
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+          {o.fulfillment === "delivery" && o.riderName && (
+            <p className="hint">
+              {o.riderName}
             </p>
           )}
 

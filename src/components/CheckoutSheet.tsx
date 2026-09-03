@@ -204,9 +204,63 @@ export function CheckoutSheet() {
       );
       setBillingCards(loadBillingCards(user.uid));
       markPaid(paid.listingIds, paid.accessToken || "paid");
-      saveLocalOrder(paid);
+      const deliveryOrder = {
+        ...paid,
+        deliveryStatus: "unassigned" as const,
+      };
+      saveLocalOrder(deliveryOrder);
+      if (fulfillment === "delivery") {
+        try {
+          const { getFirebaseDb } = await import("../lib/firebase");
+          const { publishMarketOrder } = await import("../lib/deliveryCloud");
+          const db = getFirebaseDb();
+          if (db) {
+            let lat: number | null = null;
+            let lng: number | null = null;
+            try {
+              const pos = await new Promise<GeolocationPosition>((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                  timeout: 2500,
+                  maximumAge: 60_000,
+                });
+              });
+              lat = pos.coords.latitude;
+              lng = pos.coords.longitude;
+            } catch {
+              /* address is enough */
+            }
+            await publishMarketOrder(db, {
+              orderId: paid.id,
+              buyerUid: user.uid,
+              buyerName: user.displayName || "Buyer",
+              sellerIds: [],
+              shopIds: paid.shopIds ?? [],
+              listingIds: paid.listingIds,
+              items: items.map((i) => ({ title: i.listing.title, qty: i.qty })),
+              totalTzs: paid.totalTzs,
+              fulfillment: "delivery",
+              deliveryAddress: address,
+              deliveryPhone: normalizedDelivery,
+              deliveryLat: lat,
+              deliveryLng: lng,
+              pickupCode: paid.pickupCode,
+              deliveryStatus: "unassigned",
+              riderId: null,
+              riderName: null,
+              riderAuthUid: null,
+              riderAssignedAt: null,
+              pickedUpAt: null,
+              deliveredAt: null,
+              createdAt: paid.createdAt,
+              paidAt: paid.paidAt,
+            });
+          }
+        } catch {
+          /* order is still saved locally */
+        }
+      }
       clear();
-      setOrder(paid);
+      setOrder(deliveryOrder);
       setStep("success");
     } catch (e) {
       setStep("pay");

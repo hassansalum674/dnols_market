@@ -5,8 +5,15 @@
   "targets": {
     "dnols-2a394": {
       "hosting": {
-        "buyer": ["dnols-2a394"],
-        "shop": ["shop-buyer"]
+        "buyer": [
+          "dnols-2a394"
+        ],
+        "shop": [
+          "shop-buyer"
+        ],
+        "rider": [
+          "dnols-rider"
+        ]
       }
     }
   }

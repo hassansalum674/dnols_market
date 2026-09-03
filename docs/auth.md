@@ -5,6 +5,8 @@ Buyer (**dnols.com**) and seller (**seller portal**) apps use **Firebase Authent
 - **Google**
 - **Email / password** (sign up, sign in, forgot password)
 
+The **rider** app (**rider.dnols.com**) uses **Phone** sign-in (SMS OTP). Enable **Phone** under Authentication → Sign-in method, and add `rider.dnols.com` to authorized domains.
+
 > Apple Sign-in can be added later if needed.
 
 ## How to get your Firebase keys

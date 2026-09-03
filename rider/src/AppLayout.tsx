@@ -1,0 +1,62 @@
+import { Suspense, useCallback, useState } from "react";
+import { Outlet, useLocation } from "react-router-dom";
+import { RoutePulse, Splash } from "./components/Splash";
+
+const SPLASH = "dnols.rider.splash.v2";
+
+function splashSeen(): boolean {
+  try {
+    return sessionStorage.getItem(SPLASH) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSplashSeen() {
+  try {
+    sessionStorage.setItem(SPLASH, "1");
+  } catch {
+    /* ignore */
+  }
+}
+
+export function AppLayout() {
+  const loc = useLocation();
+  const [splash, setSplash] = useState(() => !splashSeen());
+  const done = useCallback(() => {
+    markSplashSeen();
+    setSplash(false);
+  }, []);
+
+  const title = loc.pathname.startsWith("/delivery/")
+    ? "Delivery"
+    : "Deliveries";
+
+  return (
+    <>
+      {splash && <Splash onDone={done} />}
+      <div className="app-shell app-shell--stall">
+        <div className="stall-main">
+          <header className="header stall-header">
+            <div className="header-row stall-header-row">
+              <img
+                className="header-mark"
+                src="/brand/logo4_submark.svg"
+                alt="Dnols"
+              />
+              <span className="header-title">{title}</span>
+              <span className="header-sub">Kariakoo</span>
+            </div>
+          </header>
+          <main className="stall-main-content">
+            <Suspense fallback={<RoutePulse />}>
+              <div className="stall-page-wrap">
+                <Outlet />
+              </div>
+            </Suspense>
+          </main>
+        </div>
+      </div>
+    </>
+  );
+}

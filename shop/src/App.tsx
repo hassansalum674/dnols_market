@@ -54,6 +54,9 @@ const StockPage = lazy(() =>
 const OrdersPage = lazy(() =>
   import("./pages/Orders").then((m) => ({ default: m.OrdersPage })),
 );
+const RidersPage = lazy(() =>
+  import("./pages/Riders").then((m) => ({ default: m.RidersPage })),
+);
 const ShopPage = lazy(() =>
   import("./pages/Shop").then((m) => ({ default: m.ShopPage })),
 );
@@ -88,6 +91,7 @@ const router = createBrowserRouter([
       { path: "products/new", element: <ProductFormPage /> },
       { path: "products/:id/edit", element: <ProductFormPage /> },
       { path: "orders", element: <OrdersPage /> },
+      { path: "riders", element: <RidersPage /> },
       { path: "shop", element: <ShopPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
