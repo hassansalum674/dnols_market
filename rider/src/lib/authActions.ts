@@ -1,17 +1,13 @@
 import {
   GoogleAuthProvider,
-  RecaptchaVerifier,
   getRedirectResult,
   onAuthStateChanged,
-  signInWithPhoneNumber,
   signInWithPopup,
   signInWithRedirect,
   signOut,
-  type ConfirmationResult,
   type User,
 } from "firebase/auth";
 import { getFirebaseAuth, initFirebase, isFirebaseConfigured } from "./firebase";
-import { isValidTzMobile, toE164 } from "./deliveryCloud";
 
 export type AuthUser = {
   uid: string;
@@ -26,8 +22,6 @@ export type GoogleSignInMethod = "popup" | "redirect";
 
 const AUTH_ERR_KEY = "dnols.rider.auth.error";
 
-let verifier: RecaptchaVerifier | null = null;
-
 function mapUser(u: User): AuthUser {
   return {
     uid: u.uid,
@@ -37,16 +31,6 @@ function mapUser(u: User): AuthUser {
     phone: u.phoneNumber,
     provider: u.providerData[0]?.providerId ?? "unknown",
   };
-}
-
-function recaptchaHost(): HTMLElement {
-  let el = document.getElementById("recaptcha-container");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "recaptcha-container";
-    document.body.appendChild(el);
-  }
-  return el;
 }
 
 function authCode(e: unknown): string {
@@ -85,27 +69,6 @@ async function requireAuth() {
     throw new Error("Sign-in is not configured. Add Firebase keys — see docs/auth.md");
   }
   return auth;
-}
-
-export async function sendRiderOtp(phoneRaw: string): Promise<ConfirmationResult> {
-  if (!isValidTzMobile(phoneRaw)) {
-    throw new Error("bad_phone");
-  }
-  const auth = await requireAuth();
-  if (verifier) {
-    verifier.clear();
-    verifier = null;
-  }
-  verifier = new RecaptchaVerifier(auth, recaptchaHost(), { size: "invisible" });
-  await verifier.render();
-  return signInWithPhoneNumber(auth, toE164(phoneRaw), verifier);
-}
-
-export async function confirmRiderOtp(
-  confirmation: ConfirmationResult,
-  code: string,
-): Promise<void> {
-  await confirmation.confirm(code.trim());
 }
 
 export async function signInWithGoogle(): Promise<GoogleSignInMethod> {
