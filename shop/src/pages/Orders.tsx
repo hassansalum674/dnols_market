@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getOrder, handoverOrder, payOrder, rejectOrder } from "../api";
 import { escrowLabel, shortOrderRef } from "../lib/orderLabels";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { ShimmerList } from "../components/Splash";
 import { useShopData } from "../shopData";
 import { useI18n } from "../store/i18n";
@@ -18,6 +19,7 @@ export function OrdersPage() {
   const [demoMsg, setDemoMsg] = useState<string | null>(null);
   const [demoErr, setDemoErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState<"all" | string | null>(null);
 
   const load = useCallback(async () => {
     const next = await Promise.all(
@@ -106,8 +108,7 @@ export function OrdersPage() {
               key={r.saved.orderId}
               row={r}
               deleteLabel={t("deleteOrder")}
-              confirmDelete={t("confirmDeleteOrder")}
-              onDelete={() => forget(r.saved.orderId)}
+              onAskDelete={() => setPending(r.saved.orderId)}
               onChange={() => {
                 refresh();
                 void load();
@@ -117,15 +118,32 @@ export function OrdersPage() {
           <button
             type="button"
             className="btn ghost"
-            onClick={() => {
-              if (!window.confirm(t("confirmDeleteAllOrders"))) return;
-              for (const r of rows) forget(r.saved.orderId);
-            }}
+            onClick={() => setPending("all")}
           >
             {t("deleteAllOrders")}
           </button>
         </div>
       )}
+      <ConfirmDialog
+        open={pending !== null}
+        title={t("deleteOrderTitle")}
+        message={
+          pending === "all"
+            ? t("confirmDeleteAllOrders")
+            : t("confirmDeleteOrder")
+        }
+        confirmLabel={t("deleteOrder")}
+        cancelLabel={t("cancel")}
+        onConfirm={() => {
+          if (pending === "all") {
+            for (const r of rows ?? []) forget(r.saved.orderId);
+          } else if (pending) {
+            forget(pending);
+          }
+          setPending(null);
+        }}
+        onCancel={() => setPending(null)}
+      />
     </div>
   );
 }
@@ -133,15 +151,13 @@ export function OrdersPage() {
 function EscrowCard({
   row,
   onChange,
-  onDelete,
+  onAskDelete,
   deleteLabel,
-  confirmDelete,
 }: {
   row: Row;
   onChange: () => void;
-  onDelete: () => void;
+  onAskDelete: () => void;
   deleteLabel: string;
-  confirmDelete: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -213,10 +229,7 @@ function EscrowCard({
           type="button"
           className="order-delete"
           disabled={busy}
-          onClick={() => {
-            if (!window.confirm(confirmDelete)) return;
-            onDelete();
-          }}
+          onClick={onAskDelete}
         >
           {deleteLabel}
         </button>
