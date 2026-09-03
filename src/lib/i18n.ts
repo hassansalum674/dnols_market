@@ -9,6 +9,7 @@ const EN = {
   stepOf: "Step {current} of {total}",
   saved: "Saved",
   back: "Back",
+  cancel: "Cancel",
   continue: "Continue",
   myAccount: "My Account",
   yourBuyerProfile: "Your buyer profile",
@@ -95,6 +96,7 @@ const EN = {
   splashMotto: "Pickup or delivery, nearby",
   deleteOrder: "Delete",
   deleteAllOrders: "Delete all",
+  deleteOrderTitle: "Delete order",
   confirmDeleteOrder: "Remove this order from your list?",
   confirmDeleteAllOrders: "Remove all orders from this device?",
 };
@@ -108,6 +110,7 @@ const SW: typeof EN = {
   stepOf: "Hatua {current} kati ya {total}",
   saved: "Imehifadhiwa",
   back: "Rudi",
+  cancel: "Ghairi",
   continue: "Endelea",
   myAccount: "Akaunti yangu",
   yourBuyerProfile: "Akaunti yako ya mnunuzi",
@@ -194,6 +197,7 @@ const SW: typeof EN = {
   splashMotto: "Chukua au pelekewe, karibu",
   deleteOrder: "Futa",
   deleteAllOrders: "Futa zote",
+  deleteOrderTitle: "Futa oda",
   confirmDeleteOrder: "Ondoa oda hii kwenye orodha yako?",
   confirmDeleteAllOrders: "Ondoa oda zote kwenye kifaa hiki?",
 };

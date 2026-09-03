@@ -5,6 +5,7 @@ import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { useI18n } from "../store/i18n";
 import {
   clearLocalOrders,
@@ -42,9 +43,10 @@ function mergeOrders(local: Order[], remote: Order[]): Order[] {
 }
 
 export function OrdersPage() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const { t } = useI18n();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [pending, setPending] = useState<"all" | string | null>(null);
 
   useEffect(() => {
     const local = getLocalOrders<Order>();
@@ -54,20 +56,23 @@ export function OrdersPage() {
     });
   }, []);
 
-  function deleteOne(id: string) {
-    if (!window.confirm(t("confirmDeleteOrder"))) return;
-    removeLocalOrder(id);
-    setOrders((cur) => cur.filter((o) => o.id !== id));
+  function confirmDelete() {
+    if (pending === "all") {
+      for (const o of orders) removeLocalOrder(o.id);
+      clearLocalOrders();
+      setOrders([]);
+    } else if (pending) {
+      removeLocalOrder(pending);
+      setOrders((cur) => cur.filter((o) => o.id !== pending));
+    }
+    setPending(null);
   }
 
-  function deleteAll() {
-    if (!window.confirm(t("confirmDeleteAllOrders"))) return;
-    for (const o of orders) removeLocalOrder(o.id);
-    clearLocalOrders();
-    setOrders([]);
+  if (loading) {
+    return null;
   }
 
-  if (!user) {
+  if (!user && orders.length === 0) {
     return (
       <div className="center-state">
         <p>Sign in to place orders and see your delivery history here.</p>
@@ -163,16 +168,29 @@ export function OrdersPage() {
             <button
               type="button"
               className="order-delete"
-              onClick={() => deleteOne(o.id)}
+              onClick={() => setPending(o.id)}
             >
               {t("deleteOrder")}
             </button>
           </div>
         </article>
       ))}
-      <button type="button" className="btn ghost" onClick={deleteAll}>
+      <button type="button" className="btn ghost" onClick={() => setPending("all")}>
         {t("deleteAllOrders")}
       </button>
+      <ConfirmDialog
+        open={pending !== null}
+        title={t("deleteOrderTitle")}
+        message={
+          pending === "all"
+            ? t("confirmDeleteAllOrders")
+            : t("confirmDeleteOrder")
+        }
+        confirmLabel={t("deleteOrder")}
+        cancelLabel={t("cancel")}
+        onConfirm={confirmDelete}
+        onCancel={() => setPending(null)}
+      />
     </div>
   );
 }
