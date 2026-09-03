@@ -49,6 +49,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,woff2,ico}"],
+        globIgnores: ["**/sw.js"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/assets\//, /^\/__\//, /^\/api\//],
         cleanupOutdatedCaches: true,

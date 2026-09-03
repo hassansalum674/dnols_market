@@ -9,11 +9,13 @@ import App from "./App";
 import { RoutePulse } from "./components/Splash";
 import { installChunkReloadGuard } from "./lib/chunkReload";
 import { initPwaInstall } from "./lib/pwaInstall";
+import { retireLegacyServiceWorker } from "./lib/retireLegacySw";
 import { initSettings } from "./store/settings";
 import "./styles.css";
 
 initSettings();
 initPwaInstall();
+void retireLegacyServiceWorker();
 installChunkReloadGuard();
 
 registerSW({
