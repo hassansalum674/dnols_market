@@ -8,12 +8,14 @@ type Props = {
   category: string;
   condition: string;
   variants: string[];
+  photos: string[];
   onApply: (description: string) => void;
 };
 
 type Bubble = {
   role: "user" | "assistant";
   text: string;
+  photoOnly?: boolean;
   options?: string[];
 };
 
@@ -22,6 +24,7 @@ export function DescriptionAssist({
   category,
   condition,
   variants,
+  photos,
   onApply,
 }: Props) {
   const { lang, t } = useI18n();
@@ -34,18 +37,26 @@ export function DescriptionAssist({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
-  const messages = thread.map((b) => ({
-    role: b.role,
-    content: b.text,
-  }));
+  const looking = photos.slice(0, 2);
+  const started = thread.length > 0;
+  const canSend = started
+    ? reply.trim().length > 0
+    : notes.trim().length > 0 || looking.length > 0;
 
   async function send(userText: string) {
     const text = userText.trim();
-    if (!text || busy) return;
+    const photoStart = !started && looking.length > 0;
+    if (busy) return;
+    if (!text && !photoStart) return;
     setErr(null);
     setBusy(true);
     setOptions([]);
-    const nextThread: Bubble[] = [...thread, { role: "user", text }];
+    const photoOnly = !text && photoStart;
+    const display = text || t("descAssistPhotoOnly");
+    const nextThread: Bubble[] = [
+      ...thread,
+      { role: "user", text: display, photoOnly },
+    ];
     setThread(nextThread);
     setNotes("");
     setReply("");
@@ -55,8 +66,12 @@ export function DescriptionAssist({
         category,
         condition,
         variants,
+        photos: looking,
         language: assistLang,
-        messages: nextThread.map((b) => ({ role: b.role, content: b.text })),
+        messages: nextThread.map((b) => ({
+          role: b.role,
+          content: b.photoOnly ? "" : b.text,
+        })),
       });
       if (res.done && res.description) {
         setPreview(res.description.slice(0, DESC_MAX));
@@ -75,7 +90,7 @@ export function DescriptionAssist({
     } catch (e) {
       setErr(e instanceof Error ? e.message : t("descAssistFail"));
       setThread(thread);
-      if (thread.length === 0) setNotes(text);
+      if (thread.length === 0 && text) setNotes(text);
     } finally {
       setBusy(false);
     }
@@ -89,12 +104,21 @@ export function DescriptionAssist({
     setReply("");
   }
 
-  const started = thread.length > 0;
-
   return (
     <div className="desc-assist">
       <p className="desc-assist-kicker">{t("descAssistTitle")}</p>
       <p className="hint desc-assist-hint">{t("descAssistHint")}</p>
+
+      {looking.length > 0 ? (
+        <div className="desc-assist-photos">
+          {looking.map((url) => (
+            <img key={url} src={url} alt="" />
+          ))}
+          <span>{t("descAssistLooking")}</span>
+        </div>
+      ) : (
+        <p className="hint desc-assist-need-photo">{t("descAssistNeedPhoto")}</p>
+      )}
 
       {thread.length > 0 && (
         <div className="desc-assist-thread">
@@ -157,7 +181,7 @@ export function DescriptionAssist({
             <button
               type="button"
               className="btn ghost desc-assist-go"
-              disabled={busy || !(started ? reply.trim() : notes.trim())}
+              disabled={busy || !canSend}
               onClick={() => void send(started ? reply : notes)}
             >
               {busy
@@ -166,7 +190,7 @@ export function DescriptionAssist({
                   ? t("descAssistReply")
                   : t("descAssistAsk")}
             </button>
-            {started && messages.filter((m) => m.role === "assistant").length > 0 && (
+            {started && thread.some((b) => b.role === "assistant") && (
               <button
                 type="button"
                 className="desc-assist-skip"

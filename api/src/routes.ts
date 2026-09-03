@@ -477,6 +477,7 @@ export function registerRoutes(
       category?: string;
       condition?: string;
       variants?: unknown;
+      photos?: unknown;
       language?: string;
       messages?: unknown;
     };
@@ -488,6 +489,9 @@ export function registerRoutes(
         condition: String(body.condition ?? "").slice(0, 40),
         variants: Array.isArray(body.variants)
           ? body.variants.map((v) => String(v).slice(0, 32)).slice(0, 12)
+          : [],
+        photos: Array.isArray(body.photos)
+          ? body.photos.map((p) => String(p).slice(0, 240)).slice(0, 5)
           : [],
         language: body.language === "sw" ? "sw" : "en",
         messages: messages.map((m) => {

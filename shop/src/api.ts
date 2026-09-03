@@ -119,6 +119,7 @@ export type DescribeReply = {
   options?: string[];
   description?: string;
   provider: string;
+  photosAttached?: number;
 };
 
 export async function describeProduct(input: {
@@ -126,6 +127,7 @@ export async function describeProduct(input: {
   category?: string;
   condition?: string;
   variants?: string[];
+  photos?: string[];
   language?: "en" | "sw";
   messages: { role: "user" | "assistant"; content: string }[];
 }): Promise<DescribeReply> {

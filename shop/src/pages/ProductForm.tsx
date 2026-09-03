@@ -265,6 +265,7 @@ export function ProductFormPage() {
                 category={product.category}
                 condition={product.condition}
                 variants={product.variants}
+                photos={product.photos}
                 onApply={(description) => patch({ description })}
               />
 

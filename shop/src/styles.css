@@ -1511,6 +1511,11 @@ label.lbl {
   grid-template-columns: repeat(2, 1fr);
 }
 
+/* Photos first on the phone so the AI can see them before the seller writes. */
+.product-form-commerce {
+  order: -1;
+}
+
 .photo-grid-add {
   display: flex;
   align-items: center;
@@ -1569,6 +1574,31 @@ label.lbl {
 
 .desc-assist-hint {
   margin: 0 0 8px;
+}
+
+.desc-assist-need-photo {
+  margin: 0 0 8px;
+}
+
+.desc-assist-photos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.desc-assist-photos img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--faint);
+  background: var(--surface);
+}
+
+.desc-assist-photos span {
+  font-size: 13px;
+  color: var(--muted, #8a93a6);
 }
 
 .desc-assist .field {
@@ -1658,6 +1688,7 @@ label.lbl {
   }
 
   .product-form-commerce {
+    order: 0;
     position: sticky;
     top: 88px;
   }
