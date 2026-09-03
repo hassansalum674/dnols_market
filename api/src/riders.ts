@@ -160,7 +160,7 @@ function rulesHint(): string {
 }
 
 export function riderFirestoreHint(error: RidersDbError, detail?: string): string {
-  if (detail && detail !== error) return detail;
+  if (detail && detail.length > 3 && detail !== error) return detail;
   if (error === "permission_denied") {
     return `Firestore security rules are blocking rider access.${rulesHint()}`;
   }
@@ -233,13 +233,12 @@ export async function inviteRiderForSeller(
   const riderId = riderIdFromPhone(phone);
   const display = name.trim() || "Rider";
   const at = new Date().toISOString();
-  const createPayload = {
+  const createPayload: Record<string, unknown> = {
     riderId,
     name: display,
     phone,
-    authUid: null,
     linkedSellers: [sellerId],
-    status: "idle" as const,
+    status: "idle",
     createdAt: at,
   };
   try {

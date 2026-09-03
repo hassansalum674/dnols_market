@@ -3,6 +3,8 @@ import cors from "@fastify/cors";
 import { registerRoutes } from "./routes.js";
 import { registerPhotoRoutes } from "./photos/routes.js";
 
+import { probeFirestoreWrite } from "./firestoreAdmin.js";
+
 const PORT = Number(process.env.PORT ?? 8787);
 const HOST = process.env.HOST ?? "0.0.0.0";
 const CORS_ORIGIN = process.env.CORS_ORIGIN ?? "*";
@@ -17,6 +19,7 @@ await app.register(cors, {
 
 registerRoutes(app, { buyerLat, buyerLng });
 await registerPhotoRoutes(app);
+await probeFirestoreWrite();
 
 app.get("/openapi.json", async (_req, reply) => {
   return reply.send({

@@ -3,7 +3,7 @@ import { PLACE_ID, type Category, type Sort } from "./types.js";
 import { store } from "./store.js";
 import { registerCallRoutes } from "./call.js";
 import { sendRiderInviteSms, verifyFirebaseBearer, claimRiderPhone, inviteRiderForSeller, listSellerRiders, bearerToken, riderFirestoreHint, ridersUseAdmin } from "./riders.js";
-import { firestoreAdminError } from "./firestoreAdmin.js";
+import { firestoreAdminError, firestoreProjectId, firestoreWriteProbe } from "./firestoreAdmin.js";
 import {
   distanceToShop,
   toDirections,
@@ -51,14 +51,20 @@ export function registerRoutes(
   app: FastifyInstance,
   defaults: { buyerLat: number; buyerLng: number },
 ): void {
-  app.get("/health", async () => ({
-    ok: true,
-    service: "dnols-api",
-    place: PLACE_ID,
-    firestoreAdmin: ridersUseAdmin(),
-    firestoreAdminError: ridersUseAdmin() ? null : firestoreAdminError(),
-    ts: new Date().toISOString(),
-  }));
+  app.get("/health", async () => {
+    const probe = firestoreWriteProbe();
+    return {
+      ok: true,
+      service: "dnols-api",
+      place: PLACE_ID,
+      firestoreAdmin: ridersUseAdmin(),
+      firestoreAdminError: ridersUseAdmin() ? null : firestoreAdminError(),
+      firestoreProjectId: firestoreProjectId(),
+      firestoreWriteOk: probe.ok,
+      firestoreWriteError: probe.error,
+      ts: new Date().toISOString(),
+    };
+  });
 
   app.get("/places", async () => ({
     places: [
