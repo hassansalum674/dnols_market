@@ -69,6 +69,8 @@ const EN = {
   riderSmsSent: "Invite SMS sent. They should open rider.dnols.com.",
   riderFail: "Could not add this rider.",
   riderOffline: "Could not reach the database. Check your connection and try again.",
+  riderRulesMissing:
+    "Firestore rules are missing for riders. In Firebase Console → Firestore → Rules, paste the rules from firestore.rules in the repo, or set FIREBASE_SERVICE_ACCOUNT_JSON on the API (Render).",
   riderBadPhone: "Enter a valid Tanzania number (+255 6… or 7…).",
   riderNeedSignIn: "Sign in to manage riders.",
   noRiders: "No riders yet. Add a phone number to invite one.",
@@ -191,6 +193,8 @@ const SW: typeof EN = {
   riderSmsSent: "SMS ya mwaliko imetumwa. Wafungue rider.dnols.com.",
   riderFail: "Imeshindikana kuongeza rider.",
   riderOffline: "Imeshindikana kufikia hifadhidata. Angalia mtandao, kisha jaribu tena.",
+  riderRulesMissing:
+    "Sheria za Firestore hazina riders. Firebase Console → Firestore → Rules, bandika firestore.rules kutoka repo, au weka FIREBASE_SERVICE_ACCOUNT_JSON kwenye API (Render).",
   riderBadPhone: "Andika namba sahihi ya Tanzania (+255 6… au 7…).",
   riderNeedSignIn: "Ingia ili usimamie rider.",
   noRiders: "Bado hakuna rider. Weka namba ya simu kumwalika.",

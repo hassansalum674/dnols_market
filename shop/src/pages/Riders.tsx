@@ -6,14 +6,26 @@ import { getFirebaseAuth } from "../lib/firebase";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 
-function riderErrMessage(e: unknown, t: (k: "riderFail" | "riderOffline") => string): string {
+function riderErrMessage(
+  e: unknown,
+  t: (k: "riderFail" | "riderOffline" | "riderRulesMissing") => string,
+): string {
   const msg = e instanceof Error ? e.message : "";
   const status = (e as { status?: number }).status;
   if (
-    status === 503 ||
-    /offline|firestore_unavailable|firestore_/i.test(msg) ||
-    /Failed to get document/i.test(msg)
+    status === 403 ||
+    msg === "permission_denied" ||
+    /security rules are blocking/i.test(msg)
   ) {
+    return msg.length > 60 ? msg : t("riderRulesMissing");
+  }
+  if (
+    status === 503 &&
+    (msg === "firestore_unavailable" || /could not reach firestore/i.test(msg))
+  ) {
+    return msg.length > 60 ? msg : t("riderOffline");
+  }
+  if (/offline|Failed to get document/i.test(msg)) {
     return t("riderOffline");
   }
   return msg || t("riderFail");

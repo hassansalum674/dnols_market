@@ -28,7 +28,8 @@ Add these on the **API Web Service** (not the shop/buyer frontends):
 | `AFRICASTALKING_USERNAME` | Rider SMS | Africa's Talking username (usually `sandbox` in trial) |
 | `AFRICASTALKING_FROM` | Optional | Sender ID if Africa's Talking approved one |
 | `FIREBASE_WEB_API_KEY` | Rider invites + calls | Same Web API key as the PWAs — verifies the sign-in token |
-| `FIREBASE_PROJECT_ID` | Voice calls | `dnols-2a394` — used to read the order before minting an Agora token |
+| `FIREBASE_PROJECT_ID` | Firestore + calls | `dnols-2a394` |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | **Rider My riders** | Full service-account JSON (one line). Lets the API write `riders` / `seller_riders` even before Firestore rules are deployed. Generate in Firebase Console → Project settings → Service accounts → **Generate new private key**. |
 | `AGORA_APP_ID` | Voice calls | Agora App ID (also returned to the PWAs with the token) |
 | `AGORA_APP_CERTIFICATE` | Voice calls | Agora App Certificate — **server only**, never in a PWA |
 | `RESEND_API_KEY` | Optional | Email (if you add transactional email) |

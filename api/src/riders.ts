@@ -1,11 +1,12 @@
 import {
-  createRiderDoc,
-  fetchRiderDocFields,
-  patchRiderAuthUid,
-  patchRiderDoc,
-  querySellerRiderIds,
-  upsertSellerRiderLink,
-} from "./firestoreRest.js";
+  readRiderFields,
+  ridersUseAdmin,
+  listSellerRiderDocIds,
+  setRiderAuthUid,
+  writeRiderDoc,
+  writeSellerRiderLink,
+  type RidersDbError,
+} from "./ridersDb.js";
 
 const INVITE_TEXT =
   "You have been added as a delivery rider on dnols. Download the app: rider.dnols.com";
@@ -152,9 +153,21 @@ function parseRiderRow(id: string, data: Record<string, unknown>): ApiRiderRow {
   };
 }
 
+function rulesHint(): string {
+  if (ridersUseAdmin()) return "";
+  return " Deploy firestore.rules in Firebase Console, or set FIREBASE_SERVICE_ACCOUNT_JSON on the API.";
+}
+
+export function riderFirestoreHint(error: RidersDbError): string {
+  if (error === "permission_denied") {
+    return `Firestore security rules are blocking rider access.${rulesHint()}`;
+  }
+  return "Could not reach Firestore. Check API env and network.";
+}
+
 export type ClaimRiderResult =
   | { ok: true; rider: ApiRiderRow }
-  | { ok: false; error: "not_linked" | "rider_taken" | "permission_denied" | "firestore_unavailable" };
+  | { ok: false; error: "not_linked" | "rider_taken" | RidersDbError };
 
 export async function claimRiderPhone(
   idToken: string,
@@ -168,11 +181,9 @@ export async function claimRiderPhone(
   const riderId = riderIdFromPhone(phone);
   let fields: Record<string, unknown> | null;
   try {
-    fields = await fetchRiderDocFields(idToken, riderId);
-  } catch (e) {
-    const status = (e as { status?: number }).status;
-    if (status === 403) return { ok: false, error: "permission_denied" };
-    return { ok: false, error: "firestore_unavailable" };
+    fields = await readRiderFields(idToken, riderId);
+  } catch (error) {
+    return { ok: false, error: error as RidersDbError };
   }
   if (!fields) return { ok: false, error: "not_linked" };
   const cur = parseRiderRow(riderId, fields);
@@ -181,18 +192,16 @@ export async function claimRiderPhone(
   }
   if (cur.authUid === uid) return { ok: true, rider: cur };
   try {
-    await patchRiderAuthUid(idToken, riderId, uid);
-  } catch (e) {
-    const status = (e as { status?: number }).status;
-    if (status === 403) return { ok: false, error: "permission_denied" };
-    return { ok: false, error: "firestore_unavailable" };
+    await setRiderAuthUid(idToken, riderId, uid);
+  } catch (error) {
+    return { ok: false, error: error as RidersDbError };
   }
   return { ok: true, rider: { ...cur, authUid: uid } };
 }
 
 export type InviteRiderResult =
   | { ok: true; rider: ApiRiderRow }
-  | { ok: false; error: "permission_denied" | "firestore_unavailable" };
+  | { ok: false; error: RidersDbError };
 
 export async function inviteRiderForSeller(
   idToken: string,
@@ -208,66 +217,67 @@ export async function inviteRiderForSeller(
   const display = name.trim() || "Rider";
   const at = new Date().toISOString();
   try {
-    const existing = await fetchRiderDocFields(idToken, riderId);
+    const existing = await readRiderFields(idToken, riderId);
     if (existing) {
       const cur = parseRiderRow(riderId, existing);
       const linkedSellers = [...new Set([...cur.linkedSellers, sellerId])];
       const nextName = cur.name && cur.name !== "Rider" ? cur.name : display;
-      await patchRiderDoc(idToken, riderId, {
-        linkedSellers,
-        name: nextName,
-      });
+      await writeRiderDoc(
+        idToken,
+        riderId,
+        { linkedSellers, name: nextName },
+        false,
+      );
     } else {
-      await createRiderDoc(idToken, riderId, {
+      await writeRiderDoc(
+        idToken,
         riderId,
-        name: display,
-        phone,
-        authUid: null,
-        linkedSellers: [sellerId],
-        status: "idle",
-        createdAt: at,
-      });
+        {
+          riderId,
+          name: display,
+          phone,
+          authUid: null,
+          linkedSellers: [sellerId],
+          status: "idle",
+          createdAt: at,
+        },
+        true,
+      );
     }
-    await upsertSellerRiderLink(
-      idToken,
-      sellerRiderDocId(sellerId, riderId),
-      {
-        sellerId,
-        riderId,
-        addedAt: at,
-        active: true,
-      },
-    );
-    const fields = await fetchRiderDocFields(idToken, riderId);
+    await writeSellerRiderLink(idToken, sellerRiderDocId(sellerId, riderId), {
+      sellerId,
+      riderId,
+      addedAt: at,
+      active: true,
+    });
+    const fields = await readRiderFields(idToken, riderId);
     if (!fields) return { ok: false, error: "firestore_unavailable" };
     return { ok: true, rider: parseRiderRow(riderId, fields) };
-  } catch (e) {
-    const status = (e as { status?: number }).status;
-    if (status === 403) return { ok: false, error: "permission_denied" };
-    return { ok: false, error: "firestore_unavailable" };
+  } catch (error) {
+    return { ok: false, error: error as RidersDbError };
   }
 }
 
 export type ListSellerRidersResult =
   | { ok: true; riders: ApiRiderRow[] }
-  | { ok: false; error: "permission_denied" | "firestore_unavailable" };
+  | { ok: false; error: RidersDbError };
 
 export async function listSellerRiders(
   idToken: string,
   sellerId: string,
 ): Promise<ListSellerRidersResult> {
   try {
-    const ids = await querySellerRiderIds(idToken, sellerId);
+    const ids = await listSellerRiderDocIds(idToken, sellerId);
     const riders: ApiRiderRow[] = [];
     for (const id of ids) {
-      const fields = await fetchRiderDocFields(idToken, id);
+      const fields = await readRiderFields(idToken, id);
       if (fields) riders.push(parseRiderRow(id, fields));
     }
     riders.sort((a, b) => a.name.localeCompare(b.name));
     return { ok: true, riders };
-  } catch (e) {
-    const status = (e as { status?: number }).status;
-    if (status === 403) return { ok: false, error: "permission_denied" };
-    return { ok: false, error: "firestore_unavailable" };
+  } catch (error) {
+    return { ok: false, error: error as RidersDbError };
   }
 }
+
+export { ridersUseAdmin };
