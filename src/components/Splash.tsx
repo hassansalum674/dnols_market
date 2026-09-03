@@ -1,11 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
-const LINES = [
-  "What's near you",
-  "Make your first order",
-  "Pay, then we show the way",
-  "Shops you can walk to",
-];
+const LINE = "What's near you";
 
 const NOLS = ["n", "o", "l", "s"] as const;
 
@@ -37,19 +32,11 @@ function SplashLockup() {
 }
 
 export function Splash({ onDone }: { onDone: () => void }) {
-  const [i, setI] = useState(0);
   const light = document.documentElement.dataset.theme !== "dark";
 
   useEffect(() => {
-    const rotate = window.setInterval(
-      () => setI((n) => (n + 1) % LINES.length),
-      2800,
-    );
-    const done = window.setTimeout(onDone, 3200);
-    return () => {
-      window.clearInterval(rotate);
-      window.clearTimeout(done);
-    };
+    const done = window.setTimeout(onDone, 6200);
+    return () => window.clearTimeout(done);
   }, [onDone]);
 
   return (
@@ -59,9 +46,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
       aria-label="Welcome to Dnols"
     >
       <SplashLockup />
-      <p className="splash-line" key={i}>
-        {LINES[i]}
-      </p>
+      <p className="splash-line">{LINE}</p>
     </div>
   );
 }

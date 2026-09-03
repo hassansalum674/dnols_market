@@ -166,7 +166,7 @@ img {
   stroke-linecap: round;
   stroke-dasharray: 100;
   stroke-dashoffset: 100;
-  animation: splashDraw 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: splashDraw 1.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 .splash-badge-fill {
@@ -184,7 +184,7 @@ img {
   line-height: 1;
   padding-bottom: 0.06em;
   transform: scale(0);
-  animation: splashPop 0.5s 0.38s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
+  animation: splashPop 0.7s 1.05s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
 }
 
 .splash-nols {
@@ -206,20 +206,20 @@ img {
   display: inline-block;
   opacity: 0;
   transform: translateX(-10px);
-  animation: splashLetter 0.32s ease forwards;
+  animation: splashLetter 0.5s ease forwards;
 }
 
 .splash-letter:nth-child(1) {
-  animation-delay: 0.78s;
+  animation-delay: 1.95s;
 }
 .splash-letter:nth-child(2) {
-  animation-delay: 0.92s;
+  animation-delay: 2.4s;
 }
 .splash-letter:nth-child(3) {
-  animation-delay: 1.06s;
+  animation-delay: 2.85s;
 }
 .splash-letter:nth-child(4) {
-  animation-delay: 1.2s;
+  animation-delay: 3.3s;
 }
 
 @keyframes splashDraw {
@@ -253,7 +253,8 @@ img {
 @media (prefers-reduced-motion: reduce) {
   .splash-ring-arc,
   .splash-badge-fill,
-  .splash-letter {
+  .splash-letter,
+  .splash-line {
     animation: none;
     opacity: 1;
     transform: none;
@@ -272,7 +273,8 @@ img {
   font-size: 15px;
   letter-spacing: 0.02em;
   min-height: 1.4em;
-  animation: splashFade 2.8s ease-in-out infinite;
+  opacity: 0;
+  animation: splashLineIn 1.1s 3.7s ease forwards;
 }
 
 @keyframes splashPulse {
@@ -287,17 +289,9 @@ img {
   }
 }
 
-@keyframes splashFade {
-  0%,
-  20% {
-    opacity: 0;
-  }
-  35%,
-  70% {
+@keyframes splashLineIn {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 0;
   }
 }
 
