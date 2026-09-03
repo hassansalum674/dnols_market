@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { BrandLogo } from "../components/BrandLogo";
 import {
   deliveryTrackLabel,
-  formatTzMobile,
+  formatTzMobileTyping,
   isValidTzMobile,
   listenRiderOrders,
+  RiderClaimError,
   type MarketOrderDoc,
 } from "../lib/deliveryCloud";
 import { getFirebaseDb, initFirebase } from "../lib/firebase";
@@ -12,9 +14,22 @@ import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 import { SignInPage } from "./SignIn";
 
+function linkErrorMessage(
+  e: unknown,
+  t: (key: "notLinked" | "linkFailedOffline" | "linkFailedDenied") => string,
+): string {
+  if (e instanceof RiderClaimError) {
+    if (e.reason === "offline") return t("linkFailedOffline");
+    if (e.reason === "taken" || e.reason === "denied") return t("linkFailedDenied");
+    return t("notLinked");
+  }
+  if (e instanceof Error && /offline/i.test(e.message)) return t("linkFailedOffline");
+  return t("notLinked");
+}
+
 function LinkPhoneForm() {
-  const { t, tf } = useI18n();
-  const { linkPhone } = useAuth();
+  const { t, tf, lang, setLang } = useI18n();
+  const { linkPhone, signOut } = useAuth();
   const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -32,38 +47,61 @@ function LinkPhoneForm() {
       const ok = await linkPhone(phone);
       if (!ok) setErr(t("notLinked"));
     } catch (e) {
-      setErr(e instanceof Error ? e.message : t("notLinked"));
+      setErr(linkErrorMessage(e, t));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="rider-signin-card" style={{ marginTop: 8 }}>
-      <p>{t("linkPhoneHint")}</p>
-      <label className="lbl" htmlFor="link-phone">
-        {t("phoneNumber")}
-      </label>
-      <input
-        id="link-phone"
-        className="field"
-        inputMode="tel"
-        autoComplete="tel"
-        placeholder={t("phoneHint")}
-        value={phone}
-        onChange={(e) => setPhone(e.target.value)}
-      />
-      <p className="hint">
-        {digits.length === 0
-          ? t("phoneHint")
-          : ready
-            ? formatTzMobile(phone)
-            : tf("phoneCount", { n: digits.length })}
-      </p>
-      <button className="btn" disabled={busy} onClick={() => void save()}>
-        {busy ? t("linking") : t("linkPhone")}
-      </button>
-      {err && <p className="err">{err}</p>}
+    <div className="page rider-signin">
+      <div className="rider-signin-card">
+        <BrandLogo height={32} />
+        <h1 className="stall-page-title">{t("linkPhoneTitle")}</h1>
+        <p className="hint">{t("linkPhoneHint")}</p>
+        <div className="chip-grid" style={{ marginBottom: 16 }}>
+          <button
+            type="button"
+            className={`chip ${lang === "en" ? "selected" : ""}`}
+            onClick={() => setLang("en")}
+          >
+            {t("english")}
+          </button>
+          <button
+            type="button"
+            className={`chip ${lang === "sw" ? "selected" : ""}`}
+            onClick={() => setLang("sw")}
+          >
+            {t("swahili")}
+          </button>
+        </div>
+        <label className="lbl" htmlFor="link-phone">
+          {t("phoneNumber")}
+        </label>
+        <input
+          id="link-phone"
+          className="field"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder={t("phoneHint")}
+          value={phone}
+          onChange={(e) => setPhone(formatTzMobileTyping(e.target.value))}
+        />
+        <p className="hint">
+          {digits.length === 0
+            ? t("phoneHint")
+            : ready
+              ? null
+              : tf("phoneCount", { n: digits.length })}
+        </p>
+        <button className="btn" disabled={busy} onClick={() => void save()}>
+          {busy ? t("linking") : t("linkPhone")}
+        </button>
+        <button type="button" className="btn ghost" onClick={() => void signOut()}>
+          {t("signOut")}
+        </button>
+        {err && <p className="err">{err}</p>}
+      </div>
     </div>
   );
 }

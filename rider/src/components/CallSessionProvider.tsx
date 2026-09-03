@@ -38,7 +38,7 @@ export function CallSessionProvider({ children }: { children: ReactNode }) {
   const riderId = rider?.riderId ?? "";
 
   useEffect(() => {
-    if (!uid) {
+    if (!uid || !riderId) {
       setOrders([]);
       return;
     }

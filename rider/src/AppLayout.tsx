@@ -24,14 +24,14 @@ function markSplashSeen() {
 
 export function AppLayout() {
   const loc = useLocation();
-  const { user } = useAuth();
+  const { user, rider } = useAuth();
   const [splash, setSplash] = useState(() => !splashSeen());
   const done = useCallback(() => {
     markSplashSeen();
     setSplash(false);
   }, []);
 
-  const signedOut = !user;
+  const hideChrome = !user || !rider;
   const title = loc.pathname.startsWith("/delivery/")
     ? "Delivery"
     : "Deliveries";
@@ -39,9 +39,9 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
-      <div className={`app-shell app-shell--stall${signedOut ? " rider-auth" : ""}`}>
+      <div className={`app-shell app-shell--stall${hideChrome ? " rider-auth" : ""}`}>
         <div className="stall-main">
-          {!signedOut && (
+          {!hideChrome && (
             <header className="header stall-header">
               <div className="header-row stall-header-row">
                 <img

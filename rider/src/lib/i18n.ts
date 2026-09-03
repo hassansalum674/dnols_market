@@ -14,8 +14,13 @@ const EN = {
   googleAuthOff: "Turn on Google sign-in in Firebase Authentication.",
   linkPhone: "Link this number",
   linking: "Linking…",
+  linkPhoneTitle: "Link your rider number",
   linkPhoneHint:
     "Enter the Tanzania number the seller used when they added you as a rider.",
+  linkFailedOffline:
+    "Could not reach the server. Check your connection and try again.",
+  linkFailedDenied:
+    "That number is not on a seller’s rider list, or it is already linked to another Google account.",
   phoneNumber: "Phone number",
   phoneHint: "+255 6XX or 7XX XXX XXX",
   sendCode: "Send code",
@@ -84,8 +89,13 @@ const SW: typeof EN = {
   googleAuthOff: "Washa Google sign-in kwenye Firebase Authentication.",
   linkPhone: "Unganisha namba hii",
   linking: "Inaunganisha…",
+  linkPhoneTitle: "Unganisha namba yako ya rider",
   linkPhoneHint:
     "Andika namba ya Tanzania muuzaji aliyotumia alipokuongeza kama rider.",
+  linkFailedOffline:
+    "Imeshindikana kufikia seva. Angalia intaneti, kisha jaribu tena.",
+  linkFailedDenied:
+    "Namba hii haipo kwenye orodha ya rider wa muuzaji, au tayari imeunganishwa na akaunti nyingine ya Google.",
   phoneNumber: "Namba ya simu",
   phoneHint: "+255 6XX au 7XX XXX XXX",
   sendCode: "Tuma namba",

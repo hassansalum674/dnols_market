@@ -4,6 +4,7 @@ import {
   collection,
   doc,
   getDoc,
+  getDocFromServer,
   getFirestore,
   onSnapshot,
   query,
@@ -73,6 +74,7 @@ export {
   firstNameOf,
   formatCallClock,
   formatTzMobile,
+  formatTzMobileTyping,
   googleMapsUrl,
   isValidTzMobile,
   riderIdFromPhone,
@@ -518,6 +520,36 @@ async function riderHasOpenOrders(db: Firestore, riderId: string): Promise<boole
   return !snap.empty;
 }
 
+export type RiderClaimReason = "missing" | "taken" | "offline" | "denied" | "failed";
+
+export class RiderClaimError extends Error {
+  readonly reason: RiderClaimReason;
+  constructor(reason: RiderClaimReason, message?: string) {
+    super(message ?? reason);
+    this.name = "RiderClaimError";
+    this.reason = reason;
+  }
+}
+
+function firestoreErrCode(e: unknown): string {
+  if (e && typeof e === "object" && "code" in e) {
+    return String((e as { code: string }).code).replace(/^firestore\//, "");
+  }
+  return "";
+}
+
+function throwClaimFailure(e: unknown): never {
+  const code = firestoreErrCode(e);
+  const msg = e instanceof Error ? e.message : "";
+  if (code === "unavailable" || /client is offline/i.test(msg)) {
+    throw new RiderClaimError("offline", msg);
+  }
+  if (code === "permission-denied") {
+    throw new RiderClaimError("denied", msg);
+  }
+  throw new RiderClaimError("failed", msg || undefined);
+}
+
 export async function claimRiderByPhone(
   db: Firestore,
   authUid: string,
@@ -527,10 +559,26 @@ export async function claimRiderByPhone(
   const phone = toE164(phoneRaw);
   const riderId = riderIdFromPhone(phone);
   const ref = doc(db, RIDERS_COL, riderId);
-  const snap = await getDoc(ref);
+  let snap;
+  try {
+    snap = await getDocFromServer(ref);
+  } catch (e) {
+    throwClaimFailure(e);
+  }
   if (!snap.exists()) return null;
-  await updateDoc(ref, { authUid });
-  return parseRider(riderId, { ...snap.data(), authUid } as Record<string, unknown>);
+  const data = snap.data() as Record<string, unknown>;
+  if (data.authUid && data.authUid !== authUid) {
+    throw new RiderClaimError("taken");
+  }
+  if (data.authUid === authUid) {
+    return parseRider(riderId, data);
+  }
+  try {
+    await updateDoc(ref, { authUid });
+  } catch (e) {
+    throwClaimFailure(e);
+  }
+  return parseRider(riderId, { ...data, authUid });
 }
 
 export async function loadRiderByAuthUid(

@@ -93,6 +93,19 @@ export function formatTzMobile(raw: string): string {
   return `+255 ${local.slice(0, 3)} ${local.slice(3, 6)} ${local.slice(6)}`;
 }
 
+/** Format a Tanzania mobile as the rider types (+255 694 455 606). */
+export function formatTzMobileTyping(raw: string): string {
+  let digits = raw.replace(/\D/g, "");
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  if (digits.startsWith("255")) digits = digits.slice(3);
+  digits = digits.slice(0, 9);
+  if (!digits) return "";
+  const a = digits.slice(0, 3);
+  const b = digits.slice(3, 6);
+  const c = digits.slice(6, 9);
+  return `+255 ${a}${b ? ` ${b}` : ""}${c ? ` ${c}` : ""}`;
+}
+
 export function deliveryTrackLabel(
   status: DeliveryStatus | undefined,
   lang: "en" | "sw",
