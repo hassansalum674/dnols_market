@@ -131,6 +131,136 @@ img {
   animation: splashPulse 2.4s ease-in-out infinite;
 }
 
+.splash-lockup {
+  display: flex;
+  align-items: center;
+  --splash-size: clamp(56px, 16vw, 80px);
+}
+
+.splash-badge {
+  position: relative;
+  width: var(--splash-size);
+  height: var(--splash-size);
+  flex-shrink: 0;
+}
+
+.splash-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+
+.splash-ring-track {
+  fill: none;
+  stroke: var(--faint);
+  stroke-width: 3.5;
+}
+
+.splash-ring-arc {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: splashDraw 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.splash-badge-fill {
+  position: absolute;
+  inset: 7%;
+  border-radius: 50%;
+  background: var(--brand);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "Arial Black", Arial, sans-serif;
+  font-weight: 900;
+  font-size: calc(var(--splash-size) * 0.58);
+  line-height: 1;
+  padding-bottom: 0.06em;
+  transform: scale(0);
+  animation: splashPop 0.5s 0.38s cubic-bezier(0.22, 1.35, 0.36, 1) forwards;
+}
+
+.splash-nols {
+  display: flex;
+  margin-left: 0.12em;
+  font-family: "Arial Black", Arial, sans-serif;
+  font-weight: 900;
+  font-size: calc(var(--splash-size) * 0.78);
+  letter-spacing: -0.045em;
+  line-height: 1;
+  color: #111111;
+}
+
+.splash:not(.splash--light) .splash-nols {
+  color: #ffffff;
+}
+
+.splash-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-10px);
+  animation: splashLetter 0.32s ease forwards;
+}
+
+.splash-letter:nth-child(1) {
+  animation-delay: 0.78s;
+}
+.splash-letter:nth-child(2) {
+  animation-delay: 0.92s;
+}
+.splash-letter:nth-child(3) {
+  animation-delay: 1.06s;
+}
+.splash-letter:nth-child(4) {
+  animation-delay: 1.2s;
+}
+
+@keyframes splashDraw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes splashPop {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes splashLetter {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .splash-ring-arc,
+  .splash-badge-fill,
+  .splash-letter {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    stroke-dashoffset: 0;
+  }
+}
+
 .splash-logo {
   width: min(78vw, 360px);
   height: auto;

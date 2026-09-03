@@ -7,6 +7,35 @@ const LINES = [
   "Shops you can walk to",
 ];
 
+const NOLS = ["n", "o", "l", "s"] as const;
+
+function SplashLockup() {
+  return (
+    <div className="splash-lockup" aria-hidden="true">
+      <span className="splash-badge">
+        <svg className="splash-ring" viewBox="0 0 80 80">
+          <circle className="splash-ring-track" cx="40" cy="40" r="36" />
+          <circle
+            className="splash-ring-arc"
+            cx="40"
+            cy="40"
+            r="36"
+            pathLength="100"
+          />
+        </svg>
+        <span className="splash-badge-fill">d</span>
+      </span>
+      <span className="splash-nols">
+        {NOLS.map((ch) => (
+          <span key={ch} className="splash-letter">
+            {ch}
+          </span>
+        ))}
+      </span>
+    </div>
+  );
+}
+
 export function Splash({ onDone }: { onDone: () => void }) {
   const [i, setI] = useState(0);
   const light = document.documentElement.dataset.theme !== "dark";
@@ -29,11 +58,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
       role="dialog"
       aria-label="Welcome to Dnols"
     >
-      <img
-        className="splash-logo"
-        src={light ? "/brand/logo1_primary.svg" : "/brand/logo6_dark.svg"}
-        alt="Dnols"
-      />
+      <SplashLockup />
       <p className="splash-line" key={i}>
         {LINES[i]}
       </p>
