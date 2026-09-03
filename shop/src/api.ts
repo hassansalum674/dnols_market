@@ -50,10 +50,28 @@ export async function getListing(id: string): Promise<PublicListing> {
   return json(`/listings/${encodeURIComponent(id)}`);
 }
 
-export async function payOrder(listingIds: string[]): Promise<PayResponse> {
+export async function payOrder(
+  listingIds: string[],
+  opts?: {
+    phone?: string;
+    payMethod?: "mpesa" | "tigo" | "airtel";
+    fulfillment?: "pickup" | "delivery";
+    deliveryAddress?: string;
+    deliveryPhone?: string;
+  },
+): Promise<PayResponse> {
+  const phone = opts?.phone ?? "+255700000001";
   return json("/orders/pay", {
     method: "POST",
-    body: JSON.stringify({ listingIds }),
+    body: JSON.stringify({
+      listingIds,
+      phone,
+      payMethod: opts?.payMethod ?? "mpesa",
+      fulfillment: opts?.fulfillment ?? "delivery",
+      deliveryAddress:
+        opts?.deliveryAddress ?? "Kariakoo sample drop-off",
+      deliveryPhone: opts?.deliveryPhone ?? phone,
+    }),
   });
 }
 

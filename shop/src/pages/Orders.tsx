@@ -72,7 +72,12 @@ export function OrdersPage() {
     setDemoErr(null);
     setDemoMsg(null);
     try {
-      const pay = await payOrder([DEMO_LISTING]);
+      const pay = await payOrder([DEMO_LISTING], {
+        phone: "+255700000001",
+        deliveryPhone: "+255700000001",
+        fulfillment: "delivery",
+        deliveryAddress: "Kariakoo sample drop-off",
+      });
       remember({
         orderId: pay.orderId,
         listingIds: pay.listingIds,
@@ -95,7 +100,7 @@ export function OrdersPage() {
           totalTzs: pay.totalTzs,
           fulfillment: "delivery",
           deliveryAddress: "Kariakoo sample drop-off",
-          deliveryPhone: "",
+          deliveryPhone: "+255700000001",
           deliveryLat: null,
           deliveryLng: null,
           pickupCode: pay.pickupCode,
@@ -118,10 +123,17 @@ export function OrdersPage() {
       );
       refresh();
     } catch (e) {
+      const msg =
+        e instanceof Error ? e.message : "Could not create sample order";
+      const status = (e as { status?: number }).status;
+      const looksLikeNetwork =
+        status === undefined ||
+        status >= 500 ||
+        /failed to fetch|network/i.test(msg);
       setDemoErr(
-        e instanceof Error
-          ? `${e.message}. Check your connection and try again.`
-          : "Could not create sample order",
+        looksLikeNetwork && status !== 400
+          ? `${msg}. Check your connection and try again.`
+          : msg,
       );
     } finally {
       setBusy(false);
@@ -282,10 +294,22 @@ function EscrowCard({
         </span>
       </div>
       {!live && (
-        <p className="hint">
-          This order could not be loaded. It may have expired — try the sample
-          order again if you were testing.
-        </p>
+        <div className="stale-order-hint">
+          <p className="hint">
+            This practice order is no longer on the server (Render restarts clear
+            demo data). Delete it and use <strong>Create sample order</strong> again.
+          </p>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={() => {
+              if (!window.confirm(confirmDelete)) return;
+              onDelete();
+            }}
+          >
+            {deleteLabel}
+          </button>
+        </div>
       )}
       {live?.escrow === "paid_held" && (
         <div className="btn-row">
