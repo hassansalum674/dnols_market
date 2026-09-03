@@ -6,6 +6,8 @@ export type DeliveryStatus =
   | "picked_up"
   | "delivered";
 
+export type CallStatus = "idle" | "calling" | "in_call" | "ended";
+
 export type RiderDoc = {
   riderId: string;
   name: string;
@@ -52,6 +54,9 @@ export type MarketOrderDoc = {
   deliveredAt: string | null;
   createdAt: string;
   paidAt: string | null;
+  callStatus: CallStatus;
+  callInitiatedBy: string | null;
+  callStartedAt: string | null;
 };
 
 export const RIDERS_COL = "riders";
@@ -120,4 +125,35 @@ export function googleMapsUrl(order: {
   }
   const q = encodeURIComponent(order.deliveryAddress?.trim() || "Kariakoo, Dar es Salaam");
   return `https://www.google.com/maps/search/?api=1&query=${q}`;
+}
+
+export function callChannelName(orderId: string): string {
+  const safe = String(orderId).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 56);
+  return `order_${safe}`;
+}
+
+export function firstNameOf(
+  full: string | null | undefined,
+  fallback = "",
+): string {
+  const token = (full ?? "").trim().split(/\s+/)[0];
+  return token || fallback;
+}
+
+export function canPlaceVoiceCall(order: {
+  deliveryStatus?: DeliveryStatus | string | null;
+  riderId?: string | null;
+}): boolean {
+  if (order.deliveryStatus === "delivered") return false;
+  if (order.deliveryStatus !== "assigned" && order.deliveryStatus !== "picked_up") {
+    return false;
+  }
+  return Boolean(order.riderId);
+}
+
+export function formatCallClock(sec: number): string {
+  const s = Math.max(0, Math.floor(sec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${m}:${r.toString().padStart(2, "0")}`;
 }

@@ -108,6 +108,9 @@ export function OrdersPage() {
           deliveredAt: null,
           createdAt: new Date().toISOString(),
           paidAt: new Date().toISOString(),
+          callStatus: "idle",
+          callInitiatedBy: null,
+          callStartedAt: null,
         });
       }
       setDemoMsg(

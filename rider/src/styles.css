@@ -2257,3 +2257,84 @@ select.field {
   background: var(--brand-soft);
   font-weight: 700;
 }
+
+.voice-call-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: var(--black);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px calc(32px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+}
+
+.voice-call-avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.voice-call-name {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.voice-call-timer {
+  color: var(--muted);
+  margin: 8px 0 32px;
+  font-variant-numeric: tabular-nums;
+}
+
+.voice-call-actions {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 320px;
+}
+
+.voice-call-round {
+  min-width: 88px;
+  min-height: 72px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: none;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.voice-call-round.end,
+.voice-call-round.decline {
+  background: #e23b3b;
+}
+
+.voice-call-round.accept {
+  background: #1a9d5c;
+}
+
+.voice-call-round.mute {
+  background: var(--surface);
+  color: var(--white);
+  border: 1px solid var(--faint);
+}
+
+.voice-call-round.mute.on {
+  background: var(--white);
+  color: var(--black);
+}

@@ -1,5 +1,6 @@
 import { Suspense, useCallback, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { CallSessionProvider } from "./components/CallSessionProvider";
 import { RoutePulse, Splash } from "./components/Splash";
 
 const SPLASH = "dnols.rider.splash.v2";
@@ -51,7 +52,9 @@ export function AppLayout() {
           <main className="stall-main-content">
             <Suspense fallback={<RoutePulse />}>
               <div className="stall-page-wrap">
-                <Outlet />
+                <CallSessionProvider>
+                  <Outlet />
+                </CallSessionProvider>
               </div>
             </Suspense>
           </main>

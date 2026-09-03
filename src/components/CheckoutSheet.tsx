@@ -253,6 +253,9 @@ export function CheckoutSheet() {
               deliveredAt: null,
               createdAt: paid.createdAt,
               paidAt: paid.paidAt,
+              callStatus: "idle",
+              callInitiatedBy: null,
+              callStartedAt: null,
             });
           }
         } catch {

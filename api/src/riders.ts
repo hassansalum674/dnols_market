@@ -71,11 +71,18 @@ export async function sendRiderInviteSms(phoneRaw: string): Promise<{
 
 type TokenInfo = { uid: string; phone?: string };
 
+export function bearerToken(
+  header: string | string[] | undefined,
+): string | null {
+  const raw = Array.isArray(header) ? header[0] : header;
+  const token = raw?.startsWith("Bearer ") ? raw.slice(7).trim() : "";
+  return token || null;
+}
+
 export async function verifyFirebaseBearer(
   header: string | string[] | undefined,
 ): Promise<TokenInfo | null> {
-  const raw = Array.isArray(header) ? header[0] : header;
-  const token = raw?.startsWith("Bearer ") ? raw.slice(7).trim() : "";
+  const token = bearerToken(header);
   if (!token) return null;
 
   const apiKey =

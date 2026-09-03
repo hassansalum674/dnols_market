@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { PLACE_ID, type Category, type Sort } from "./types.js";
 import { store } from "./store.js";
+import { registerCallRoutes } from "./call.js";
 import { sendRiderInviteSms, verifyFirebaseBearer } from "./riders.js";
 import {
   distanceToShop,
@@ -492,4 +493,6 @@ export function registerRoutes(
       return reply.code(422).send({ error: "invite_failed", message });
     }
   });
+
+  registerCallRoutes(app);
 }

@@ -20,6 +20,7 @@ import {
   riderIdFromPhone,
   sellerRiderDocId,
   toE164,
+  type CallStatus,
   type DeliveryItem,
   type DeliveryStatus,
   type MarketOrderDoc,
@@ -27,11 +28,22 @@ import {
   type SellerRiderDoc,
 } from "./delivery";
 
-export type { DeliveryItem, DeliveryStatus, MarketOrderDoc, RiderDoc, SellerRiderDoc };
+export type {
+  CallStatus,
+  DeliveryItem,
+  DeliveryStatus,
+  MarketOrderDoc,
+  RiderDoc,
+  SellerRiderDoc,
+};
 export {
   ORDERS_COL,
   RIDERS_COL,
   SELLER_RIDERS_COL,
+  canPlaceVoiceCall,
+  callChannelName,
+  firstNameOf,
+  formatCallClock,
   formatTzMobile,
   googleMapsUrl,
   isValidTzMobile,
@@ -53,6 +65,23 @@ function asStringOrNull(v: unknown): string | null {
 
 function asNumOrNull(v: unknown): number | null {
   return typeof v === "number" && Number.isFinite(v) ? v : null;
+}
+
+function asTime(v: unknown): string | null {
+  if (typeof v === "string" && v.trim()) return v;
+  if (v && typeof v === "object") {
+    const ts = v as { toDate?: () => Date; seconds?: number; toMillis?: () => number };
+    if (typeof ts.toDate === "function") return ts.toDate().toISOString();
+    if (typeof ts.toMillis === "function") return new Date(ts.toMillis()).toISOString();
+    if (typeof ts.seconds === "number") {
+      return new Date(ts.seconds * 1000).toISOString();
+    }
+  }
+  return null;
+}
+
+function asCallStatus(v: unknown): CallStatus {
+  return v === "calling" || v === "in_call" || v === "ended" ? v : "idle";
 }
 
 export function parseRider(id: string, data: Record<string, unknown>): RiderDoc {
@@ -117,6 +146,9 @@ export function parseOrder(id: string, data: Record<string, unknown>): MarketOrd
     deliveredAt: asStringOrNull(data.deliveredAt),
     createdAt: asString(data.createdAt, nowIso()),
     paidAt: asStringOrNull(data.paidAt),
+    callStatus: asCallStatus(data.callStatus),
+    callInitiatedBy: asStringOrNull(data.callInitiatedBy),
+    callStartedAt: asTime(data.callStartedAt),
   };
 }
 
@@ -373,6 +405,42 @@ export async function assignRider(
   await updateDoc(riderRef, { status: "busy" });
 }
 
+export async function setOrderCallState(
+  db: Firestore,
+  orderId: string,
+  state: {
+    callStatus: CallStatus;
+    callInitiatedBy?: string | null;
+    callStartedAt?: string | null;
+  },
+): Promise<void> {
+  const patch: {
+    callStatus: CallStatus;
+    updatedAt: ReturnType<typeof serverTimestamp>;
+    callInitiatedBy?: string | null;
+    callStartedAt?: string | null;
+  } = {
+    callStatus: state.callStatus,
+    updatedAt: serverTimestamp(),
+  };
+  if (state.callStatus === "calling") {
+    patch.callInitiatedBy = state.callInitiatedBy ?? null;
+    patch.callStartedAt = state.callStartedAt ?? nowIso();
+  } else if (state.callStatus === "in_call") {
+    if (state.callInitiatedBy !== undefined) {
+      patch.callInitiatedBy = state.callInitiatedBy;
+    }
+  } else if (state.callStatus === "ended") {
+    if (state.callInitiatedBy !== undefined) {
+      patch.callInitiatedBy = state.callInitiatedBy;
+    }
+  } else {
+    patch.callInitiatedBy = null;
+    patch.callStartedAt = null;
+  }
+  await updateDoc(doc(db, ORDERS_COL, orderId), patch);
+}
+
 export async function markPickedUp(db: Firestore, orderId: string): Promise<void> {
   await updateDoc(doc(db, ORDERS_COL, orderId), {
     deliveryStatus: "picked_up",
@@ -389,6 +457,7 @@ export async function markDelivered(
   await updateDoc(doc(db, ORDERS_COL, orderId), {
     deliveryStatus: "delivered",
     deliveredAt: nowIso(),
+    callStatus: "ended",
     updatedAt: serverTimestamp(),
   });
   if (!riderId) return;

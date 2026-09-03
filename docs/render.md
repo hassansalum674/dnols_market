@@ -27,10 +27,22 @@ Add these on the **API Web Service** (not the shop/buyer frontends):
 | `AFRICASTALKING_API_KEY` | Rider SMS | Africa's Talking API key for rider invite texts |
 | `AFRICASTALKING_USERNAME` | Rider SMS | Africa's Talking username (usually `sandbox` in trial) |
 | `AFRICASTALKING_FROM` | Optional | Sender ID if Africa's Talking approved one |
-| `FIREBASE_WEB_API_KEY` | Rider invites | Same Web API key as the PWAs — verifies the seller's sign-in token |
+| `FIREBASE_WEB_API_KEY` | Rider invites + calls | Same Web API key as the PWAs — verifies the sign-in token |
+| `FIREBASE_PROJECT_ID` | Voice calls | `dnols-2a394` — used to read the order before minting an Agora token |
+| `AGORA_APP_ID` | Voice calls | Agora App ID (also returned to the PWAs with the token) |
+| `AGORA_APP_CERTIFICATE` | Voice calls | Agora App Certificate — **server only**, never in a PWA |
 | `RESEND_API_KEY` | Optional | Email (if you add transactional email) |
 
-Do **not** put `FAPIAPI_API_KEY` or Africa's Talking keys in the buyer, shop, or rider PWA — they stay server-side only.
+Do **not** put `FAPIAPI_API_KEY`, Africa's Talking keys, or `AGORA_APP_CERTIFICATE` in the buyer, shop, or rider PWA — they stay server-side only.
+
+## Voice calling (`POST /call/token`)
+
+Rider and buyer PWAs request a short-lived Agora RTC token. The API:
+
+1. Checks the Firebase ID token
+2. Reads `orders/{orderId}` with that token
+3. Returns 403 unless the caller is the buyer or the assigned rider, and the order is not delivered
+4. Mints a **voice-only** UID token for channel `order_{orderId}`
 
 ## Frontend builds
 

@@ -70,6 +70,9 @@ export type Order = {
     | "picked_up"
     | "delivered";
   riderName?: string | null;
+  riderId?: string | null;
+  callStatus?: "idle" | "calling" | "in_call" | "ended";
+  callInitiatedBy?: string | null;
 };
 
 export type CartLine = {

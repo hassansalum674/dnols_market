@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useVoiceCall } from "../components/CallSessionProvider";
 import {
+  canPlaceVoiceCall,
   googleMapsUrl,
   listenOrder,
   markDelivered,
@@ -15,9 +17,9 @@ export function ActiveDeliveryPage() {
   const { orderId = "" } = useParams();
   const { rider } = useAuth();
   const { t } = useI18n();
+  const { startCall } = useVoiceCall();
   const [order, setOrder] = useState<MarketOrderDoc | null>(null);
   const [busy, setBusy] = useState(false);
-  const [callHint, setCallHint] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   useEffect(() => {
@@ -66,6 +68,7 @@ export function ActiveDeliveryPage() {
   }
 
   const maps = googleMapsUrl(order);
+  const showCall = canPlaceVoiceCall(order);
 
   return (
     <div className="page stall-page">
@@ -112,16 +115,20 @@ export function ActiveDeliveryPage() {
               {busy ? t("updating") : t("delivered")}
             </button>
           )}
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={() => setCallHint(true)}
-          >
-            {t("callBuyer")}
-          </button>
+          {showCall && (
+            <button
+              type="button"
+              className="btn ghost"
+              onClick={() => void startCall(order)}
+            >
+              {t("callBuyer")}
+            </button>
+          )}
         </div>
       )}
-      {callHint && <p className="hint">{t("comingSoon")}</p>}
+      {order.deliveryStatus === "delivered" && (
+        <p className="hint">{t("deliveryComplete")}</p>
+      )}
       {err && <p className="err">{err}</p>}
     </div>
   );

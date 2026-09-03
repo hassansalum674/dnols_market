@@ -3,11 +3,16 @@ import { Link } from "react-router-dom";
 import { fetchOrders } from "../api/client";
 import { useAuth } from "../store/auth";
 import { PAY_METHODS } from "../lib/checkout";
-import { deliveryTrackLabel, listenBuyerOrders } from "../lib/deliveryCloud";
+import {
+  canPlaceVoiceCall,
+  deliveryTrackLabel,
+  listenBuyerOrders,
+} from "../lib/deliveryCloud";
 import { getFirebaseDb } from "../lib/firebase";
 import { formatTsh } from "../lib/format";
 import { formatTzPhoneDisplay } from "../lib/phone";
 import { useI18n } from "../store/i18n";
+import { useVoiceCall } from "../components/CallSessionProvider";
 import {
   clearLocalOrders,
   getLocalOrders,
@@ -46,6 +51,7 @@ function mergeOrders(local: Order[], remote: Order[]): Order[] {
 export function OrdersPage() {
   const { user } = useAuth();
   const { t, lang } = useI18n();
+  const { startCall } = useVoiceCall();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -80,6 +86,9 @@ export function OrdersPage() {
                   deliveryPhone: m.deliveryPhone,
                   deliveryStatus: m.deliveryStatus,
                   riderName: m.riderName,
+                  riderId: m.riderId,
+                  callStatus: m.callStatus,
+                  callInitiatedBy: m.callInitiatedBy,
                 });
               }
               return [...map.values()].sort((a, b) =>
@@ -197,6 +206,47 @@ export function OrdersPage() {
               {o.riderName}
             </p>
           )}
+
+          {o.fulfillment === "delivery" &&
+            canPlaceVoiceCall(o) &&
+            o.deliveryStatus !== "delivered" && (
+              <button
+                type="button"
+                className="btn ghost"
+                style={{ marginTop: 12 }}
+                onClick={() => {
+                  void startCall({
+                    orderId: o.id,
+                    buyerUid: user?.uid ?? "",
+                    buyerName: user?.displayName || "Buyer",
+                    sellerIds: [],
+                    shopIds: o.shopIds ?? [],
+                    listingIds: o.listingIds,
+                    items: [],
+                    totalTzs: o.totalTzs,
+                    fulfillment: "delivery",
+                    deliveryAddress: o.deliveryAddress ?? "",
+                    deliveryPhone: o.deliveryPhone ?? "",
+                    deliveryLat: null,
+                    deliveryLng: null,
+                    deliveryStatus: o.deliveryStatus ?? "assigned",
+                    riderId: o.riderId ?? null,
+                    riderName: o.riderName ?? null,
+                    riderAuthUid: null,
+                    riderAssignedAt: null,
+                    pickedUpAt: null,
+                    deliveredAt: null,
+                    createdAt: o.createdAt,
+                    paidAt: o.paidAt,
+                    callStatus: o.callStatus ?? "idle",
+                    callInitiatedBy: o.callInitiatedBy ?? null,
+                    callStartedAt: null,
+                  });
+                }}
+              >
+                {t("callRider")}
+              </button>
+            )}
 
           {o.deliveryPhone && (
             <p className="hint">

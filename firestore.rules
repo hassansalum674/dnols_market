@@ -38,6 +38,17 @@ service cloud.firestore {
         );
     }
 
+    function callStatusOk() {
+      return !('callStatus' in request.resource.data)
+        || request.resource.data.callStatus in ['idle', 'calling', 'in_call', 'ended'];
+    }
+
+    function callInitiatorOk() {
+      return !('callInitiatedBy' in request.resource.data)
+        || request.resource.data.callInitiatedBy == null
+        || request.resource.data.callInitiatedBy is string;
+    }
+
     match /users/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
       match /orders/{orderId} {
@@ -81,7 +92,9 @@ service cloud.firestore {
           request.resource.data.buyerUid == request.auth.uid ||
           request.auth.uid in request.resource.data.sellerIds
         );
-      allow update: if isOrderParty() || isAssignedRider();
+      allow update: if (isOrderParty() || isAssignedRider())
+        && callStatusOk()
+        && callInitiatorOk();
     }
   }
 }
