@@ -26,7 +26,9 @@ import {
   formatTzPhoneDisplay,
   isValidTzPhone,
   normalizeTzPhone,
+  TZ_PHONE_HINT,
 } from "../lib/phone";
+import { pushAccountNow } from "../lib/accountCloud";
 import { useAuth } from "../store/auth";
 import { useCart } from "../store/cart";
 import { useCheckoutSheet } from "../store/checkoutSheet";
@@ -148,7 +150,7 @@ export function CheckoutSheet() {
       return;
     }
     if (!isValidTzPhone(phone)) {
-      setErr("Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).");
+      setErr(`Enter a valid Tanzania mobile money number (${TZ_PHONE_HINT}).`);
       return;
     }
     if (!fulfillment) {
@@ -160,8 +162,8 @@ export function CheckoutSheet() {
     if (!isValidTzPhone(deliveryRaw)) {
       setErr(
         fulfillment === "pickup"
-          ? "Enter a valid contact number (+255 7XX XXX XXX)."
-          : "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+          ? `Enter a valid contact number (${TZ_PHONE_HINT}).`
+          : `Enter a valid delivery contact number (${TZ_PHONE_HINT}).`,
       );
       return;
     }
@@ -205,6 +207,7 @@ export function CheckoutSheet() {
       setBillingCards(loadBillingCards(user.uid));
       markPaid(paid.listingIds, paid.accessToken || "paid");
       saveLocalOrder(paid);
+      void pushAccountNow(user.uid);
       clear();
       setOrder(paid);
       setStep("success");
@@ -488,7 +491,7 @@ export function CheckoutSheet() {
                     id="sheet-delivery-address"
                     className="sheet-field fulfillment-address"
                     rows={2}
-                    placeholder=""
+                    placeholder="Street, area, landmark — e.g. Msimbazi St, Kariakoo"
                     value={deliveryAddress}
                     onChange={(e) => {
                       setDeliveryAddress(e.target.value);
@@ -499,54 +502,79 @@ export function CheckoutSheet() {
               )}
             </section>
 
-            {billingCards.length > 0 && (
-              <section className="uc-panel" aria-label="Saved billing cards">
-                <div className="uc-panel-head">
-                  <h2 className="uc-panel-label">Saved wallets</h2>
-                </div>
-                <p className="hint billing-cards-hint">
-                  Tap a card to charge that number — no need to retype it each time.
-                </p>
-                <div className="billing-cards-row">
-                  {billingCards.map((card) => (
-                    <BillingCardTile
-                      key={card.id}
-                      card={card}
-                      selected={selectedCardId === card.id}
-                      compact
-                      onSelect={() => applyBillingCard(card)}
-                    />
-                  ))}
-                </div>
-                {selectedCardId && (
+            <section className="uc-panel pay-panel" aria-label="Pay">
+              <h2 className="uc-panel-label">Pay with</h2>
+              <div className="pay-methods" role="group" aria-label="Payment wallet">
+                {PAY_METHODS.map((m) => (
                   <button
+                    key={m.id}
                     type="button"
-                    className="uc-use-saved"
+                    className={`pay-method ${method === m.id ? "on" : ""}`}
                     onClick={() => {
                       setSelectedCardId(null);
+                      setMethod(m.id);
                       setErr(null);
                     }}
                   >
-                    Enter a different number
+                    <span
+                      className="pay-method-mark"
+                      style={{ background: m.accent }}
+                      aria-hidden
+                    >
+                      {m.label.charAt(0)}
+                    </span>
+                    <span className="pay-method-name">{m.label}</span>
+                    <span className="pay-method-net">{m.network}</span>
                   </button>
-                )}
-              </section>
-            )}
-
-            <section className="uc-panel">
-              <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Mobile money</h2>
+                ))}
               </div>
+              <p className="hint">{selectedMethod.stkHint}</p>
+
+              {billingCards.length > 0 && (
+                <div className="pay-saved" aria-label="Saved billing cards">
+                  <p className="hint billing-cards-hint">
+                    Tap a saved wallet to fill the number.
+                  </p>
+                  <div className="billing-cards-row">
+                    {billingCards.map((card) => (
+                      <BillingCardTile
+                        key={card.id}
+                        card={card}
+                        selected={selectedCardId === card.id}
+                        compact
+                        onSelect={() => applyBillingCard(card)}
+                      />
+                    ))}
+                  </div>
+                  {selectedCardId && (
+                    <button
+                      type="button"
+                      className="uc-use-saved"
+                      onClick={() => {
+                        setSelectedCardId(null);
+                        setErr(null);
+                      }}
+                    >
+                      Enter a different number
+                    </button>
+                  )}
+                </div>
+              )}
+
               <label className="field-label" htmlFor="sheet-charge-phone">
-                Number to charge
+                Mobile number
               </label>
+              <p className="hint pay-hint">
+                The {selectedMethod.label} PIN prompt is sent here. The stall
+                can call the same number. Tanzania mobiles start with 6 or 7.
+              </p>
               <input
                 id="sheet-charge-phone"
                 className="sheet-field"
                 type="tel"
                 inputMode="tel"
                 autoComplete="tel"
-                placeholder="+255 7XX XXX XXX"
+                placeholder={TZ_PHONE_HINT}
                 value={phone}
                 onChange={(e) => {
                   setSelectedCardId(null);
@@ -555,19 +583,15 @@ export function CheckoutSheet() {
                   setErr(null);
                 }}
               />
-            </section>
-
-            <section className="uc-panel">
-              <div className="uc-panel-head">
-                <h2 className="uc-panel-label">
-                  {fulfillment === "pickup" ? "Contact number" : "Delivery contact"}
-                </h2>
-              </div>
-              <p className="hint delivery-contact-note">
-                {fulfillment === "pickup"
-                  ? "We may call this number if the stall needs to reach you."
-                  : "Dnols will call this number when your order is on the way. We share it with the seller through Dnols only."}
-              </p>
+              {savedPhone && savedPhone !== phone && (
+                <button
+                  type="button"
+                  className="uc-use-saved"
+                  onClick={() => setPhone(savedPhone)}
+                >
+                  Use saved number · {formatTzPhoneDisplay(savedPhone)}
+                </button>
+              )}
 
               <label className="checkout-toggle">
                 <input
@@ -584,22 +608,28 @@ export function CheckoutSheet() {
                 <span>
                   {fulfillment === "pickup"
                     ? "Use a different contact number"
-                    : "Use a different number to receive delivery"}
+                    : "Use a different number for delivery"}
                 </span>
               </label>
-
-              {useCustomDelivery ? (
+              {useCustomDelivery && (
                 <>
                   <label className="field-label" htmlFor="sheet-delivery-phone">
-                    Delivery phone number
+                    {fulfillment === "pickup"
+                      ? "Contact number"
+                      : "Delivery contact"}
                   </label>
+                  <p className="hint delivery-contact-note">
+                    {fulfillment === "pickup"
+                      ? "We may call this number if the stall needs to reach you."
+                      : "Dnols will call this number when your order is on the way."}
+                  </p>
                   <input
                     id="sheet-delivery-phone"
                     className="sheet-field"
                     type="tel"
                     inputMode="tel"
                     autoComplete="tel"
-                    placeholder="+255 7XX XXX XXX"
+                    placeholder={TZ_PHONE_HINT}
                     value={deliveryPhone}
                     onChange={(e) => {
                       setDeliveryPhone(e.target.value);
@@ -607,76 +637,23 @@ export function CheckoutSheet() {
                     }}
                   />
                 </>
-              ) : (
-                <p className="uc-panel-strong">
-                  {displayPhone || "Same as mobile money number above"}
-                </p>
               )}
             </section>
 
-            <section className="uc-panel">
-              <div className="uc-panel-head">
-                <h2 className="uc-panel-label">Payment wallet</h2>
-                <button type="button" className="uc-edit" onClick={goBack}>
-                  Change
-                </button>
-              </div>
-
-              <div className="uc-wallets">
-                {PAY_METHODS.map((m) => (
-                  <button
-                    key={m.id}
-                    type="button"
-                    className={`uc-wallet ${method === m.id ? "on" : ""}`}
-                    onClick={() => {
-                      setSelectedCardId(null);
-                      setMethod(m.id);
-                    }}
-                  >
-                    <span
-                      className="uc-pay-mark"
-                      style={{ background: m.accent }}
-                      aria-hidden
-                    >
-                      {m.label.charAt(0)}
-                    </span>
-                    <div className="uc-wallet-text">
-                      <p className="uc-panel-strong">{m.label}</p>
-                      <p className="muted">{m.network}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {savedPhone && savedPhone !== phone && (
-                <button
-                  type="button"
-                  className="uc-use-saved"
-                  onClick={() => setPhone(savedPhone)}
-                >
-                  Use saved number · {formatTzPhoneDisplay(savedPhone)}
-                </button>
-              )}
-
-              <p className="hint">{selectedMethod.stkHint}</p>
-            </section>
-
-            <section className="uc-panel uc-panel--compact">
-              <div className="uc-totals-row">
+            <div className="pay-footer">
+              <div className="uc-totals-row uc-totals-total">
                 <span>Total</span>
                 <span className="price">{formatTsh(totalTzs)}</span>
               </div>
-            </section>
-
-            {err && <p className="err">{err}</p>}
-
-            <button
-              type="button"
-              className="btn checkout-sheet-continue"
-              onClick={() => void startPayment()}
-            >
-              Continue
-            </button>
+              {err && <p className="err">{err}</p>}
+              <button
+                type="button"
+                className="btn checkout-sheet-continue"
+                onClick={() => void startPayment()}
+              >
+                Pay {formatTsh(totalTzs)}
+              </button>
+            </div>
           </>
         )}
 

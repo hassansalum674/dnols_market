@@ -9,6 +9,7 @@ import {
   formatTzPhoneDisplay,
   isValidTzPhone,
   normalizeTzPhone,
+  TZ_PHONE_HINT,
 } from "../lib/phone";
 import { loadProfile, saveProfile } from "../lib/profile";
 import { userDisplayName, userInitial } from "../lib/userDisplay";
@@ -267,6 +268,7 @@ export function EditProfilePage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 autoComplete="tel"
+                placeholder={TZ_PHONE_HINT}
               />
               {phone.trim() && isValidTzPhone(phone) && (
                 <p className="hint">{formatTzPhoneDisplay(phone)}</p>

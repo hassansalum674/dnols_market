@@ -46,9 +46,10 @@ const EN = {
   stallsMayUse:
     "Stalls may use your name and number after you pay — for pickup at Kariakoo or delivery to your location.",
   mobileNumber: "Mobile number",
-  phoneInvalid: "Enter a Tanzania mobile number.",
+  phoneInvalid: "Enter a Tanzania mobile starting with 6 or 7.",
   nameShort: "Enter your name (at least 2 letters).",
-  usedAtCheckout: "Used at checkout for mobile money and delivery.",
+  usedAtCheckout:
+    "Tanzania mobiles start with 6 or 7. Used at checkout for mobile money and delivery.",
   saveProfile: "Save profile",
   saving: "Saving…",
   saveFailed: "Could not save your profile.",
@@ -145,9 +146,10 @@ const SW: typeof EN = {
   stallsMayUse:
     "Baada ya kulipa, duka linaweza kutumia jina na namba yako — kuchukua Kariakoo au kufikishwa.",
   mobileNumber: "Namba ya simu",
-  phoneInvalid: "Andika namba ya simu ya Tanzania.",
+  phoneInvalid: "Andika namba ya simu ya Tanzania inayoanza 6 au 7.",
   nameShort: "Andika jina lako (herufi 2 au zaidi).",
-  usedAtCheckout: "Inatumika kulipia na kujifungulia bidhaa.",
+  usedAtCheckout:
+    "Namba za Tanzania zinaanza 6 au 7. Inatumika kulipia na kujifungulia bidhaa.",
   saveProfile: "Hifadhi akaunti",
   saving: "Inahifadhi…",
   saveFailed: "Akaunti haikuweza kuhifadhiwa.",

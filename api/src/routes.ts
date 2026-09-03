@@ -35,7 +35,7 @@ function normalizeTzPhone(raw: string): string | null {
           ? `+255${phoneDigits}`
           : raw.trim();
   const phoneCheck = normalized.replace(/\D/g, "");
-  if (!/^2557\d{8}$/.test(phoneCheck)) return null;
+  if (!/^255[67]\d{8}$/.test(phoneCheck)) return null;
   return normalized;
 }
 
@@ -252,7 +252,7 @@ export function registerRoutes(
     if (!normalized) {
       return reply.code(400).send({
         error: "bad_phone",
-        message: "Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).",
+        message: "Enter a valid Tanzania mobile number (+255 6XX or 7XX XXX XXX).",
       });
     }
     const fulfillment =
@@ -264,8 +264,8 @@ export function registerRoutes(
         error: "bad_delivery_phone",
         message:
           fulfillment === "pickup"
-            ? "Enter a valid contact number (+255 7XX XXX XXX)."
-            : "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+            ? "Enter a valid contact number (+255 6XX or 7XX XXX XXX)."
+            : "Enter a valid delivery contact number (+255 6XX or 7XX XXX XXX).",
       });
     }
     const deliveryAddress = String(body.deliveryAddress ?? "").trim();

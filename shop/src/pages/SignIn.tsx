@@ -79,7 +79,7 @@ export function SignInPage() {
             className="field"
             type="tel"
             inputMode="tel"
-            placeholder="+255 7XX XXX XXX"
+            placeholder="+255 6XX or 7XX XXX XXX"
             value={phone}
             onChange={(e) => {
               setPhone(e.target.value);

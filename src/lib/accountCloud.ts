@@ -18,7 +18,7 @@ import {
   type PayMethod,
 } from "./checkout";
 import { notifyAvatarChange } from "./avatar";
-import { getFirebaseDb } from "./firebase";
+import { getFirebaseDb, initFirebase } from "./firebase";
 import { loadProfile, saveProfile, type UserProfile } from "./profile";
 import {
   emitAccountSync,
@@ -240,19 +240,41 @@ function stampless(data: BuyerCloud | undefined): string {
   return JSON.stringify(rest);
 }
 
+async function writeOrderDocs(
+  db: Firestore,
+  uid: string,
+  orders: unknown[],
+) {
+  for (const row of orders) {
+    if (!row || typeof row !== "object") continue;
+    const id = (row as { id?: unknown }).id;
+    if (typeof id !== "string" || !id) continue;
+    await setDoc(doc(db, "users", uid, "orders", id), compact(row));
+  }
+}
+
 async function writeCloud(db: Firestore, uid: string, data: BuyerCloud) {
   const payload = compact(data);
   lastSent = stampless(payload);
   await setDoc(doc(db, "users", uid), payload);
+  try {
+    await writeOrderDocs(db, uid, payload.orders ?? []);
+  } catch (e) {
+    console.warn("Dnols could not save orders to the cloud", e);
+  }
 }
 
 export async function pushAccountNow(uid: string) {
+  await initFirebase();
   const db = getFirebaseDb();
-  if (!db) return;
+  if (!db) {
+    console.warn("Dnols cloud sync skipped: Firestore is not ready");
+    return;
+  }
   try {
     await writeCloud(db, uid, collectBuyer(uid));
-  } catch {
-    /* Firestore may not be enabled yet */
+  } catch (e) {
+    console.warn("Dnols could not save account data to the cloud", e);
   }
 }
 
@@ -270,8 +292,10 @@ export async function startAccountSync(uid: string) {
   setAccountPush(() => {
     if (activeUid) pushSoon(activeUid);
   });
+  await initFirebase();
   const db = getFirebaseDb();
   if (!db) {
+    console.warn("Dnols cloud sync skipped: Firestore is not ready");
     emitAccountSync();
     return;
   }
@@ -284,7 +308,8 @@ export async function startAccountSync(uid: string) {
       : local;
     applyBuyer(uid, merged);
     await writeCloud(db, uid, merged);
-  } catch {
+  } catch (e) {
+    console.warn("Dnols could not load account data from the cloud", e);
     emitAccountSync();
     return;
   }
