@@ -11,6 +11,7 @@ import { installChunkReloadGuard } from "./lib/chunkReload";
 import { initPwaInstall } from "./lib/pwaInstall";
 import { initSettings } from "./store/settings";
 import "./styles.css";
+import "./rider-ui.css";
 
 initSettings();
 initPwaInstall();

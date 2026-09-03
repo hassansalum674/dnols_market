@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useVoiceCall } from "../components/CallSessionProvider";
 import {
   canPlaceVoiceCall,
+  firstNameOf,
   googleMapsUrl,
   listenOrder,
   markDelivered,
@@ -15,12 +16,14 @@ import { useI18n } from "../store/i18n";
 
 export function ActiveDeliveryPage() {
   const { orderId = "" } = useParams();
+  const navigate = useNavigate();
   const { rider } = useAuth();
   const { t } = useI18n();
   const { startCall } = useVoiceCall();
   const [order, setOrder] = useState<MarketOrderDoc | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [doneMsg, setDoneMsg] = useState(false);
 
   useEffect(() => {
     const db = getFirebaseDb();
@@ -49,6 +52,8 @@ export function ActiveDeliveryPage() {
     setErr(null);
     try {
       await markDelivered(db, order.orderId, rider?.riderId ?? order.riderId);
+      setDoneMsg(true);
+      window.setTimeout(() => navigate("/", { replace: true }), 1500);
     } catch (e) {
       setErr(e instanceof Error ? e.message : t("updating"));
     } finally {
@@ -58,77 +63,98 @@ export function ActiveDeliveryPage() {
 
   if (!order) {
     return (
-      <div className="page stall-page">
-        <Link to="/" className="back-link">
-          ← {t("back")}
+      <div className="rider-page">
+        <Link to="/" className="rider-back" aria-label={t("back")}>
+          ←
         </Link>
-        <p className="muted">{t("updating")}</p>
+        <p className="rider-meta">{t("verifying")}</p>
       </div>
     );
   }
 
   const maps = googleMapsUrl(order);
   const showCall = canPlaceVoiceCall(order);
+  const isAssigned = order.deliveryStatus === "assigned";
+  const isDelivered = order.deliveryStatus === "delivered";
+  const orderLabel = order.orderId.slice(-6).toUpperCase();
 
   return (
-    <div className="page stall-page">
-      <Link to="/" className="back-link">
-        ← {t("back")}
-      </Link>
-      <h1 className="stall-page-title">{t("activeDelivery")}</h1>
+    <div className="rider-page">
+      <div className="rider-active-head">
+        <Link to="/" className="rider-back" aria-label={t("back")}>
+          ←
+        </Link>
+        <h1 className="rider-active-title">
+          {t("orderNum")} {orderLabel}
+        </h1>
+      </div>
 
-      <section className="card" style={{ marginBottom: 16 }}>
-        <p className="lbl">{t("buyer")}</p>
-        <p className="uc-panel-strong">{order.buyerName}</p>
-        <p className="lbl">{t("address")}</p>
-        <p>{order.deliveryAddress || "Kariakoo"}</p>
-        <a className="btn ghost" href={maps} target="_blank" rel="noreferrer">
-          {t("openMaps")}
-        </a>
-      </section>
+      <p className="rider-section-label">{t("buyer")}</p>
+      <p className="rider-hero-name">{firstNameOf(order.buyerName, t("buyer"))}</p>
+      <p className="rider-hero-address">{order.deliveryAddress || "Kariakoo, Dar es Salaam"}</p>
 
-      <section className="card" style={{ marginBottom: 16 }}>
-        <p className="lbl">{t("items")}</p>
-        <ul>
-          {order.items.map((item, i) => (
-            <li key={`${item.title}-${i}`}>
-              {item.title} × {item.qty}
-            </li>
-          ))}
-        </ul>
-      </section>
+      <a
+        className="rider-btn rider-btn--primary"
+        href={maps}
+        target="_blank"
+        rel="noreferrer"
+      >
+        📍 {t("openMaps")}
+      </a>
 
-      {order.deliveryStatus !== "delivered" && (
-        <div className="btn-row" style={{ flexDirection: "column", gap: 8 }}>
-          {order.deliveryStatus === "assigned" && (
-            <button className="btn" disabled={busy} onClick={() => void pickup()}>
-              {busy ? t("updating") : t("pickedUp")}
-            </button>
-          )}
-          {(order.deliveryStatus === "assigned" ||
-            order.deliveryStatus === "picked_up") && (
-            <button
-              className="btn"
-              disabled={busy}
-              onClick={() => void delivered()}
-            >
-              {busy ? t("updating") : t("delivered")}
-            </button>
-          )}
+      <p className="rider-section-label" style={{ marginTop: 24 }}>
+        {t("items")}
+      </p>
+      <ul className="rider-items">
+        {order.items.map((item, i) => (
+          <li key={`${item.title}-${i}`}>
+            {item.title}
+            {item.qty > 1 ? ` × ${item.qty}` : ""}
+          </li>
+        ))}
+      </ul>
+
+      {doneMsg && <p className="rider-ok">{t("deliveredConfirm")}</p>}
+
+      {!isDelivered && (
+        <div className="rider-btn-stack">
           {showCall && (
             <button
               type="button"
-              className="btn ghost"
+              className="rider-btn rider-btn--primary"
+              disabled={busy}
               onClick={() => void startCall(order)}
             >
-              {t("callBuyer")}
+              📞 {t("callBuyer")}
             </button>
+          )}
+          {isAssigned && (
+            <button
+              type="button"
+              className="rider-btn rider-btn--yellow"
+              disabled={busy}
+              onClick={() => void pickup()}
+            >
+              {busy ? t("updating") : t("pickedUpBtn")}
+            </button>
+          )}
+          <button
+            type="button"
+            className="rider-btn rider-btn--green"
+            disabled={busy || isAssigned}
+            onClick={() => void delivered()}
+          >
+            {busy ? t("updating") : t("deliveredBtn")}
+          </button>
+          {isAssigned && (
+            <p className="rider-meta" style={{ textAlign: "center", margin: 0 }}>
+              {t("deliverAfterPickup")}
+            </p>
           )}
         </div>
       )}
-      {order.deliveryStatus === "delivered" && (
-        <p className="hint">{t("deliveryComplete")}</p>
-      )}
+
+      {isDelivered && <p className="rider-ok">{t("deliveryComplete")}</p>}
       {err && <p className="err">{err}</p>}
     </div>
   );

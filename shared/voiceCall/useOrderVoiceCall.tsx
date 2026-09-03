@@ -33,6 +33,8 @@ export type VoiceCallLabels = {
   decline: string;
   mute: string;
   unmute: string;
+  speaker: string;
+  speakerOff: string;
   end: string;
   callEnded: string;
   micDenied: string;
@@ -77,6 +79,7 @@ export function useOrderVoiceCall(opts: {
   liveRef.current = live;
 
   const [muted, setMuted] = useState(false);
+  const [speakerOn, setSpeakerOn] = useState(true);
   const [durationSec, setDurationSec] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [farewell, setFarewell] = useState(false);
@@ -125,6 +128,7 @@ export function useOrderVoiceCall(opts: {
         setFarewell(false);
         setError(null);
         setMuted(false);
+        setSpeakerOn(true);
         setDurationSec(0);
         setBusyOrderId(null);
         endingRef.current = false;
@@ -164,8 +168,9 @@ export function useOrderVoiceCall(opts: {
       sessionRef.current = session;
       joinedOrderRef.current = order.orderId;
       if (muted) await session.setMuted(true);
+      await session.setSpeaker(speakerOn);
     },
-    [apiBase, db, getIdToken, hangup, muted, myUid],
+    [apiBase, db, getIdToken, hangup, muted, myUid, speakerOn],
   );
 
   const startCall = useCallback(
@@ -294,6 +299,16 @@ export function useOrderVoiceCall(opts: {
     }
   }, [muted]);
 
+  const toggleSpeaker = useCallback(async () => {
+    const next = !speakerOn;
+    setSpeakerOn(next);
+    try {
+      await sessionRef.current?.setSpeaker(next);
+    } catch {
+      setSpeakerOn(!next);
+    }
+  }, [speakerOn]);
+
   let phase: VoiceCallPhase | null = null;
   if (farewell) phase = "ended";
   else if (live?.callStatus === "in_call") phase = "in_call";
@@ -311,10 +326,24 @@ export function useOrderVoiceCall(opts: {
   } else if (phase === "outgoing") {
     subtitle = labels.calling;
   } else if (phase === "in_call") {
-    subtitle = `${labels.inCall} · ${formatCallClock(durationSec)}`;
+    subtitle = labels.inCall;
   } else if (phase === "ended") {
     subtitle = error || labels.callEnded;
   }
+
+  const orderShort = orderForUi
+    ? orderForUi.orderId.slice(-6).toUpperCase()
+    : "";
+  if (phase === "incoming" && orderShort) {
+    subtitle = `${subtitle} · #${orderShort}`;
+  } else if ((phase === "outgoing" || phase === "in_call") && orderShort) {
+    subtitle = `${role === "buyer" ? labels.incomingRider : labels.incomingBuyer} · #${orderShort}`;
+  }
+
+  const timer =
+    phase === "in_call" || phase === "outgoing"
+      ? formatCallClock(durationSec)
+      : undefined;
 
   const overlay = (
     <VoiceCallOverlay
@@ -322,18 +351,23 @@ export function useOrderVoiceCall(opts: {
       phase={phase ?? "ended"}
       peerName={peer}
       subtitle={subtitle}
+      timer={timer}
       muted={muted}
+      speakerOn={speakerOn}
       error={phase === "ended" ? null : error}
       labels={{
         accept: labels.accept,
         decline: labels.decline,
         mute: labels.mute,
         unmute: labels.unmute,
+        speaker: labels.speaker,
+        speakerOff: labels.speakerOff,
         end: labels.end,
       }}
       onAccept={() => void accept()}
       onDecline={() => void hangup("decline", orderForUi?.orderId)}
       onToggleMute={() => void toggleMute()}
+      onToggleSpeaker={() => void toggleSpeaker()}
       onEnd={() => void hangup("end", orderForUi?.orderId)}
     />
   );

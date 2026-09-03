@@ -14,6 +14,12 @@ const ActiveDeliveryPage = lazy(() =>
     default: m.ActiveDeliveryPage,
   })),
 );
+const HistoryPage = lazy(() =>
+  import("./pages/History").then((m) => ({ default: m.HistoryPage })),
+);
+const ProfilePage = lazy(() =>
+  import("./pages/Profile").then((m) => ({ default: m.ProfilePage })),
+);
 
 const router = createBrowserRouter([
   {
@@ -22,6 +28,8 @@ const router = createBrowserRouter([
     errorElement: <AppErrorPage />,
     children: [
       { index: true, element: <DeliveriesPage /> },
+      { path: "history", element: <HistoryPage /> },
+      { path: "profile", element: <ProfilePage /> },
       { path: "delivery/:orderId", element: <ActiveDeliveryPage /> },
       { path: "*", element: <Navigate to="/" replace /> },
     ],

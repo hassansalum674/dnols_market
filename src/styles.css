@@ -4178,3 +4178,70 @@ img {
   background: var(--white);
   color: var(--black);
 }
+
+.voice-call-overlay--v2 {
+  background: #1a1a1a;
+  z-index: 80;
+}
+
+.voice-call-overlay--v2 .voice-call-avatar {
+  width: 96px;
+  height: 96px;
+  font-size: 2.5rem;
+  background: #1a73e8;
+}
+
+.voice-call-overlay--v2 .voice-call-name {
+  color: #fff;
+  font-size: 1.75rem;
+}
+
+.voice-call-overlay--v2 .voice-call-sub {
+  color: #aaa;
+  font-size: 0.9375rem;
+  margin: 0 0 8px;
+}
+
+.voice-call-overlay--v2 .voice-call-timer {
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 300;
+  font-variant-numeric: tabular-nums;
+  margin: 16px 0 32px;
+}
+
+.voice-call-overlay--v2 .voice-call-err {
+  color: #ea4335;
+  text-align: center;
+  padding: 0 24px;
+}
+
+.voice-call-overlay--v2 .voice-call-round.speaker {
+  background: #444;
+  color: #fff;
+}
+
+.voice-call-overlay--v2 .voice-call-round.speaker.on {
+  background: #1a73e8;
+}
+
+.voice-call-end-main {
+  display: block;
+  width: min(280px, 80vw);
+  margin: 24px auto 0;
+  padding: 16px 32px;
+  border: none;
+  border-radius: 999px;
+  background: #ea4335;
+  color: #fff;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.voice-call-order-btn {
+  background: #1a73e8 !important;
+  color: #fff !important;
+  font-weight: 700;
+  min-height: 48px;
+}
