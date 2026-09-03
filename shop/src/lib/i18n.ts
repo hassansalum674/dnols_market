@@ -53,6 +53,7 @@ const EN = {
   becomeASeller: "Become a seller",
   signIn: "Sign in",
   loading: "Loading…",
+  splashMotto: "Pickups and deliveries",
   myShop: "My shop",
   sellHeroTitle: "Sell from Kariakoo",
   sellHeroSub:
@@ -150,6 +151,7 @@ const SW: typeof EN = {
   becomeASeller: "Kuwa muuzaji",
   signIn: "Ingia",
   loading: "Inapakia…",
+  splashMotto: "Kuchukua na kupeleka",
   myShop: "Duka langu",
   sellHeroTitle: "Uza kutoka Kariakoo",
   sellHeroSub:

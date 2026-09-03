@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-
-const LINE = "What's near you";
+import { useI18n } from "../store/i18n";
 
 const NOLS = ["n", "o", "l", "s"] as const;
 
@@ -32,6 +31,7 @@ function SplashLockup() {
 }
 
 export function Splash({ onDone }: { onDone: () => void }) {
+  const { t } = useI18n();
   const light = document.documentElement.dataset.theme !== "dark";
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function Splash({ onDone }: { onDone: () => void }) {
       aria-label="Welcome to Dnols"
     >
       <SplashLockup />
-      <p className="splash-line">{LINE}</p>
+      <p className="splash-line">{t("splashMotto")}</p>
     </div>
   );
 }
