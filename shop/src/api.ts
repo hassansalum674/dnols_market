@@ -116,10 +116,29 @@ export async function processPhoto(
 export async function inviteRiderSms(
   phone: string,
   idToken: string,
-): Promise<{ ok: boolean; sms: string }> {
+  name = "",
+): Promise<{ ok: boolean; sms: string; rider?: RiderDoc }> {
   return json("/riders/invite", {
     method: "POST",
     headers: { Authorization: `Bearer ${idToken}` },
-    body: JSON.stringify({ phone }),
+    body: JSON.stringify({ phone, name }),
+  });
+}
+
+export type RiderDoc = {
+  riderId: string;
+  name: string;
+  phone: string;
+  authUid: string | null;
+  linkedSellers: string[];
+  status: "idle" | "busy";
+  createdAt: string;
+};
+
+export async function listMyRiders(
+  idToken: string,
+): Promise<{ ok: boolean; riders: RiderDoc[] }> {
+  return json("/riders/mine", {
+    headers: { Authorization: `Bearer ${idToken}` },
   });
 }

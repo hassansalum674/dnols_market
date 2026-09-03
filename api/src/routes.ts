@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { PLACE_ID, type Category, type Sort } from "./types.js";
 import { store } from "./store.js";
 import { registerCallRoutes } from "./call.js";
-import { sendRiderInviteSms, verifyFirebaseBearer, claimRiderPhone, bearerToken } from "./riders.js";
+import { sendRiderInviteSms, verifyFirebaseBearer, claimRiderPhone, inviteRiderForSeller, listSellerRiders, bearerToken } from "./riders.js";
 import {
   distanceToShop,
   toDirections,
@@ -471,7 +471,37 @@ export function registerRoutes(
     return { placeId: PLACE_ID, items };
   });
 
+  app.get("/riders/mine", async (req, reply) => {
+    const token = bearerToken(req.headers.authorization);
+    if (!token) {
+      return reply.code(401).send({
+        error: "auth_required",
+        message: "Sign in to view riders.",
+      });
+    }
+    const caller = await verifyFirebaseBearer(req.headers.authorization);
+    if (!caller) {
+      return reply.code(401).send({
+        error: "auth_required",
+        message: "Sign in to view riders.",
+      });
+    }
+    const result = await listSellerRiders(token, caller.uid);
+    if (!result.ok) {
+      const code = result.error === "permission_denied" ? 403 : 503;
+      return reply.code(code).send({ error: result.error });
+    }
+    return { ok: true, riders: result.riders };
+  });
+
   app.post("/riders/invite", async (req, reply) => {
+    const token = bearerToken(req.headers.authorization);
+    if (!token) {
+      return reply.code(401).send({
+        error: "auth_required",
+        message: "Sign in to invite a rider.",
+      });
+    }
     const caller = await verifyFirebaseBearer(req.headers.authorization);
     if (!caller) {
       return reply.code(401).send({
@@ -480,11 +510,19 @@ export function registerRoutes(
       });
     }
     const body = (req.body ?? {}) as { phone?: string; name?: string };
+    const phone = String(body.phone ?? "");
+    const name = String(body.name ?? "");
     try {
-      const sms = await sendRiderInviteSms(String(body.phone ?? ""));
+      const saved = await inviteRiderForSeller(token, caller.uid, phone, name);
+      if (!saved.ok) {
+        const code = saved.error === "permission_denied" ? 403 : 503;
+        return reply.code(code).send({ error: saved.error });
+      }
+      const sms = await sendRiderInviteSms(phone);
       return {
         ok: true,
         sellerId: caller.uid,
+        rider: saved.rider,
         sms: sms.sent ? "sent" : sms.skipped ?? "skipped",
         downloadUrl: "https://rider.dnols.com",
       };
