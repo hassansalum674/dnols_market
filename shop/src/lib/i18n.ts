@@ -102,6 +102,14 @@ const EN = {
   continuePhone: "Continue with phone",
   newSeller: "New seller?",
   startOnboarding: "Start onboarding",
+  descAssistTitle: "AI writing help",
+  descAssistHint:
+    "Write a few words. We ask short choices so we understand, then fill a full listing.",
+  descAssistPlaceholder: "e.g. blue kitenge maxi, wrap waist",
+  descAssistAsk: "Ask me choices",
+  descAssistSkip: "Skip remaining — write from this",
+  descAssistPreview: "Suggested description",
+  descAssistUse: "Use this description",
 };
 
 const SW: typeof EN = {
@@ -204,6 +212,14 @@ const SW: typeof EN = {
   continuePhone: "Endelea na simu",
   newSeller: "Muuzaji mpya?",
   startOnboarding: "Anza usajili",
+  descAssistTitle: "Msaada wa AI kuandika",
+  descAssistHint:
+    "Andika maneno machache. Tunauliza chaguo fupi tuelewe, kisha tunaandika maelezo kamili.",
+  descAssistPlaceholder: "mf. kitenge ya bluu, kiuno kinazunguka",
+  descAssistAsk: "Niulize chaguo",
+  descAssistSkip: "Ruka mengine — andika kutoka hapa",
+  descAssistPreview: "Maelezo yaliyopendekezwa",
+  descAssistUse: "Tumia maelezo haya",
 };
 
 export type ShopMsg = keyof typeof EN;
