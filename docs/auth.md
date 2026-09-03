@@ -5,7 +5,9 @@ Buyer (**dnols.com**) and seller (**seller portal**) apps use **Firebase Authent
 - **Google**
 - **Email / password** (sign up, sign in, forgot password)
 
-The **rider** app (**rider.dnols.com**) uses **Phone** sign-in (SMS OTP). Enable **Phone** under Authentication → Sign-in method, and add `rider.dnols.com` to authorized domains.
+The **rider** app (**rider.dnols.com**) signs in with **Google** on the Firebase **Spark** plan. After Google, the rider enters the phone number the seller saved under My Riders.
+
+Firebase **Phone** SMS OTP needs the **Blaze** plan. Spark cannot send those texts. Keep Google enabled for riders until you upgrade.
 
 > Apple Sign-in can be added later if needed.
 
@@ -70,6 +72,8 @@ Apple Sign-in is not wired up in the app right now. To enable later: Firebase Co
 
 - `dnols.com`
 - `shop.dnols.com` (seller portal — hosting only; not shown in public legal pages)
+- `rider.dnols.com`
+- `rider-seller.web.app`
 - `localhost` (already there for local dev)
 
 ## Environment files
