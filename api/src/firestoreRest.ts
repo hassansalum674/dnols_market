@@ -201,24 +201,10 @@ export async function querySellerRiderIds(
       structuredQuery: {
         from: [{ collectionId: "seller_riders" }],
         where: {
-          compositeFilter: {
-            op: "AND",
-            filters: [
-              {
-                fieldFilter: {
-                  field: { fieldPath: "sellerId" },
-                  op: "EQUAL",
-                  value: { stringValue: sellerId },
-                },
-              },
-              {
-                fieldFilter: {
-                  field: { fieldPath: "active" },
-                  op: "EQUAL",
-                  value: { booleanValue: true },
-                },
-              },
-            ],
+          fieldFilter: {
+            field: { fieldPath: "sellerId" },
+            op: "EQUAL",
+            value: { stringValue: sellerId },
           },
         },
       },
@@ -231,6 +217,8 @@ export async function querySellerRiderIds(
   return rows
     .map((row) => {
       const fields = row.document?.fields ?? {};
+      const active = unwrap(fields.active);
+      if (active === false) return "";
       const id = unwrap(fields.riderId);
       return typeof id === "string" ? id : "";
     })

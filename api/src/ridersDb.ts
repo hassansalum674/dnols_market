@@ -10,9 +10,46 @@ import {
 
 export type RidersDbError = "permission_denied" | "firestore_unavailable";
 
-function restErr(e: unknown): RidersDbError {
+export class RiderDbException extends Error {
+  readonly code: RidersDbError;
+
+  constructor(code: RidersDbError, message?: string) {
+    super(message?.trim() || code);
+    this.name = "RiderDbException";
+    this.code = code;
+  }
+}
+
+function restErr(e: unknown): RiderDbException {
   const status = (e as { status?: number }).status;
-  return status === 403 ? "permission_denied" : "firestore_unavailable";
+  return new RiderDbException(
+    status === 403 ? "permission_denied" : "firestore_unavailable",
+    e instanceof Error ? e.message : undefined,
+  );
+}
+
+function adminErr(e: unknown): RiderDbException {
+  const err = e as { code?: string | number; message?: string };
+  const code = err.code;
+  if (
+    code === 7 ||
+    code === "permission-denied" ||
+    code === "PERMISSION_DENIED"
+  ) {
+    return new RiderDbException("permission_denied", err.message);
+  }
+  return new RiderDbException(
+    "firestore_unavailable",
+    err.message ?? (e instanceof Error ? e.message : String(e)),
+  );
+}
+
+async function withAdmin<T>(fn: () => Promise<T>): Promise<T> {
+  try {
+    return await fn();
+  } catch (e) {
+    throw adminErr(e);
+  }
 }
 
 export function ridersUseAdmin(): boolean {
@@ -25,9 +62,11 @@ export async function readRiderFields(
 ): Promise<Record<string, unknown> | null> {
   const admin = getAdminDb();
   if (admin) {
-    const snap = await admin.collection("riders").doc(riderId).get();
-    if (!snap.exists) return null;
-    return snap.data() as Record<string, unknown>;
+    return withAdmin(async () => {
+      const snap = await admin.collection("riders").doc(riderId).get();
+      if (!snap.exists) return null;
+      return snap.data() as Record<string, unknown>;
+    });
   }
   try {
     return await fetchRiderDocFields(idToken, riderId);
@@ -44,12 +83,14 @@ export async function writeRiderDoc(
 ): Promise<void> {
   const admin = getAdminDb();
   if (admin) {
-    const ref = admin.collection("riders").doc(riderId);
-    if (create) {
-      await ref.set(data);
-    } else {
-      await ref.set(data, { merge: true });
-    }
+    await withAdmin(async () => {
+      const ref = admin.collection("riders").doc(riderId);
+      if (create) {
+        await ref.set(data);
+      } else {
+        await ref.set(data, { merge: true });
+      }
+    });
     return;
   }
   try {
@@ -63,29 +104,31 @@ export async function writeRiderDoc(
   }
 }
 
-/** Create rider doc, or patch if it already exists (REST cannot read missing docs). */
+/** Create rider doc, or patch if it already exists. Returns the stored fields. */
 export async function upsertRiderForInvite(
   idToken: string,
   riderId: string,
   createData: Record<string, unknown>,
   patchIfExists: (existing: Record<string, unknown>) => Record<string, unknown>,
-): Promise<void> {
+): Promise<Record<string, unknown>> {
   const admin = getAdminDb();
   if (admin) {
-    const ref = admin.collection("riders").doc(riderId);
-    const snap = await ref.get();
-    if (snap.exists) {
-      await ref.set(patchIfExists(snap.data() as Record<string, unknown>), {
-        merge: true,
-      });
-    } else {
+    return withAdmin(async () => {
+      const ref = admin.collection("riders").doc(riderId);
+      const snap = await ref.get();
+      if (snap.exists) {
+        const patch = patchIfExists(snap.data() as Record<string, unknown>);
+        await ref.set(patch, { merge: true });
+        return { ...(snap.data() as Record<string, unknown>), ...patch };
+      }
       await ref.set(createData);
-    }
-    return;
+      return createData;
+    });
   }
 
   try {
     await createRiderDoc(idToken, riderId, createData);
+    return createData;
   } catch (e) {
     const status = (e as { status?: number }).status;
     if (status !== 409) throw restErr(e);
@@ -96,7 +139,9 @@ export async function upsertRiderForInvite(
       throw restErr(readErr);
     }
     if (!existing) throw restErr(e);
-    await patchRiderDoc(idToken, riderId, patchIfExists(existing));
+    const patch = patchIfExists(existing);
+    await patchRiderDoc(idToken, riderId, patch);
+    return { ...existing, ...patch };
   }
 }
 
@@ -107,7 +152,9 @@ export async function writeSellerRiderLink(
 ): Promise<void> {
   const admin = getAdminDb();
   if (admin) {
-    await admin.collection("seller_riders").doc(linkId).set(data, { merge: true });
+    await withAdmin(async () => {
+      await admin.collection("seller_riders").doc(linkId).set(data, { merge: true });
+    });
     return;
   }
   try {
@@ -123,17 +170,20 @@ export async function listSellerRiderDocIds(
 ): Promise<string[]> {
   const admin = getAdminDb();
   if (admin) {
-    const snap = await admin
-      .collection("seller_riders")
-      .where("sellerId", "==", sellerId)
-      .where("active", "==", true)
-      .get();
-    return snap.docs
-      .map((doc) => {
-        const riderId = doc.data().riderId;
-        return typeof riderId === "string" ? riderId : "";
-      })
-      .filter(Boolean);
+    return withAdmin(async () => {
+      // Single-field query — no composite index required.
+      const snap = await admin
+        .collection("seller_riders")
+        .where("sellerId", "==", sellerId)
+        .get();
+      return snap.docs
+        .filter((doc) => doc.data().active !== false)
+        .map((doc) => {
+          const riderId = doc.data().riderId;
+          return typeof riderId === "string" ? riderId : "";
+        })
+        .filter(Boolean);
+    });
   }
   try {
     return await querySellerRiderIds(idToken, sellerId);
@@ -149,7 +199,9 @@ export async function setRiderAuthUid(
 ): Promise<void> {
   const admin = getAdminDb();
   if (admin) {
-    await admin.collection("riders").doc(riderId).update({ authUid });
+    await withAdmin(async () => {
+      await admin.collection("riders").doc(riderId).update({ authUid });
+    });
     return;
   }
   try {

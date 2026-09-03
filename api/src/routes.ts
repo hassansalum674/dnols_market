@@ -494,7 +494,7 @@ export function registerRoutes(
       const code = result.error === "permission_denied" ? 403 : 503;
       return reply.code(code).send({
         error: result.error,
-        message: riderFirestoreHint(result.error),
+        message: riderFirestoreHint(result.error, result.detail),
       });
     }
     return { ok: true, riders: result.riders };
@@ -524,7 +524,7 @@ export function registerRoutes(
         const code = saved.error === "permission_denied" ? 403 : 503;
         return reply.code(code).send({
           error: saved.error,
-          message: riderFirestoreHint(saved.error),
+          message: riderFirestoreHint(saved.error, saved.detail),
         });
       }
       const sms = await sendRiderInviteSms(phone);
@@ -571,7 +571,7 @@ export function registerRoutes(
         const hint =
           result.error === "permission_denied" ||
           result.error === "firestore_unavailable"
-            ? riderFirestoreHint(result.error)
+            ? riderFirestoreHint(result.error, result.detail)
             : undefined;
         return reply.code(code).send({
           error: result.error,

@@ -5,6 +5,7 @@ import {
   setRiderAuthUid,
   upsertRiderForInvite,
   writeSellerRiderLink,
+  RiderDbException,
   type RidersDbError,
 } from "./ridersDb.js";
 
@@ -158,16 +159,30 @@ function rulesHint(): string {
   return " Deploy firestore.rules in Firebase Console, or set FIREBASE_SERVICE_ACCOUNT_JSON on the API.";
 }
 
-export function riderFirestoreHint(error: RidersDbError): string {
+export function riderFirestoreHint(error: RidersDbError, detail?: string): string {
+  if (detail && detail !== error) return detail;
   if (error === "permission_denied") {
     return `Firestore security rules are blocking rider access.${rulesHint()}`;
   }
   return "Could not reach Firestore. Check API env and network.";
 }
 
+function dbFailure(error: unknown): { error: RidersDbError; detail?: string } {
+  if (error instanceof RiderDbException) {
+    return { error: error.code, detail: error.message };
+  }
+  if (error === "permission_denied" || error === "firestore_unavailable") {
+    return { error: error };
+  }
+  return {
+    error: "firestore_unavailable",
+    detail: error instanceof Error ? error.message : String(error),
+  };
+}
+
 export type ClaimRiderResult =
   | { ok: true; rider: ApiRiderRow }
-  | { ok: false; error: "not_linked" | "rider_taken" | RidersDbError };
+  | { ok: false; error: "not_linked" | "rider_taken" | RidersDbError; detail?: string };
 
 export async function claimRiderPhone(
   idToken: string,
@@ -183,7 +198,8 @@ export async function claimRiderPhone(
   try {
     fields = await readRiderFields(idToken, riderId);
   } catch (error) {
-    return { ok: false, error: error as RidersDbError };
+    const fail = dbFailure(error);
+    return { ok: false, error: fail.error, detail: fail.detail };
   }
   if (!fields) return { ok: false, error: "not_linked" };
   const cur = parseRiderRow(riderId, fields);
@@ -194,14 +210,15 @@ export async function claimRiderPhone(
   try {
     await setRiderAuthUid(idToken, riderId, uid);
   } catch (error) {
-    return { ok: false, error: error as RidersDbError };
+    const fail = dbFailure(error);
+    return { ok: false, error: fail.error, detail: fail.detail };
   }
   return { ok: true, rider: { ...cur, authUid: uid } };
 }
 
 export type InviteRiderResult =
   | { ok: true; rider: ApiRiderRow }
-  | { ok: false; error: RidersDbError };
+  | { ok: false; error: RidersDbError; detail?: string };
 
 export async function inviteRiderForSeller(
   idToken: string,
@@ -226,29 +243,33 @@ export async function inviteRiderForSeller(
     createdAt: at,
   };
   try {
-    await upsertRiderForInvite(idToken, riderId, createPayload, (existing) => {
-      const cur = parseRiderRow(riderId, existing);
-      const linkedSellers = [...new Set([...cur.linkedSellers, sellerId])];
-      const nextName = cur.name && cur.name !== "Rider" ? cur.name : display;
-      return { linkedSellers, name: nextName };
-    });
+    const riderData = await upsertRiderForInvite(
+      idToken,
+      riderId,
+      createPayload,
+      (existing) => {
+        const cur = parseRiderRow(riderId, existing);
+        const linkedSellers = [...new Set([...cur.linkedSellers, sellerId])];
+        const nextName = cur.name && cur.name !== "Rider" ? cur.name : display;
+        return { linkedSellers, name: nextName };
+      },
+    );
     await writeSellerRiderLink(idToken, sellerRiderDocId(sellerId, riderId), {
       sellerId,
       riderId,
       addedAt: at,
       active: true,
     });
-    const fields = await readRiderFields(idToken, riderId);
-    if (!fields) return { ok: false, error: "firestore_unavailable" };
-    return { ok: true, rider: parseRiderRow(riderId, fields) };
+    return { ok: true, rider: parseRiderRow(riderId, riderData) };
   } catch (error) {
-    return { ok: false, error: error as RidersDbError };
+    const fail = dbFailure(error);
+    return { ok: false, error: fail.error, detail: fail.detail };
   }
 }
 
 export type ListSellerRidersResult =
   | { ok: true; riders: ApiRiderRow[] }
-  | { ok: false; error: RidersDbError };
+  | { ok: false; error: RidersDbError; detail?: string };
 
 export async function listSellerRiders(
   idToken: string,
@@ -264,7 +285,8 @@ export async function listSellerRiders(
     riders.sort((a, b) => a.name.localeCompare(b.name));
     return { ok: true, riders };
   } catch (error) {
-    return { ok: false, error: error as RidersDbError };
+    const fail = dbFailure(error);
+    return { ok: false, error: fail.error, detail: fail.detail };
   }
 }
 
