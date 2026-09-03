@@ -3,7 +3,7 @@ import {
   ridersUseAdmin,
   listSellerRiderDocIds,
   setRiderAuthUid,
-  writeRiderDoc,
+  upsertRiderForInvite,
   writeSellerRiderLink,
   type RidersDbError,
 } from "./ridersDb.js";
@@ -216,34 +216,22 @@ export async function inviteRiderForSeller(
   const riderId = riderIdFromPhone(phone);
   const display = name.trim() || "Rider";
   const at = new Date().toISOString();
+  const createPayload = {
+    riderId,
+    name: display,
+    phone,
+    authUid: null,
+    linkedSellers: [sellerId],
+    status: "idle" as const,
+    createdAt: at,
+  };
   try {
-    const existing = await readRiderFields(idToken, riderId);
-    if (existing) {
+    await upsertRiderForInvite(idToken, riderId, createPayload, (existing) => {
       const cur = parseRiderRow(riderId, existing);
       const linkedSellers = [...new Set([...cur.linkedSellers, sellerId])];
       const nextName = cur.name && cur.name !== "Rider" ? cur.name : display;
-      await writeRiderDoc(
-        idToken,
-        riderId,
-        { linkedSellers, name: nextName },
-        false,
-      );
-    } else {
-      await writeRiderDoc(
-        idToken,
-        riderId,
-        {
-          riderId,
-          name: display,
-          phone,
-          authUid: null,
-          linkedSellers: [sellerId],
-          status: "idle",
-          createdAt: at,
-        },
-        true,
-      );
-    }
+      return { linkedSellers, name: nextName };
+    });
     await writeSellerRiderLink(idToken, sellerRiderDocId(sellerId, riderId), {
       sellerId,
       riderId,

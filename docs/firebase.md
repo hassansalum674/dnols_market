@@ -183,6 +183,8 @@ Your live rules may still be only `users` and `sellers`. Either:
 
 Check API is ready: `curl https://dnols-83jj.onrender.com/health` should include `"firestoreAdmin":true` after step 2.
 
+If the key is set but `firestoreAdmin` is **missing** from `/health`, Render is still running an **old deploy** — open Render → **Manual Deploy** → deploy latest `main`. If `firestoreAdmin` is `false`, check `firestoreAdminError` in the same response (usually invalid JSON in the env var).
+
 ---
 
 ## Troubleshooting
