@@ -72,7 +72,13 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            urlPattern: ({ url }) => url.pathname.startsWith("/__/"),
+            urlPattern: ({ url }) =>
+              url.hostname.endsWith("googleapis.com") ||
+              url.hostname.endsWith("gstatic.com") ||
+              url.hostname.endsWith("google.com") ||
+              url.hostname.endsWith("firebaseio.com") ||
+              url.hostname.endsWith("cloudfunctions.net") ||
+              url.pathname.startsWith("/__/"),
             handler: "NetworkOnly",
           },
           {

@@ -4,16 +4,19 @@ import {
   collection,
   doc,
   getDoc,
-  getFirestore,
+  getDocFromServer,
   onSnapshot,
   query,
   serverTimestamp,
   setDoc,
   updateDoc,
   where,
+  type DocumentReference,
+  type DocumentSnapshot,
   type Firestore,
   type Unsubscribe,
 } from "firebase/firestore";
+import { openFirestore } from "./firestoreInit";
 import {
   ORDERS_COL,
   RIDERS_COL,
@@ -38,7 +41,7 @@ import {
  */
 function bindDb(passed: Firestore): Firestore {
   try {
-    if (getApps().length > 0) return getFirestore(getApp());
+    if (getApps().length > 0) return openFirestore(getApp());
     const options = (
       passed as unknown as { app?: { options?: { apiKey?: string; projectId?: string } } }
     ).app?.options;
@@ -48,12 +51,61 @@ function bindDb(passed: Firestore): Firestore {
       typeof options.projectId === "string"
     ) {
       initializeApp(options);
-      return getFirestore(getApp());
+      return openFirestore(getApp());
     }
   } catch {
     /* use the instance the caller already created */
   }
   return passed;
+}
+
+export const CLOUD_OFFLINE = "CLOUD_OFFLINE";
+export const CLOUD_DENIED = "CLOUD_DENIED";
+export const CLOUD_TAKEN = "CLOUD_TAKEN";
+
+export type RiderCloudErrorKey = "cloudOffline" | "cloudDenied" | "cloudTaken";
+
+function errorText(e: unknown): string {
+  if (e instanceof Error) return `${e.name} ${e.message} ${"code" in e ? String((e as { code?: string }).code) : ""}`;
+  return String(e);
+}
+
+export function riderCloudErrorKey(e: unknown): RiderCloudErrorKey | null {
+  const text = errorText(e);
+  if (text.includes(CLOUD_OFFLINE) || /client is offline|unavailable|Failed to get document because/i.test(text)) {
+    return "cloudOffline";
+  }
+  if (text.includes(CLOUD_DENIED) || /permission-denied|PERMISSION_DENIED/i.test(text)) {
+    return "cloudDenied";
+  }
+  if (text.includes(CLOUD_TAKEN)) return "cloudTaken";
+  return null;
+}
+
+function throwMapped(e: unknown): never {
+  const key = riderCloudErrorKey(e);
+  if (key === "cloudDenied") throw new Error(CLOUD_DENIED);
+  if (key === "cloudTaken") throw new Error(CLOUD_TAKEN);
+  if (key === "cloudOffline") throw new Error(CLOUD_OFFLINE);
+  throw e instanceof Error ? e : new Error(CLOUD_OFFLINE);
+}
+
+function isOfflineish(e: unknown): boolean {
+  return riderCloudErrorKey(e) === "cloudOffline";
+}
+
+async function getDocRetry(ref: DocumentReference): Promise<DocumentSnapshot> {
+  let last: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return attempt === 0 ? await getDoc(ref) : await getDocFromServer(ref);
+    } catch (e) {
+      last = e;
+      if (!isOfflineish(e) || attempt === 2) throwMapped(e);
+      await new Promise((r) => setTimeout(r, 350 * (attempt + 1)));
+    }
+  }
+  throwMapped(last);
 }
 
 export type {
@@ -527,9 +579,23 @@ export async function claimRiderByPhone(
   const phone = toE164(phoneRaw);
   const riderId = riderIdFromPhone(phone);
   const ref = doc(db, RIDERS_COL, riderId);
-  const snap = await getDoc(ref);
+  let snap: DocumentSnapshot;
+  try {
+    snap = await getDocRetry(ref);
+  } catch (e) {
+    throwMapped(e);
+  }
   if (!snap.exists()) return null;
-  await updateDoc(ref, { authUid });
+  const cur = parseRider(riderId, snap.data() as Record<string, unknown>);
+  if (cur.authUid === authUid) return cur;
+  if (cur.authUid && cur.authUid !== authUid) {
+    throw new Error(CLOUD_TAKEN);
+  }
+  try {
+    await updateDoc(ref, { authUid });
+  } catch (e) {
+    throwMapped(e);
+  }
   return parseRider(riderId, { ...snap.data(), authUid } as Record<string, unknown>);
 }
 
@@ -540,7 +606,7 @@ export async function loadRiderByAuthUid(
 ): Promise<RiderDoc | null> {
   db = bindDb(db);
   if (phoneRaw && isValidTzMobile(phoneRaw)) {
-    const byPhone = await getDoc(doc(db, RIDERS_COL, riderIdFromPhone(phoneRaw)));
+    const byPhone = await getDocRetry(doc(db, RIDERS_COL, riderIdFromPhone(phoneRaw)));
     if (byPhone.exists()) {
       const rider = parseRider(byPhone.id, byPhone.data() as Record<string, unknown>);
       if (!rider.authUid) {

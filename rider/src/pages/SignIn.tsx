@@ -1,57 +1,14 @@
 import { useState } from "react";
-import type { ConfirmationResult } from "firebase/auth";
 import { BrandLogo } from "../components/BrandLogo";
-import {
-  confirmRiderOtp,
-  consumeAuthError,
-  riderAuthErrorCode,
-  sendRiderOtp,
-} from "../lib/authActions";
-import { formatTzMobile, isValidTzMobile } from "../lib/deliveryCloud";
+import { consumeAuthError, riderAuthErrorCode } from "../lib/authActions";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
-import type { RiderMsg } from "../lib/i18n";
-
-function localDigits(raw: string): string {
-  const d = raw.replace(/\D/g, "");
-  if (d.startsWith("255")) return d.slice(3);
-  if (d.startsWith("0")) return d.slice(1);
-  return d;
-}
-
-function errorKey(code: string, message = ""): RiderMsg {
-  if (
-    code === "auth/billing-not-enabled" ||
-    /billing|blaze|spark/i.test(`${code} ${message}`)
-  ) {
-    return "sparkSms";
-  }
-  if (code === "auth/invalid-phone-number") return "badPhone";
-  if (code === "auth/too-many-requests") return "tooManyCodes";
-  if (code === "auth/unauthorized-domain") return "authDomain";
-  if (code === "auth/operation-not-allowed") return "phoneAuthOff";
-  if (
-    code === "auth/captcha-check-failed" ||
-    code === "auth/invalid-app-credential" ||
-    code === "auth/admin-restricted-operation"
-  ) {
-    return "captchaFailed";
-  }
-  return "signInFailed";
-}
 
 export function SignInPage() {
-  const { t, tf, lang, setLang } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const { signInWithGoogle, configured, loading } = useAuth();
-  const [phone, setPhone] = useState("");
-  const [code, setCode] = useState("");
-  const [confirm, setConfirm] = useState<ConfirmationResult | null>(null);
-  const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
   const [err, setErr] = useState<string | null>(() => consumeAuthError());
-
-  const digits = localDigits(phone);
-  const phoneReady = isValidTzMobile(phone);
 
   async function google() {
     setErr(null);
@@ -66,37 +23,6 @@ export function SignInPage() {
       else setErr(e instanceof Error ? e.message : t("signInFailed"));
     } finally {
       setGoogleBusy(false);
-    }
-  }
-
-  async function send() {
-    setErr(null);
-    if (!phoneReady) {
-      setErr(t("badPhone"));
-      return;
-    }
-    setBusy(true);
-    try {
-      const next = await sendRiderOtp(phone);
-      setConfirm(next);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "";
-      setErr(t(errorKey(riderAuthErrorCode(e), msg)));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function verify() {
-    if (!confirm) return;
-    setErr(null);
-    setBusy(true);
-    try {
-      await confirmRiderOtp(confirm, code);
-    } catch {
-      setErr(t("badCode"));
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -151,64 +77,6 @@ export function SignInPage() {
           {googleBusy ? t("signingIn") : t("continueGoogle")}
         </button>
 
-        <p className="auth-divider">
-          <span>{t("orUsePhone")}</span>
-        </p>
-        <p className="hint">{t("sparkSms")}</p>
-
-        {!confirm ? (
-          <>
-            <label className="lbl" htmlFor="rider-phone">
-              {t("phoneNumber")}
-            </label>
-            <input
-              id="rider-phone"
-              className="field"
-              inputMode="tel"
-              autoComplete="tel"
-              placeholder={t("phoneHint")}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-            <p className="hint">
-              {digits.length === 0
-                ? t("phoneHint")
-                : phoneReady
-                  ? formatTzMobile(phone)
-                  : tf("phoneCount", { n: digits.length })}
-            </p>
-            <button className="btn" disabled={busy} onClick={() => void send()}>
-              {busy ? t("sendingCode") : t("sendCode")}
-            </button>
-          </>
-        ) : (
-          <>
-            <label className="lbl" htmlFor="rider-otp">
-              {t("otpLabel")}
-            </label>
-            <input
-              id="rider-otp"
-              className="field"
-              inputMode="numeric"
-              autoComplete="one-time-code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
-            <button className="btn" disabled={busy} onClick={() => void verify()}>
-              {busy ? t("verifying") : t("verify")}
-            </button>
-            <button
-              type="button"
-              className="btn ghost"
-              onClick={() => {
-                setConfirm(null);
-                setCode("");
-              }}
-            >
-              {t("changeNumber")}
-            </button>
-          </>
-        )}
         {err && <p className="err">{err}</p>}
       </div>
     </div>

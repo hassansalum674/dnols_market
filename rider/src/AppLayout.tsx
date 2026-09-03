@@ -39,7 +39,7 @@ export function AppLayout() {
   return (
     <>
       {splash && <Splash onDone={done} />}
-      <div className={`app-shell app-shell--stall${signedOut ? " rider-auth" : ""}`}>
+      <div className={`app-shell app-shell--rider${signedOut ? " rider-auth" : ""}`}>
         <div className="stall-main">
           {!signedOut && (
             <header className="header stall-header">

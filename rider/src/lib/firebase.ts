@@ -8,7 +8,8 @@ import {
   setPersistence,
   type Auth,
 } from "firebase/auth";
-import { getFirestore, type Firestore } from "firebase/firestore";
+import { type Firestore } from "firebase/firestore";
+import { openFirestore } from "../../../shared/firestoreInit";
 
 type FirebaseConfig = {
   apiKey: string;
@@ -64,7 +65,7 @@ export async function initFirebase(): Promise<boolean> {
 
     resolvedConfig = merged;
     app = getApps().length ? getApp() : initializeApp(merged);
-    db = getFirestore(app);
+    db = openFirestore(app);
     try {
       auth = initializeAuth(app, {
         persistence: [indexedDBLocalPersistence, browserLocalPersistence],

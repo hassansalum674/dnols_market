@@ -5,6 +5,7 @@ import {
   formatTzMobile,
   isValidTzMobile,
   listenRiderOrders,
+  riderCloudErrorKey,
   type MarketOrderDoc,
 } from "../lib/deliveryCloud";
 import { getFirebaseDb, initFirebase } from "../lib/firebase";
@@ -14,8 +15,8 @@ import { SignInPage } from "./SignIn";
 
 function LinkPhoneForm() {
   const { t, tf } = useI18n();
-  const { linkPhone } = useAuth();
-  const [phone, setPhone] = useState("");
+  const { linkPhone, user } = useAuth();
+  const [phone, setPhone] = useState(user?.phone ?? "");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const digits = phone.replace(/\D/g, "").replace(/^255/, "").replace(/^0/, "");
@@ -32,14 +33,15 @@ function LinkPhoneForm() {
       const ok = await linkPhone(phone);
       if (!ok) setErr(t("notLinked"));
     } catch (e) {
-      setErr(e instanceof Error ? e.message : t("notLinked"));
+      const key = riderCloudErrorKey(e);
+      setErr(key ? t(key) : t("cloudOffline"));
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="rider-signin-card" style={{ marginTop: 8 }}>
+    <div className="rider-signin-card rider-link-card">
       <p>{t("linkPhoneHint")}</p>
       <label className="lbl" htmlFor="link-phone">
         {t("phoneNumber")}
@@ -125,7 +127,9 @@ export function DeliveriesPage() {
       </header>
 
       {!rider ? (
-        <LinkPhoneForm />
+        <div className="rider-link-wrap">
+          <LinkPhoneForm />
+        </div>
       ) : orders.length === 0 ? (
         <div className="center-state">
           <p>{t("noDeliveries")}</p>
