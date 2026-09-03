@@ -8,6 +8,7 @@ import {
 } from "./pages/productRedirects";
 import { ShopProvider } from "./shopData";
 import { AuthProvider } from "./store/auth";
+import { InstallAppPrompt } from "./components/InstallApp";
 
 const SellLandingPage = lazy(() =>
   import("./pages/SellLanding").then((m) => ({ default: m.SellLandingPage })),
@@ -118,6 +119,7 @@ export default function App() {
   return (
     <AuthProvider>
       <ShopProvider>
+        <InstallAppPrompt />
         <RouterProvider router={router} />
       </ShopProvider>
     </AuthProvider>

@@ -226,7 +226,6 @@ export function HomePage() {
       <FilterSheet
         open={open}
         filters={draft}
-        count={listings?.length ?? 0}
         onClose={() => setOpen(false)}
         onChange={setDraft}
         onApply={() => setFilters(draft)}

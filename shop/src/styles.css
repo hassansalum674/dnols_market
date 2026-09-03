@@ -2047,3 +2047,7 @@ select.field {
   flex-shrink: 0;
   text-align: center;
 }
+
+.install-dismiss {
+  margin-top: 10px;
+}

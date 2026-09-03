@@ -8,9 +8,11 @@ import "@fontsource/inter/700.css";
 import App from "./App";
 import { registerPushStub } from "./api/client";
 import { initSettings } from "./store/settings";
+import { initPwaInstall } from "./lib/pwaInstall";
 import "./styles.css";
 
 initSettings();
+initPwaInstall();
 
 registerSW({ immediate: true });
 void registerPushStub();

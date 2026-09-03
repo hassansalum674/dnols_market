@@ -8,8 +8,10 @@ import "@fontsource/inter/700.css";
 import App from "./App";
 import { RoutePulse } from "./components/Splash";
 import { installChunkReloadGuard } from "./lib/chunkReload";
+import { initPwaInstall } from "./lib/pwaInstall";
 import "./styles.css";
 
+initPwaInstall();
 installChunkReloadGuard();
 
 registerSW({

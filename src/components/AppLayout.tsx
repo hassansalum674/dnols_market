@@ -6,6 +6,7 @@ import { HeaderSearch } from "./HeaderSearch";
 import { RoutePulse, Splash } from "./Splash";
 import { BuyerHeader, TabBar } from "./TabBar";
 import { CheckoutSheet } from "./CheckoutSheet";
+import { InstallAppPrompt } from "./InstallApp";
 import { SiteFooter } from "./SiteFooter";
 
 const SPLASH_KEY = "dnols.splash.session";
@@ -79,6 +80,7 @@ export function AppLayout() {
         {!legal && <TabBar />}
         {!shop && <SiteFooter />}
         <CheckoutSheet />
+        {!shop && <InstallAppPrompt ready={!splash} />}
         {!shop && (
           <p className="build-stamp" aria-hidden>
             build {typeof __BUILD_SHA__ !== "undefined" ? __BUILD_SHA__ : "dev"}

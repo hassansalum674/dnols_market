@@ -1,9 +1,9 @@
 import type { Category, ListingFilters, Sort } from "../types";
+import { useI18n } from "../store/i18n";
 
 type Props = {
   open: boolean;
   filters: ListingFilters;
-  count: number;
   onClose: () => void;
   onChange: (next: ListingFilters) => void;
   onApply: () => void;
@@ -32,11 +32,11 @@ const SORTS: { value: Sort; label: string }[] = [
 export function FilterSheet({
   open,
   filters,
-  count,
   onClose,
   onChange,
   onApply,
 }: Props) {
+  const { t } = useI18n();
   if (!open) return null;
 
   const set = (patch: Partial<ListingFilters>) =>
@@ -134,7 +134,7 @@ export function FilterSheet({
             onClose();
           }}
         >
-          Show {count} results
+          {t("apply")}
         </button>
       </div>
     </>

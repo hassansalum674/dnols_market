@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getHealth, getOrder, getPlaces } from "../api";
 import { BUYER_URL } from "../lib/urls";
+import { InstallAppSettings } from "../components/InstallApp";
 import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
 import { useShopData } from "../shopData";
 import type { Place, PayoutMock, ShopHours } from "../types";
@@ -143,6 +144,7 @@ export function ShopPage() {
             </div>
           ))}
         </section>
+        <InstallAppSettings />
       </div>
 
       <a className="buy-link" href={BUYER_URL} rel="noopener noreferrer">

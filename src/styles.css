@@ -1398,6 +1398,14 @@ img {
   border-radius: var(--radius);
 }
 
+.install-dismiss {
+  margin-top: 10px;
+}
+
+.install-sheet .section-desc {
+  margin: 0 0 8px;
+}
+
 .sheet h3 {
   margin: 0;
   font-size: 20px;
