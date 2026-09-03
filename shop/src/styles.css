@@ -1511,6 +1511,11 @@ label.lbl {
   grid-template-columns: repeat(2, 1fr);
 }
 
+/* Photos first on the phone so the AI can see them before the seller writes. */
+.product-form-commerce {
+  order: -1;
+}
+
 .photo-grid-add {
   display: flex;
   align-items: center;
@@ -1550,6 +1555,131 @@ label.lbl {
   margin-top: 0;
 }
 
+.desc-assist {
+  margin: 12px 0 4px;
+  padding: 12px;
+  border: 1px solid var(--faint);
+  border-radius: 10px;
+  background: var(--black);
+}
+
+.desc-assist-kicker {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+.desc-assist-hint {
+  margin: 0 0 8px;
+}
+
+.desc-assist-need-photo {
+  margin: 0 0 8px;
+}
+
+.desc-assist-photos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+}
+
+.desc-assist-photos img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--faint);
+  background: var(--surface);
+}
+
+.desc-assist-photos span {
+  font-size: 13px;
+  color: var(--muted, #8a93a6);
+}
+
+.desc-assist .field {
+  margin-bottom: 8px;
+}
+
+.desc-assist-go {
+  width: auto;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.desc-assist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.desc-assist-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 12px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.desc-assist-bubble {
+  max-width: 92%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.desc-assist-bubble.me {
+  align-self: flex-end;
+  background: var(--brand-soft);
+  border: 1px solid rgba(26, 111, 212, 0.25);
+}
+
+.desc-assist-bubble.ai {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--faint);
+}
+
+.desc-assist-prompt {
+  margin: 8px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.desc-assist-skip,
+.desc-assist-use {
+  margin-top: 4px;
+}
+
+.desc-assist-skip {
+  border: none;
+  background: transparent;
+  color: var(--blue);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 8px 0;
+  cursor: pointer;
+}
+
+.desc-assist-preview {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--faint);
+}
+
+.desc-assist-text {
+  margin: 8px 0 12px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
 @media (min-width: 768px) {
   .product-form-grid {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
@@ -1558,6 +1688,7 @@ label.lbl {
   }
 
   .product-form-commerce {
+    order: 0;
     position: sticky;
     top: 88px;
   }

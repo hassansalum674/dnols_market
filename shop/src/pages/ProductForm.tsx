@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { CharCount, RadioGroup, Toggle } from "../components/OnboardingLayout";
+import { DescriptionAssist } from "../components/DescriptionAssist";
 import { ProductPhotoUpload } from "../components/ProductPhotoUpload";
+import { DESC_MAX } from "../lib/describeAssist";
 import { isCdnPhoto } from "../lib/photoPipeline";
 import { PRODUCTS_PATH } from "../lib/productRoutes";
 import { formatTzsInput, parseTzsPrice } from "../lib/validation";
@@ -172,8 +174,8 @@ export function ProductFormPage() {
       setErr("Stock quantity is required.");
       return;
     }
-    if (product.description.length > 200) {
-      setErr("Description must be 200 characters or less.");
+    if (product.description.length > DESC_MAX) {
+      setErr(`Description must be ${DESC_MAX} characters or less.`);
       return;
     }
 
@@ -246,17 +248,25 @@ export function ProductFormPage() {
               />
 
               <label className="lbl" htmlFor="product-description">
-                Short description{" "}
-                <CharCount current={product.description.length} max={200} />
+                Description{" "}
+                <CharCount current={product.description.length} max={DESC_MAX} />
               </label>
               <textarea
                 id="product-description"
                 className="field"
                 value={product.description}
                 onChange={(e) => patch({ description: e.target.value })}
-                maxLength={210}
+                maxLength={DESC_MAX + 10}
                 placeholder="Material, fit, or key selling points buyers should know."
                 rows={4}
+              />
+              <DescriptionAssist
+                name={product.name}
+                category={product.category}
+                condition={product.condition}
+                variants={product.variants}
+                photos={product.photos}
+                onApply={(description) => patch({ description })}
               />
 
               <label className="lbl" htmlFor="product-sku">

@@ -102,6 +102,22 @@ const EN = {
   continuePhone: "Continue with phone",
   newSeller: "New seller?",
   startOnboarding: "Start onboarding",
+  descAssistTitle: "AI writing help",
+  descAssistHint:
+    "Add photos first. The AI looks at them and your note, then asks about this item — not a fixed form — and writes the listing.",
+  descAssistPlaceholder: "e.g. blue kitenge maxi, wrap waist — or just ask with photos",
+  descAssistPhotoOnly: "Look at the photos",
+  descAssistLooking: "The AI will look at these photos.",
+  descAssistNeedPhoto: "Add photos so the AI can see the item.",
+  descAssistAsk: "Ask the AI",
+  descAssistReply: "Send",
+  descAssistTypeAnswer: "Type your answer, or tap a choice above",
+  descAssistWriteNow: "Write the listing now",
+  descAssistThinking: "Thinking…",
+  descAssistAgain: "Start over",
+  descAssistFail: "Could not reach the AI. Try again.",
+  descAssistPreview: "Suggested description",
+  descAssistUse: "Use this description",
 };
 
 const SW: typeof EN = {
@@ -204,6 +220,22 @@ const SW: typeof EN = {
   continuePhone: "Endelea na simu",
   newSeller: "Muuzaji mpya?",
   startOnboarding: "Anza usajili",
+  descAssistTitle: "Msaada wa AI kuandika",
+  descAssistHint:
+    "Weka picha kwanza. AI inaangalia picha na maneno yako, kisha inauliza kuhusu bidhaa hii — si fomu ya kudumu — na inaandika maelezo.",
+  descAssistPlaceholder: "mf. kitenge ya bluu, kiuno kinazunguka — au uliza kwa picha tu",
+  descAssistPhotoOnly: "Angalia picha",
+  descAssistLooking: "AI itaangalia picha hizi.",
+  descAssistNeedPhoto: "Weka picha ili AI iona bidhaa.",
+  descAssistAsk: "Uliza AI",
+  descAssistReply: "Tuma",
+  descAssistTypeAnswer: "Andika jibu, au gusa chaguo hapo juu",
+  descAssistWriteNow: "Andika maelezo sasa",
+  descAssistThinking: "Inafikiri…",
+  descAssistAgain: "Anza upya",
+  descAssistFail: "AI haikufikiwa. Jaribu tena.",
+  descAssistPreview: "Maelezo yaliyopendekezwa",
+  descAssistUse: "Tumia maelezo haya",
 };
 
 export type ShopMsg = keyof typeof EN;
