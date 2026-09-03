@@ -2338,3 +2338,38 @@ select.field {
   background: var(--white);
   color: var(--black);
 }
+
+.rider-signin {
+  min-height: calc(100dvh - 24px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.rider-signin-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 24px 20px 28px;
+  background: var(--surface);
+  border: 1px solid var(--faint);
+  border-radius: 16px;
+}
+
+.rider-signin-card .stall-page-title {
+  margin-top: 16px;
+}
+
+.rider-signin-card .field,
+.rider-signin-card .btn {
+  margin-top: 8px;
+}
+
+.app-shell.rider-auth .stall-main-content {
+  padding: 0;
+}
+
+.app-shell.rider-auth .stall-page-wrap {
+  max-width: none;
+  margin: 0;
+}

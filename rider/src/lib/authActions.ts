@@ -110,4 +110,11 @@ export function subscribeAuth(
   return () => unsub();
 }
 
+export function riderAuthErrorCode(e: unknown): string {
+  if (e && typeof e === "object" && "code" in e) {
+    return String((e as { code: string }).code);
+  }
+  return "";
+}
+
 export { isFirebaseConfigured };

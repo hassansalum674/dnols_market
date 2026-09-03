@@ -70,6 +70,8 @@ Apple Sign-in is not wired up in the app right now. To enable later: Firebase Co
 
 - `dnols.com`
 - `shop.dnols.com` (seller portal — hosting only; not shown in public legal pages)
+- `rider.dnols.com`
+- `rider-seller.web.app`
 - `localhost` (already there for local dev)
 
 ## Environment files
