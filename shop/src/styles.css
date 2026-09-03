@@ -1581,8 +1581,40 @@ label.lbl {
   padding: 0 14px;
 }
 
-.desc-assist-qs {
-  margin-top: 12px;
+.desc-assist-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.desc-assist-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 12px;
+  max-height: 280px;
+  overflow: auto;
+}
+
+.desc-assist-bubble {
+  max-width: 92%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.desc-assist-bubble.me {
+  align-self: flex-end;
+  background: var(--brand-soft);
+  border: 1px solid rgba(26, 111, 212, 0.25);
+}
+
+.desc-assist-bubble.ai {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--faint);
 }
 
 .desc-assist-prompt {

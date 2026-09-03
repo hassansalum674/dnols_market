@@ -22,11 +22,13 @@ Add these on the **API Web Service** (not the shop/buyer frontends):
 | Key | Required | Description |
 |-----|----------|-------------|
 | `FAPIAPI_API_KEY` | Yes (cover photos) | FAPIhub API key from [fapihub.com](https://fapihub.com) |
+| `ANTHROPIC_API_KEY` | Yes (listing AI) | Claude key so sellers get live follow-up questions, not a fixed form |
 | `API_PUBLIC_URL` | Yes | `https://dnols-83jj.onrender.com` — used for CDN image URLs |
 | `CORS_ORIGIN` | Recommended | `*` or your frontend origins |
 | `RESEND_API_KEY` | Optional | Email (if you add transactional email) |
+| `OPENAI_API_KEY` or `GEMINI_API_KEY` | Optional | Used only if `ANTHROPIC_API_KEY` is not set |
 
-Do **not** put `FAPIAPI_API_KEY` in the buyer or shop PWA — it stays server-side only.
+Do **not** put `FAPIAPI_API_KEY` or `ANTHROPIC_API_KEY` in the buyer or shop PWA — they stay server-side only.
 
 ## Frontend builds
 

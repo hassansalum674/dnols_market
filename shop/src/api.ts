@@ -112,3 +112,25 @@ export async function processPhoto(
   }
   return body;
 }
+
+export type DescribeReply = {
+  done: boolean;
+  question?: string;
+  options?: string[];
+  description?: string;
+  provider: string;
+};
+
+export async function describeProduct(input: {
+  name?: string;
+  category?: string;
+  condition?: string;
+  variants?: string[];
+  language?: "en" | "sw";
+  messages: { role: "user" | "assistant"; content: string }[];
+}): Promise<DescribeReply> {
+  return json("/listings/describe", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}

@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import { PLACE_ID, type Category, type Sort } from "./types.js";
+import { describeConfigured, runDescribeChat } from "./describeChat.js";
 import { store } from "./store.js";
 import {
   distanceToShop,
@@ -466,5 +467,45 @@ export function registerRoutes(
         trendingScore: l.trendingScore,
       }));
     return { placeId: PLACE_ID, items };
+  });
+
+  app.get("/listings/describe", async () => describeConfigured());
+
+  app.post("/listings/describe", async (req, reply) => {
+    const body = (req.body ?? {}) as {
+      name?: string;
+      category?: string;
+      condition?: string;
+      variants?: unknown;
+      language?: string;
+      messages?: unknown;
+    };
+    const messages = Array.isArray(body.messages) ? body.messages : [];
+    try {
+      const result = await runDescribeChat({
+        name: String(body.name ?? "").slice(0, 120),
+        category: String(body.category ?? "").slice(0, 40),
+        condition: String(body.condition ?? "").slice(0, 40),
+        variants: Array.isArray(body.variants)
+          ? body.variants.map((v) => String(v).slice(0, 32)).slice(0, 12)
+          : [],
+        language: body.language === "sw" ? "sw" : "en",
+        messages: messages.map((m) => {
+          const row = m as { role?: unknown; content?: unknown };
+          return {
+            role: row.role === "assistant" ? "assistant" : "user",
+            content: String(row.content ?? ""),
+          };
+        }),
+      });
+      return result;
+    } catch (e) {
+      const status = (e as { status?: number }).status ?? 422;
+      const message = e instanceof Error ? e.message : "describe_failed";
+      return reply.code(status === 503 ? 503 : 422).send({
+        error: status === 503 ? "ai_not_configured" : "describe_failed",
+        message,
+      });
+    }
   });
 }
