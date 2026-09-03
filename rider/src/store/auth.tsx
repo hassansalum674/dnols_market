@@ -10,8 +10,10 @@ import {
 import {
   authSignOut,
   isFirebaseConfigured,
+  signInWithGoogle as persistGoogle,
   subscribeAuth,
   type AuthUser,
+  type GoogleSignInMethod,
 } from "../lib/authActions";
 import {
   claimRiderByPhone,
@@ -25,6 +27,8 @@ type AuthState = {
   rider: RiderDoc | null;
   loading: boolean;
   configured: boolean;
+  signInWithGoogle: () => Promise<GoogleSignInMethod>;
+  linkPhone: (phone: string) => Promise<boolean>;
   signOut: () => Promise<void>;
 };
 
@@ -61,6 +65,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user?.uid, user?.phone]);
 
+  const doGoogle = useCallback(async () => persistGoogle(), []);
+
+  const linkPhone = useCallback(
+    async (phone: string) => {
+      const db = getFirebaseDb();
+      if (!db || !user?.uid) return false;
+      const next = await claimRiderByPhone(db, user.uid, phone);
+      setRider(next);
+      return Boolean(next);
+    },
+    [user?.uid],
+  );
+
   const doSignOut = useCallback(async () => {
     await authSignOut();
     setUser(null);
@@ -73,9 +90,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       rider,
       loading,
       configured,
+      signInWithGoogle: doGoogle,
+      linkPhone,
       signOut: doSignOut,
     }),
-    [user, rider, loading, configured, doSignOut],
+    [user, rider, loading, configured, doGoogle, linkPhone, doSignOut],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

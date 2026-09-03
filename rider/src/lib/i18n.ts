@@ -4,7 +4,18 @@ const EN = {
   swahili: "Kiswahili",
   riderPortal: "Rider",
   signInTitle: "Rider sign-in",
-  signInHint: "Use the phone number the seller added you with.",
+  signInHint:
+    "On the Spark plan, sign in with Google. Then enter the phone number the seller added you with.",
+  continueGoogle: "Continue with Google",
+  signingIn: "Signing in…",
+  orUsePhone: "or SMS (needs Blaze)",
+  sparkSms:
+    "Firebase SMS does not work on the Spark plan. Use Google, then link your rider phone.",
+  googleAuthOff: "Turn on Google sign-in in Firebase Authentication.",
+  linkPhone: "Link this number",
+  linking: "Linking…",
+  linkPhoneHint:
+    "Enter the Tanzania number the seller used when they added you as a rider.",
   phoneNumber: "Phone number",
   phoneHint: "+255 6XX or 7XX XXX XXX",
   sendCode: "Send code",
@@ -63,7 +74,18 @@ const SW: typeof EN = {
   swahili: "Kiswahili",
   riderPortal: "Rider",
   signInTitle: "Ingia kama rider",
-  signInHint: "Tumia namba ya simu muuzaji aliyokuongeza nayo.",
+  signInHint:
+    "Katika mpango wa Spark, ingia na Google. Kisha andika namba ya simu muuzaji aliyokuongeza nayo.",
+  continueGoogle: "Endelea na Google",
+  signingIn: "Inaingia…",
+  orUsePhone: "au SMS (inahitaji Blaze)",
+  sparkSms:
+    "SMS ya Firebase haifanyi kazi kwenye Spark. Tumia Google, kisha unganisha namba ya rider.",
+  googleAuthOff: "Washa Google sign-in kwenye Firebase Authentication.",
+  linkPhone: "Unganisha namba hii",
+  linking: "Inaunganisha…",
+  linkPhoneHint:
+    "Andika namba ya Tanzania muuzaji aliyotumia alipokuongeza kama rider.",
   phoneNumber: "Namba ya simu",
   phoneHint: "+255 6XX au 7XX XXX XXX",
   sendCode: "Tuma namba",

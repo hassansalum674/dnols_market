@@ -1,7 +1,11 @@
 import {
+  GoogleAuthProvider,
   RecaptchaVerifier,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithPhoneNumber,
+  signInWithPopup,
+  signInWithRedirect,
   signOut,
   type ConfirmationResult,
   type User,
@@ -17,6 +21,10 @@ export type AuthUser = {
   phone: string | null;
   provider: string;
 };
+
+export type GoogleSignInMethod = "popup" | "redirect";
+
+const AUTH_ERR_KEY = "dnols.rider.auth.error";
 
 let verifier: RecaptchaVerifier | null = null;
 
@@ -39,6 +47,35 @@ function recaptchaHost(): HTMLElement {
     document.body.appendChild(el);
   }
   return el;
+}
+
+function authCode(e: unknown): string {
+  if (e && typeof e === "object" && "code" in e) {
+    return String((e as { code: string }).code);
+  }
+  return "";
+}
+
+export function riderAuthErrorCode(e: unknown): string {
+  return authCode(e);
+}
+
+export function consumeAuthError(): string | null {
+  try {
+    const v = sessionStorage.getItem(AUTH_ERR_KEY);
+    if (v) sessionStorage.removeItem(AUTH_ERR_KEY);
+    return v;
+  } catch {
+    return null;
+  }
+}
+
+function storeAuthError(message: string) {
+  try {
+    sessionStorage.setItem(AUTH_ERR_KEY, message);
+  } catch {
+    /* ignore */
+  }
 }
 
 async function requireAuth() {
@@ -71,6 +108,26 @@ export async function confirmRiderOtp(
   await confirmation.confirm(code.trim());
 }
 
+export async function signInWithGoogle(): Promise<GoogleSignInMethod> {
+  const auth = await requireAuth();
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
+  try {
+    await signInWithPopup(auth, provider);
+    return "popup";
+  } catch (e) {
+    const code = authCode(e);
+    if (
+      code !== "auth/popup-blocked" &&
+      code !== "auth/operation-not-supported-in-this-environment"
+    ) {
+      throw e;
+    }
+    await signInWithRedirect(auth, provider);
+    return "redirect";
+  }
+}
+
 export async function authSignOut(): Promise<void> {
   const auth = getFirebaseAuth();
   if (auth) await signOut(auth);
@@ -101,6 +158,12 @@ export function subscribeAuth(
       markReady();
       return;
     }
+    try {
+      const redirect = await getRedirectResult(auth);
+      if (redirect?.user) onUser(mapUser(redirect.user));
+    } catch (e) {
+      storeAuthError(e instanceof Error ? e.message : "Google sign-in failed");
+    }
     unsub = onAuthStateChanged(auth, (u) => {
       onUser(u ? mapUser(u) : null);
       markReady();
@@ -108,13 +171,6 @@ export function subscribeAuth(
   })();
 
   return () => unsub();
-}
-
-export function riderAuthErrorCode(e: unknown): string {
-  if (e && typeof e === "object" && "code" in e) {
-    return String((e as { code: string }).code);
-  }
-  return "";
 }
 
 export { isFirebaseConfigured };
