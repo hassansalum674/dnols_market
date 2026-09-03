@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -18,6 +19,7 @@ import { useOrderVoiceCall } from "../../shared/voiceCall/useOrderVoiceCall";
 
 type CallCtxValue = {
   startCall: (order: MarketOrderDoc) => Promise<void>;
+  startCallById: (orderId: string) => Promise<void>;
 };
 
 const CallCtx = createContext<CallCtxValue | null>(null);
@@ -25,7 +27,10 @@ const CallCtx = createContext<CallCtxValue | null>(null);
 export function useVoiceCall(): CallCtxValue {
   const ctx = useContext(CallCtx);
   if (!ctx) {
-    return { startCall: async () => undefined };
+    return {
+      startCall: async () => undefined,
+      startCallById: async () => undefined,
+    };
   }
   return ctx;
 }
@@ -78,7 +83,19 @@ export function CallSessionProvider({ children }: { children: ReactNode }) {
     labels,
   });
 
-  const value = useMemo(() => ({ startCall }), [startCall]);
+  const startCallById = useCallback(
+    async (orderId: string) => {
+      const order = orders.find((o) => o.orderId === orderId);
+      if (!order) return;
+      await startCall(order);
+    },
+    [orders, startCall],
+  );
+
+  const value = useMemo(
+    () => ({ startCall, startCallById }),
+    [startCall, startCallById],
+  );
 
   return (
     <CallCtx.Provider value={value}>

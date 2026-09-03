@@ -7,9 +7,12 @@ export type CallTokenResponse = {
 };
 
 export class CallApiError extends Error {
-  code: "delivered" | "forbidden" | "http";
+  code: "delivered" | "forbidden" | "http" | "not_configured";
 
-  constructor(code: "delivered" | "forbidden" | "http", message: string) {
+  constructor(
+    code: "delivered" | "forbidden" | "http" | "not_configured",
+    message: string,
+  ) {
     super(message);
     this.code = code;
     this.name = "CallApiError";
@@ -41,6 +44,12 @@ export async function fetchCallToken(opts: {
       throw new CallApiError("delivered", msg || "Delivery complete");
     }
     throw new CallApiError("forbidden", msg || "You cannot join this call.");
+  }
+  if (res.status === 503 && body.error === "agora_not_configured") {
+    throw new CallApiError(
+      "not_configured",
+      body.message || "Voice calling is not configured on the server.",
+    );
   }
   if (!res.ok || !body.token || !body.channel || !body.appId) {
     throw new CallApiError(

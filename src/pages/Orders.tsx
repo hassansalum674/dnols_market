@@ -51,7 +51,7 @@ function mergeOrders(local: Order[], remote: Order[]): Order[] {
 export function OrdersPage() {
   const { user } = useAuth();
   const { t, lang } = useI18n();
-  const { startCall } = useVoiceCall();
+  const { startCallById } = useVoiceCall();
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
@@ -215,33 +215,7 @@ export function OrdersPage() {
                 className="btn voice-call-order-btn"
                 style={{ marginTop: 12, width: "100%" }}
                 onClick={() => {
-                  void startCall({
-                    orderId: o.id,
-                    buyerUid: user?.uid ?? "",
-                    buyerName: user?.displayName || "Buyer",
-                    sellerIds: [],
-                    shopIds: o.shopIds ?? [],
-                    listingIds: o.listingIds,
-                    items: [],
-                    totalTzs: o.totalTzs,
-                    fulfillment: "delivery",
-                    deliveryAddress: o.deliveryAddress ?? "",
-                    deliveryPhone: o.deliveryPhone ?? "",
-                    deliveryLat: null,
-                    deliveryLng: null,
-                    deliveryStatus: o.deliveryStatus ?? "assigned",
-                    riderId: o.riderId ?? null,
-                    riderName: o.riderName ?? null,
-                    riderAuthUid: null,
-                    riderAssignedAt: null,
-                    pickedUpAt: null,
-                    deliveredAt: null,
-                    createdAt: o.createdAt,
-                    paidAt: o.paidAt,
-                    callStatus: o.callStatus ?? "idle",
-                    callInitiatedBy: o.callInitiatedBy ?? null,
-                    callStartedAt: null,
-                  });
+                  void startCallById(o.id);
                 }}
               >
                 {t("callRider")}
