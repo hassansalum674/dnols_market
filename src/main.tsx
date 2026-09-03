@@ -9,10 +9,12 @@ import App from "./App";
 import { registerPushStub } from "./api/client";
 import { initSettings } from "./store/settings";
 import { initPwaInstall } from "./lib/pwaInstall";
+import { retireLegacyServiceWorker } from "./lib/retireLegacySw";
 import "./styles.css";
 
 initSettings();
 initPwaInstall();
+void retireLegacyServiceWorker();
 
 registerSW({
   immediate: true,
