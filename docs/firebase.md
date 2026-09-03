@@ -148,6 +148,33 @@ If it stays stuck after 24 hours: remove `shop.dnols.com` from Firebase Hosting,
 
 ---
 
+## Firestore (riders + deliveries) — one-time
+
+Riders and seller **My riders** store data in **Cloud Firestore**. GitHub Actions deploys `firestore.rules` after each push to `main`.
+
+### If CI fails with billing / 403
+
+Log line like:
+
+`Creating the new Firestore database (default)... HTTP Error: 403, This API method requires billing to be enabled`
+
+means the **(default) database does not exist yet**. The CLI cannot create it on the Spark plan. Create it once in the console:
+
+1. [Firebase Console](https://console.firebase.google.com) → project **`dnols-2a394`**
+2. **Build** → **Firestore Database** → **Create database**
+3. Pick a region (e.g. **eur3** or **nam5**) and start in **production mode** (rules from this repo will be deployed by CI)
+4. Wait a minute, then **re-run** the **Deploy to Firebase** workflow on GitHub
+
+Spark includes a free Firestore quota (reads/writes per day). You do **not** need Blaze for riders unless you also want Firebase Phone SMS.
+
+After the database exists, CI runs:
+
+`firebase deploy --only firestore:rules,firestore:indexes`
+
+If that step still fails, hosting (buyer / shop / rider) **still deploys** — only rules are skipped until the database exists.
+
+---
+
 ## Troubleshooting
 
 ### dnols.com still shows the old agent landing page
