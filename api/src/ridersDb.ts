@@ -63,6 +63,43 @@ export async function writeRiderDoc(
   }
 }
 
+/** Create rider doc, or patch if it already exists (REST cannot read missing docs). */
+export async function upsertRiderForInvite(
+  idToken: string,
+  riderId: string,
+  createData: Record<string, unknown>,
+  patchIfExists: (existing: Record<string, unknown>) => Record<string, unknown>,
+): Promise<void> {
+  const admin = getAdminDb();
+  if (admin) {
+    const ref = admin.collection("riders").doc(riderId);
+    const snap = await ref.get();
+    if (snap.exists) {
+      await ref.set(patchIfExists(snap.data() as Record<string, unknown>), {
+        merge: true,
+      });
+    } else {
+      await ref.set(createData);
+    }
+    return;
+  }
+
+  try {
+    await createRiderDoc(idToken, riderId, createData);
+  } catch (e) {
+    const status = (e as { status?: number }).status;
+    if (status !== 409) throw restErr(e);
+    let existing: Record<string, unknown> | null;
+    try {
+      existing = await fetchRiderDocFields(idToken, riderId);
+    } catch (readErr) {
+      throw restErr(readErr);
+    }
+    if (!existing) throw restErr(e);
+    await patchRiderDoc(idToken, riderId, patchIfExists(existing));
+  }
+}
+
 export async function writeSellerRiderLink(
   idToken: string,
   linkId: string,
