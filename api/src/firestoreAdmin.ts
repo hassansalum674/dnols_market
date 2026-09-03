@@ -4,6 +4,24 @@ import { getFirestore, type Firestore } from "firebase-admin/firestore";
 let app: App | null = null;
 let db: Firestore | null = null;
 let initError: string | null = null;
+let resolvedProjectId: string | null = null;
+let writeProbeOk = false;
+let writeProbeError: string | null = null;
+
+export function formatFirebaseError(e: unknown): string {
+  if (!e || typeof e !== "object") return String(e);
+  const err = e as {
+    code?: string | number;
+    message?: string;
+    details?: string;
+  };
+  const bits = [
+    err.code !== undefined ? String(err.code) : "",
+    err.message ?? "",
+    err.details ?? "",
+  ].filter(Boolean);
+  return bits.join(": ") || JSON.stringify(e);
+}
 
 function parseServiceAccount(): Record<string, unknown> | null {
   const b64 = process.env.FIREBASE_SERVICE_ACCOUNT_BASE64?.trim();
@@ -44,6 +62,34 @@ function parseServiceAccount(): Record<string, unknown> | null {
   return null;
 }
 
+export function firestoreProjectId(): string | null {
+  getAdminDb();
+  return resolvedProjectId;
+}
+
+export function firestoreWriteProbe(): { ok: boolean; error: string | null } {
+  return { ok: writeProbeOk, error: writeProbeError };
+}
+
+export async function probeFirestoreWrite(): Promise<void> {
+  const admin = getAdminDb();
+  if (!admin) return;
+  try {
+    const ref = admin.collection("_dnols_health").doc("probe");
+    await ref.set({ ts: new Date().toISOString() }, { merge: true });
+    const snap = await ref.get();
+    if (!snap.exists) {
+      writeProbeError = "Firestore write probe: document missing after set";
+      return;
+    }
+    writeProbeOk = true;
+    writeProbeError = null;
+  } catch (e) {
+    writeProbeOk = false;
+    writeProbeError = formatFirebaseError(e);
+  }
+}
+
 export function firestoreAdminReady(): boolean {
   return getAdminDb() !== null;
 }
@@ -58,9 +104,11 @@ export function getAdminDb(): Firestore | null {
   const cred = parseServiceAccount();
   if (!cred) return null;
   try {
-    const projectId =
-      process.env.FIREBASE_PROJECT_ID?.trim() ||
-      String(cred.project_id ?? "dnols-2a394");
+    // Service account project is authoritative (env override caused NOT_FOUND writes).
+    const projectId = String(
+      cred.project_id ?? process.env.FIREBASE_PROJECT_ID?.trim() ?? "dnols-2a394",
+    );
+    resolvedProjectId = projectId;
     app =
       getApps().length > 0
         ? getApps()[0]!

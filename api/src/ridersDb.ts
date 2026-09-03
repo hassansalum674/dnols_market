@@ -1,4 +1,4 @@
-import { firestoreAdminReady, getAdminDb } from "./firestoreAdmin.js";
+import { firestoreAdminReady, getAdminDb, formatFirebaseError } from "./firestoreAdmin.js";
 import {
   createRiderDoc,
   fetchRiderDocFields,
@@ -31,17 +31,15 @@ function restErr(e: unknown): RiderDbException {
 function adminErr(e: unknown): RiderDbException {
   const err = e as { code?: string | number; message?: string };
   const code = err.code;
+  const detail = formatFirebaseError(e);
   if (
     code === 7 ||
     code === "permission-denied" ||
     code === "PERMISSION_DENIED"
   ) {
-    return new RiderDbException("permission_denied", err.message);
+    return new RiderDbException("permission_denied", detail);
   }
-  return new RiderDbException(
-    "firestore_unavailable",
-    err.message ?? (e instanceof Error ? e.message : String(e)),
-  );
+  return new RiderDbException("firestore_unavailable", detail);
 }
 
 async function withAdmin<T>(fn: () => Promise<T>): Promise<T> {
