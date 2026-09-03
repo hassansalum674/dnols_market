@@ -85,6 +85,7 @@ export const PAY_METHODS: {
   stkHint: string;
   checkoutLabel: string;
   accent: string;
+  mark: string;
 }[] = [
   {
     id: "mpesa",
@@ -92,6 +93,7 @@ export const PAY_METHODS: {
     network: "Vodacom",
     checkoutLabel: "Pay with M-Pesa",
     accent: "#4caf50",
+    mark: "M",
     stkHint: "Enter your M-Pesa PIN on the Vodacom prompt",
   },
   {
@@ -100,6 +102,7 @@ export const PAY_METHODS: {
     network: "Tigo Pesa",
     checkoutLabel: "Pay with Mix by Yas",
     accent: "#1565c0",
+    mark: "Y",
     stkHint: "Approve the payment on your Mix by Yas / Tigo Pesa screen",
   },
   {
@@ -108,6 +111,7 @@ export const PAY_METHODS: {
     network: "Airtel",
     checkoutLabel: "Pay with Airtel Money",
     accent: "#e40000",
+    mark: "A",
     stkHint: "Confirm with your Airtel Money PIN when prompted",
   },
 ];

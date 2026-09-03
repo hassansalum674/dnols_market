@@ -346,6 +346,7 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
         className="field"
         type="tel"
         inputMode="tel"
+        placeholder="+255 6XX or 7XX XXX XXX"
         value={s.primaryPhone}
         onChange={(e) => updateStep("step3", { primaryPhone: e.target.value })}
         required
@@ -367,6 +368,7 @@ function Step3({ draft, updateStep, err, onNext }: StepProps) {
             className="field"
             type="tel"
             inputMode="tel"
+            placeholder="+255 6XX or 7XX XXX XXX"
             value={s.whatsappPhone}
             onChange={(e) =>
               updateStep("step3", { whatsappPhone: e.target.value })
