@@ -9,6 +9,7 @@ import {
 import { ShopProvider } from "./shopData";
 import { AuthProvider } from "./store/auth";
 import { I18nProvider } from "./store/i18n";
+import { InstallAppPrompt } from "./components/InstallApp";
 
 const SellLandingPage = lazy(() =>
   import("./pages/SellLanding").then((m) => ({ default: m.SellLandingPage })),
@@ -120,6 +121,7 @@ export default function App() {
     <I18nProvider>
       <AuthProvider>
         <ShopProvider>
+          <InstallAppPrompt />
           <RouterProvider router={router} />
         </ShopProvider>
       </AuthProvider>

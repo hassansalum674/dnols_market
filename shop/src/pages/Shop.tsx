@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { getHealth, getOrder, getPlaces } from "../api";
 import { BuyerPortalLink } from "../components/BuyerPortalLink";
+import { InstallAppSettings } from "../components/InstallApp";
 import { addPayout, loadHours, loadPayouts, saveHours } from "../storage";
 import { useShopData } from "../shopData";
 import { useI18n } from "../store/i18n";
@@ -145,6 +146,7 @@ export function ShopPage() {
             </div>
           ))}
         </section>
+        <InstallAppSettings />
       </div>
 
       <BuyerPortalLink className="buy-link">

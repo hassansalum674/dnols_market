@@ -2068,6 +2068,10 @@ select.field {
   text-align: center;
 }
 
+.install-dismiss {
+  margin-top: 10px;
+}
+
 [data-theme="light"] .skel {
   background: #ececef;
 }
@@ -2084,4 +2088,3 @@ select.field {
 [data-theme="light"] .err {
   color: #b42318;
 }
-

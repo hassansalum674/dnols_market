@@ -77,6 +77,21 @@ const EN = {
   becomeASeller: "Become a seller",
   sameAccountHint:
     "One account is both buyer and seller. Sign in on the seller site with the same Google or email you use here.",
+  apply: "Apply",
+  installApp: "Install app",
+  installAppHint:
+    "If you deleted Dnols from your home screen, install it again here.",
+  installAppNow: "Install",
+  installAppTitle: "Install Dnols",
+  installAppBody:
+    "Add Dnols to your home screen so you can open it like an app. If you deleted it, you can install it again.",
+  installAppIos: "On iPhone or iPad: tap Share, then Add to Home Screen.",
+  installAppBrowser: "Tap Install to add Dnols to your home screen.",
+  installAppManual:
+    "In your browser menu, choose Install app or Add to Home Screen.",
+  installAppInstalled: "Dnols is installed on this device.",
+  notNow: "Not now",
+  gotIt: "Got it",
 };
 
 const SW: typeof EN = {
@@ -156,6 +171,21 @@ const SW: typeof EN = {
   becomeASeller: "Kuwa muuzaji",
   sameAccountHint:
     "Akaunti moja ni ya mnunuzi na muuzaji. Ingia kwenye tovuti ya kuuza kwa Google au barua pepe ile ile unayotumia hapa.",
+  apply: "Tumia",
+  installApp: "Sakinisha programu",
+  installAppHint:
+    "Ukiifuta Dnols kwenye skrini ya nyumbani, sakinisha tena hapa.",
+  installAppNow: "Sakinisha",
+  installAppTitle: "Sakinisha Dnols",
+  installAppBody:
+    "Weka Dnols kwenye skrini ya nyumbani ili uifungue kama programu. Ukiifuta, unaweza kuisakinisha tena.",
+  installAppIos: "Kwenye iPhone au iPad: gusa Share, kisha Add to Home Screen.",
+  installAppBrowser: "Gusa Sakinisha kuweka Dnols kwenye skrini ya nyumbani.",
+  installAppManual:
+    "Kwenye menyu ya kivinjari, chagua Install app au Add to Home Screen.",
+  installAppInstalled: "Dnols imesakinishwa kwenye kifaa hiki.",
+  notNow: "Si sasa",
+  gotIt: "Sawa",
 };
 
 export const I18N = { en: EN, sw: SW } as const;

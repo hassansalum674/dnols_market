@@ -10,6 +10,7 @@ import {
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
 import { saveProfile } from "../lib/profile";
+import { InstallAppSettings } from "../components/InstallApp";
 
 export function SettingsPage() {
   const { user, signOut } = useAuth();
@@ -86,6 +87,8 @@ export function SettingsPage() {
           ))}
         </div>
       </section>
+
+      <InstallAppSettings />
 
       {user && (
         <section className="account-section">
