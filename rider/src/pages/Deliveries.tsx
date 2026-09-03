@@ -1,16 +1,14 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  deliveryTrackLabel,
+  firstNameOf,
   formatTzMobile,
   isValidTzMobile,
-  listenRiderOrders,
   riderCloudErrorKey,
-  type MarketOrderDoc,
 } from "../lib/deliveryCloud";
-import { getFirebaseDb, initFirebase } from "../lib/firebase";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
+import { useRiderOrders } from "../hooks/useRiderOrders";
 import { SignInPage } from "./SignIn";
 
 function LinkPhoneForm() {
@@ -62,7 +60,7 @@ function LinkPhoneForm() {
             ? formatTzMobile(phone)
             : tf("phoneCount", { n: digits.length })}
       </p>
-      <button className="btn" disabled={busy} onClick={() => void save()}>
+      <button className="rider-btn rider-btn--primary" disabled={busy} onClick={() => void save()}>
         {busy ? t("linking") : t("linkPhone")}
       </button>
       {err && <p className="err">{err}</p>}
@@ -70,42 +68,30 @@ function LinkPhoneForm() {
   );
 }
 
-function badge(order: MarketOrderDoc) {
-  if (order.deliveryStatus === "delivered") return "deliveredBadge";
-  if (order.deliveryStatus === "picked_up") return "pickedUpBadge";
-  return "assigned";
+function statusBadgeClass(status: string): string {
+  if (status === "picked_up") return "rider-badge--picked_up";
+  if (status === "delivered") return "rider-badge--delivered";
+  return "rider-badge--assigned";
+}
+
+function statusLabel(
+  status: string,
+  t: (k: "assigned" | "pickedUpBadge" | "deliveredBadge") => string,
+): string {
+  if (status === "picked_up") return t("pickedUpBadge");
+  if (status === "delivered") return t("deliveredBadge");
+  return t("assigned");
 }
 
 export function DeliveriesPage() {
-  const { user, rider, loading, signOut } = useAuth();
-  const { t, lang } = useI18n();
-  const [orders, setOrders] = useState<MarketOrderDoc[]>([]);
-
-  useEffect(() => {
-    if (!rider) {
-      setOrders([]);
-      return;
-    }
-    let stop: (() => void) | undefined;
-    let cancelled = false;
-    void initFirebase().then(() => {
-      const db = getFirebaseDb();
-      if (!db || cancelled) {
-        setOrders([]);
-        return;
-      }
-      stop = listenRiderOrders(db, rider.riderId, rider.authUid, setOrders);
-    });
-    return () => {
-      cancelled = true;
-      stop?.();
-    };
-  }, [rider]);
+  const { user, rider, loading } = useAuth();
+  const { t } = useI18n();
+  const { active, ready } = useRiderOrders(rider);
 
   if (loading) {
     return (
-      <div className="page stall-page">
-        <p className="muted">{t("verifying")}</p>
+      <div className="rider-page">
+        <p className="rider-meta">{t("verifying")}</p>
       </div>
     );
   }
@@ -113,45 +99,46 @@ export function DeliveriesPage() {
   if (!user) return <SignInPage />;
 
   return (
-    <div className="page stall-page">
-      <header className="stall-page-head">
-        <div>
-          <h1 className="stall-page-title">{t("myDeliveries")}</h1>
-          <p className="muted stall-page-desc">
-            {user.phone || rider?.phone || ""}
-          </p>
-        </div>
-        <button type="button" className="btn ghost" onClick={() => void signOut()}>
-          {t("signOut")}
-        </button>
-      </header>
+    <div className="rider-page">
+      <h1 className="rider-page-title">{t("myDeliveries")}</h1>
 
       {!rider ? (
         <div className="rider-link-wrap">
           <LinkPhoneForm />
         </div>
-      ) : orders.length === 0 ? (
-        <div className="center-state">
+      ) : !ready ? (
+        <p className="rider-meta">{t("verifying")}</p>
+      ) : active.length === 0 ? (
+        <div className="rider-empty">
+          <div className="rider-empty-icon" aria-hidden>
+            🛵
+          </div>
           <p>{t("noDeliveries")}</p>
         </div>
       ) : (
-        <div className="order-list">
-          {orders.map((o) => (
+        <div>
+          {active.map((o) => (
             <Link
               key={o.orderId}
               to={`/delivery/${encodeURIComponent(o.orderId)}`}
-              className="card order-card"
-              style={{ textDecoration: "none", color: "inherit" }}
+              className="rider-delivery-card"
             >
-              <span className="pill live">{t(badge(o))}</span>
-              <h2>{o.buyerName}</h2>
-              <p className="hint">{o.deliveryAddress}</p>
-              <p className="muted">
-                {deliveryTrackLabel(o.deliveryStatus, lang)}
-              </p>
-              <p className="price">
+              <div className="rider-card-top">
+                <span className="rider-order-num">
+                  {t("orderNum")} {o.orderId.slice(-6).toUpperCase()}
+                </span>
+                <span className={`rider-badge ${statusBadgeClass(o.deliveryStatus)}`}>
+                  {statusLabel(o.deliveryStatus, t)}
+                </span>
+              </div>
+              <p className="rider-buyer-name">{firstNameOf(o.buyerName, t("buyer"))}</p>
+              <p className="rider-address-line">{o.deliveryAddress || "Kariakoo"}</p>
+              <p className="rider-meta">
                 {o.items.length} {t("items")}
               </p>
+              <span className="rider-btn rider-btn--primary" style={{ pointerEvents: "none" }}>
+                {t("viewOrder")}
+              </span>
             </Link>
           ))}
         </div>

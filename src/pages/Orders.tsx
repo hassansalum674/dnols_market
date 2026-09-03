@@ -212,8 +212,8 @@ export function OrdersPage() {
             o.deliveryStatus !== "delivered" && (
               <button
                 type="button"
-                className="btn ghost"
-                style={{ marginTop: 12 }}
+                className="btn voice-call-order-btn"
+                style={{ marginTop: 12, width: "100%" }}
                 onClick={() => {
                   void startCall({
                     orderId: o.id,
@@ -247,6 +247,12 @@ export function OrdersPage() {
                 {t("callRider")}
               </button>
             )}
+
+          {o.fulfillment === "delivery" && o.deliveryStatus === "delivered" && (
+            <p className="hint" style={{ marginTop: 8 }}>
+              {t("deliveryComplete")}
+            </p>
+          )}
 
           {o.deliveryPhone && (
             <p className="hint">

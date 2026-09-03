@@ -1,8 +1,10 @@
 import { Suspense, useCallback, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { CallSessionProvider } from "./components/CallSessionProvider";
+import { RiderTabBar } from "./components/TabBar";
 import { RoutePulse, Splash } from "./components/Splash";
 import { useAuth } from "./store/auth";
+import { useI18n } from "./store/i18n";
 
 const SPLASH = "dnols.rider.splash.v2";
 
@@ -25,6 +27,7 @@ function markSplashSeen() {
 export function AppLayout() {
   const loc = useLocation();
   const { user } = useAuth();
+  const { t } = useI18n();
   const [splash, setSplash] = useState(() => !splashSeen());
   const done = useCallback(() => {
     markSplashSeen();
@@ -32,26 +35,24 @@ export function AppLayout() {
   }, []);
 
   const signedOut = !user;
-  const title = loc.pathname.startsWith("/delivery/")
-    ? "Delivery"
-    : "Deliveries";
+  const isDetail = loc.pathname.startsWith("/delivery/");
+  const showTabBar = !signedOut && !isDetail;
 
   return (
     <>
       {splash && <Splash onDone={done} />}
-      <div className={`app-shell app-shell--rider${signedOut ? " rider-auth" : ""}`}>
+      <div
+        className={`app-shell app-shell--rider${signedOut ? " rider-auth" : ""}${isDetail ? " rider-detail" : ""}`}
+      >
         <div className="stall-main">
           {!signedOut && (
-            <header className="header stall-header">
-              <div className="header-row stall-header-row">
-                <img
-                  className="header-mark"
-                  src="/brand/logo4_submark.svg"
-                  alt="Dnols"
-                />
-                <span className="header-title">{title}</span>
-                <span className="header-sub">Kariakoo</span>
-              </div>
+            <header className="rider-header">
+              <img
+                className="rider-header-logo"
+                src="/brand/logo4_submark.svg"
+                alt="Dnols"
+              />
+              <span className="rider-header-shop">{t("defaultShop")}</span>
             </header>
           )}
           <main className="stall-main-content">
@@ -63,6 +64,7 @@ export function AppLayout() {
               </div>
             </Suspense>
           </main>
+          {showTabBar && <RiderTabBar />}
         </div>
       </div>
     </>

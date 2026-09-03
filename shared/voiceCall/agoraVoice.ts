@@ -7,6 +7,7 @@ import type {
 export type VoiceSession = {
   leave: () => Promise<void>;
   setMuted: (muted: boolean) => Promise<void>;
+  setSpeaker: (speakerOn: boolean) => Promise<void>;
 };
 
 export function isMicPermissionError(e: unknown): boolean {
@@ -39,6 +40,8 @@ export async function joinVoiceChannel(opts: {
     codec: "vp8",
   });
   let mic: IMicrophoneAudioTrack | null = null;
+  let remoteAudio: import("agora-rtc-sdk-ng").IRemoteAudioTrack | null = null;
+  let speakerOn = true;
   let intentionalLeave = false;
   let ready = false;
   let remoteCount = 0;
@@ -47,7 +50,9 @@ export async function joinVoiceChannel(opts: {
     if (mediaType !== "audio") return;
     try {
       await client.subscribe(user, "audio");
+      remoteAudio = user.audioTrack ?? null;
       user.audioTrack?.play();
+      await remoteAudio?.setVolume(speakerOn ? 100 : 35);
       remoteCount += 1;
       opts.onRemoteJoined?.();
     } catch {
@@ -92,6 +97,10 @@ export async function joinVoiceChannel(opts: {
   return {
     async setMuted(muted: boolean) {
       await mic?.setMuted(muted);
+    },
+    async setSpeaker(on: boolean) {
+      speakerOn = on;
+      await remoteAudio?.setVolume(on ? 100 : 35);
     },
     async leave() {
       intentionalLeave = true;

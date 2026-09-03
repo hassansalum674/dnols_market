@@ -69,6 +69,8 @@ export function CallSessionProvider({ children }: { children: ReactNode }) {
       decline: t("declineCall"),
       mute: t("mute"),
       unmute: t("unmute"),
+      speaker: t("speaker"),
+      speakerOff: t("speakerOff"),
       end: t("endCall"),
       callEnded: t("callEnded"),
       micDenied: t("micDenied"),
