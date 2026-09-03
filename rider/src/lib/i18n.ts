@@ -29,6 +29,11 @@ const EN = {
   noDeliveries: "No deliveries yet. When a seller assigns you, they show up here.",
   notLinked:
     "This number is not linked to a stall yet. Ask the seller to add you under My Riders.",
+  cloudOffline:
+    "Could not reach the database. Check your connection and try again.",
+  cloudDenied:
+    "Could not open that rider record. Ask the seller to add this number under My Riders.",
+  cloudTaken: "That number is already linked to another rider account.",
   items: "Items",
   buyer: "Buyer",
   address: "Address",
@@ -99,6 +104,11 @@ const SW: typeof EN = {
   noDeliveries: "Bado hakuna delivery. Muuzaji akikupa oda, itaonekana hapa.",
   notLinked:
     "Namba hii bado haijaunganishwa na duka. Muulize muuzaji akuongeze kwenye My Riders.",
+  cloudOffline:
+    "Imeshindikana kufikia hifadhidata. Angalia mtandao, kisha jaribu tena.",
+  cloudDenied:
+    "Imeshindikana kufungua rekodi hiyo. Muulize muuzaji aongeze namba hii kwenye My Riders.",
+  cloudTaken: "Namba hiyo tayari imeunganishwa na akaunti nyingine ya rider.",
   items: "Bidhaa",
   buyer: "Mnunuzi",
   address: "Anuani",

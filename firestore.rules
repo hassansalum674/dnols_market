@@ -20,6 +20,20 @@ service cloud.firestore {
       );
     }
 
+    function isUnclaimed(data) {
+      return data.authUid == null;
+    }
+
+    // Google (Spark) riders have no phone token. They claim by knowing
+    // the seller-saved number, which is also the document id.
+    function isClaimingSelf() {
+      return signedIn()
+        && resource.data.authUid == null
+        && request.resource.data.authUid == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['authUid']);
+    }
+
     function isOrderParty() {
       return signedIn() && (
         resource.data.buyerUid == request.auth.uid ||
@@ -62,13 +76,17 @@ service cloud.firestore {
 
     match /riders/{riderId} {
       allow read: if signedIn() && (
-        isThisRider(resource.data) || isLinkedSeller(resource.data)
+        isThisRider(resource.data)
+        || isLinkedSeller(resource.data)
+        || isUnclaimed(resource.data)
       );
       allow create: if signedIn()
         && request.resource.data.riderId == riderId
         && request.auth.uid in request.resource.data.linkedSellers;
       allow update: if signedIn() && (
-        isLinkedSeller(resource.data) || isThisRider(resource.data)
+        isLinkedSeller(resource.data)
+        || isThisRider(resource.data)
+        || isClaimingSelf()
       );
     }
 
