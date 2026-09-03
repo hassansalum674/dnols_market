@@ -21,6 +21,7 @@ import {
 import { initFirebase } from "../lib/firebase";
 import { mergeAnonymousSearchHistory } from "../store/persist";
 import { mergeCheckoutPhonesToProfile, loadProfile, saveProfile } from "../lib/profile";
+import { startAccountSync, stopAccountSync } from "../lib/accountCloud";
 import { loadSettings, saveSettings } from "./settings";
 
 type AuthState = {
@@ -48,16 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (user?.uid) {
-      mergeAnonymousSearchHistory(user.uid);
-      mergeCheckoutPhonesToProfile(user.uid);
-      const p = loadProfile(user.uid);
-      if (p.language) {
-        saveSettings({ language: p.language });
-      } else {
-        saveProfile(user.uid, { language: loadSettings().language });
-      }
+    if (!user?.uid) {
+      stopAccountSync();
+      return;
     }
+    mergeAnonymousSearchHistory(user.uid);
+    mergeCheckoutPhonesToProfile(user.uid);
+    const p = loadProfile(user.uid);
+    if (p.language) {
+      saveSettings({ language: p.language });
+    } else {
+      saveProfile(user.uid, { language: loadSettings().language });
+    }
+    void startAccountSync(user.uid);
+    return () => stopAccountSync();
   }, [user?.uid]);
 
   const doSignOut = useCallback(async () => {

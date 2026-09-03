@@ -20,6 +20,7 @@ export function ProductPage() {
 
   useEffect(() => {
     const token = getPaidTokens()[id];
+    setSaved(getSavedIds().includes(id));
     void fetchListingDetail(id, token).then(({ detail: d, status }) => {
       setFail(status ?? null);
       setDetail(d);

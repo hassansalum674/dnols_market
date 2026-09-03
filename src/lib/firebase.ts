@@ -8,6 +8,7 @@ import {
   setPersistence,
   type Auth,
 } from "firebase/auth";
+import { getFirestore, type Firestore } from "firebase/firestore";
 
 type FirebaseConfig = {
   apiKey: string;
@@ -23,6 +24,7 @@ const envConfig = {
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
+let db: Firestore | null = null;
 let resolvedConfig: FirebaseConfig | null = null;
 let initPromise: Promise<boolean> | null = null;
 
@@ -62,6 +64,7 @@ export async function initFirebase(): Promise<boolean> {
 
     resolvedConfig = merged;
     app = getApps().length ? getApp() : initializeApp(merged);
+    db = getFirestore(app);
     try {
       auth = initializeAuth(app, {
         persistence: [indexedDBLocalPersistence, browserLocalPersistence],
@@ -96,6 +99,10 @@ export function isFirebaseConfigured(): boolean {
 
 export function getFirebaseAuth(): Auth | null {
   return auth;
+}
+
+export function getFirebaseDb(): Firestore | null {
+  return db;
 }
 
 export { initFirebase as ensureFirebase };

@@ -1,3 +1,5 @@
+import { requestAccountPush } from "../lib/syncBus";
+
 const ANON_KEY = "dnols.searchHistory.v1";
 
 export type HistoryEntry = {
@@ -34,6 +36,7 @@ export function pushHistory(entry: HistoryEntry, userId?: string | null): void {
     ...read(key).filter((h) => h.q.toLowerCase() !== entry.q.toLowerCase()),
   ].slice(0, 8);
   write(key, next);
+  requestAccountPush();
 }
 
 export function clearHistory(userId?: string | null): void {
@@ -51,6 +54,7 @@ export function mergeAnonymousSearchHistory(userId: string): void {
   );
   write(userKey(userId), merged.slice(0, 8));
   localStorage.removeItem(ANON_KEY);
+  requestAccountPush();
 }
 
 const SAVED = "dnols.saved.v1";
@@ -67,7 +71,12 @@ export function toggleSaved(id: string): string[] {
   const cur = getSavedIds();
   const next = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
   localStorage.setItem(SAVED, JSON.stringify(next));
+  requestAccountPush();
   return next;
+}
+
+export function replaceSavedIds(ids: string[]) {
+  localStorage.setItem(SAVED, JSON.stringify(ids));
 }
 
 export function getPaidTokens(): Record<string, string> {
@@ -87,6 +96,11 @@ export function markPaid(listingIds: string[], token: string) {
     cur[id] = token;
   });
   localStorage.setItem("dnols.paid.v1", JSON.stringify(cur));
+  requestAccountPush();
+}
+
+export function replacePaidTokens(tokens: Record<string, string>) {
+  localStorage.setItem("dnols.paid.v1", JSON.stringify(tokens));
 }
 
 const ORDERS = "dnols.orders.v1";
@@ -95,6 +109,11 @@ export function saveLocalOrder(order: unknown) {
   const cur = JSON.parse(localStorage.getItem(ORDERS) || "[]") as unknown[];
   cur.unshift(order);
   localStorage.setItem(ORDERS, JSON.stringify(cur.slice(0, 40)));
+  requestAccountPush();
+}
+
+export function replaceLocalOrders(orders: unknown[]) {
+  localStorage.setItem(ORDERS, JSON.stringify(orders.slice(0, 40)));
 }
 
 export function getLocalOrders<T>(): T[] {
@@ -133,6 +152,11 @@ export function removeLocalOrder(id: string) {
   const hidden = hiddenIds();
   hidden.add(id);
   writeHidden(hidden);
+  requestAccountPush();
+}
+
+export function replaceHiddenOrderIds(ids: string[]) {
+  writeHidden(new Set(ids));
 }
 
 export function clearLocalOrders() {
@@ -143,4 +167,5 @@ export function clearLocalOrders() {
   }
   localStorage.setItem(ORDERS, "[]");
   writeHidden(hidden);
+  requestAccountPush();
 }

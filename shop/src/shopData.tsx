@@ -2,10 +2,12 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
 } from "react";
+import { SELLER_SYNC_EVENT } from "./lib/syncBus";
 import type { SavedOrder } from "./types";
 import { loadSavedOrders, removeSavedOrder, upsertSavedOrder } from "./storage";
 
@@ -20,6 +22,12 @@ const ShopData = createContext<Ctx | null>(null);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
   const [saved, setSaved] = useState<SavedOrder[]>(() => loadSavedOrders());
+
+  useEffect(() => {
+    const reload = () => setSaved(loadSavedOrders());
+    window.addEventListener(SELLER_SYNC_EVENT, reload);
+    return () => window.removeEventListener(SELLER_SYNC_EVENT, reload);
+  }, []);
 
   const remember = useCallback((row: SavedOrder) => {
     setSaved(upsertSavedOrder(row));

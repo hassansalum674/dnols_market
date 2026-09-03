@@ -13,6 +13,7 @@ import { formatTzPhoneDisplay } from "../lib/phone";
 import { publicAccountId } from "../lib/accountId";
 import { SellerPortalLink } from "../components/SellerPortalLink";
 import { useI18n } from "../store/i18n";
+import { ACCOUNT_SYNC_EVENT } from "../lib/syncBus";
 
 export function YouPage() {
   const { user, loading, signOut } = useAuth();
@@ -23,21 +24,28 @@ export function YouPage() {
   const [billingCards, setBillingCards] = useState(() =>
     user?.uid ? loadBillingCards(user.uid) : [],
   );
-  const savedCount = getSavedIds().length;
+  const [savedCount, setSavedCount] = useState(() => getSavedIds().length);
 
   const displayName = userDisplayName(user);
 
   useEffect(() => {
-    if (!user?.uid) {
-      setProfilePhone(null);
-      setProfileDelivery(null);
-      setBillingCards([]);
-      return;
+    function load() {
+      if (!user?.uid) {
+        setProfilePhone(null);
+        setProfileDelivery(null);
+        setBillingCards([]);
+        setSavedCount(0);
+        return;
+      }
+      const p = loadProfile(user.uid);
+      setProfilePhone(p.phone ?? null);
+      setProfileDelivery(p.deliveryPhone ?? null);
+      setBillingCards(loadBillingCards(user.uid));
+      setSavedCount(getSavedIds().length);
     }
-    const p = loadProfile(user.uid);
-    setProfilePhone(p.phone ?? null);
-    setProfileDelivery(p.deliveryPhone ?? null);
-    setBillingCards(loadBillingCards(user.uid));
+    load();
+    window.addEventListener(ACCOUNT_SYNC_EVENT, load);
+    return () => window.removeEventListener(ACCOUNT_SYNC_EVENT, load);
   }, [user?.uid]);
 
   return (

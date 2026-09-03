@@ -55,6 +55,14 @@ jobs:
             exit 1
           fi
 
+      - name: Deploy Firestore rules
+        continue-on-error: true
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only firestore --project dnols-2a394
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
       - name: Deploy to Firebase Hosting
         uses: w9jds/firebase-action@master
         with:

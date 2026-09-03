@@ -1,3 +1,5 @@
+import { requestAccountPush } from "./syncBus";
+
 const LAST_PHONE = "dnols.checkout.lastPhone";
 const LAST_DELIVERY_PHONE = "dnols.checkout.lastDeliveryPhone";
 const LAST_METHOD = "dnols.checkout.lastMethod";
@@ -26,6 +28,7 @@ export function saveCheckoutPrefs(
     if (deliveryAddress) {
       localStorage.setItem(LAST_ADDRESS, deliveryAddress.trim());
     }
+    requestAccountPush();
   } catch {
     /* ignore */
   }

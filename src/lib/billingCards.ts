@@ -1,5 +1,6 @@
 import type { PayMethod } from "./checkout";
 import { PAY_METHODS } from "./checkout";
+import { requestAccountPush } from "./syncBus";
 
 export type BillingCard = {
   id: string;
@@ -24,6 +25,7 @@ function read(uid: string): BillingCard[] {
 
 function write(uid: string, cards: BillingCard[]): void {
   localStorage.setItem(key(uid), JSON.stringify(cards.slice(0, 5)));
+  requestAccountPush();
 }
 
 export function loadBillingCards(uid: string): BillingCard[] {

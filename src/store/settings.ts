@@ -1,4 +1,5 @@
 import type { AppLanguage } from "../lib/i18n";
+import { requestAccountPush } from "../lib/syncBus";
 import {
   consumePrefsFromUrl,
   readSharedPrefs,
@@ -61,6 +62,7 @@ export function saveSettings(patch: Partial<AppSettings>): AppSettings {
   persist(next);
   applySettings(next);
   window.dispatchEvent(new Event("dnols-settings"));
+  requestAccountPush();
   return next;
 }
 

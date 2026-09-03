@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import type { PublicListing } from "../types";
+import { requestAccountPush } from "../lib/syncBus";
 
 const KEY = "dnols.cart.v1";
 
@@ -28,6 +29,17 @@ let state = read();
 const listeners = new Set<() => void>();
 
 function emit() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+  listeners.forEach((l) => l());
+  requestAccountPush();
+}
+
+export function getCartItems(): CartItem[] {
+  return state.items;
+}
+
+export function hydrateCart(items: CartItem[]) {
+  state = { items: Array.isArray(items) ? items : [] };
   localStorage.setItem(KEY, JSON.stringify(state));
   listeners.forEach((l) => l());
 }

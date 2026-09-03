@@ -17,6 +17,7 @@ import {
   subscribeAuth,
   type AuthUser,
 } from "../lib/authActions";
+import { startSellerSync, stopSellerSync } from "../lib/accountCloud";
 import { initFirebase } from "../lib/firebase";
 import { clearSession, saveSession } from "../storage";
 
@@ -44,12 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (user?.uid) {
-      saveSession({
-        phone: user.email ?? user.uid,
-        signedInAt: new Date().toISOString(),
-      });
+    if (!user?.uid) {
+      stopSellerSync();
+      return;
     }
+    saveSession({
+      phone: user.email ?? user.uid,
+      signedInAt: new Date().toISOString(),
+    });
+    void startSellerSync(user.uid);
+    return () => stopSellerSync();
   }, [user?.uid, user?.email]);
 
   const doSignOut = useCallback(async () => {

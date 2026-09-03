@@ -1,4 +1,5 @@
 import { loadLastDeliveryPhone, loadLastPayPhone } from "./checkout";
+import { requestAccountPush } from "./syncBus";
 
 export type UserProfile = {
   displayName?: string;
@@ -31,6 +32,7 @@ export function saveProfile(uid: string, patch: UserProfile): void {
     if (patch.avatarDataUrl === "") delete next.avatarDataUrl;
     if (patch.displayName === "") delete next.displayName;
     localStorage.setItem(key(uid), JSON.stringify(next));
+    requestAccountPush();
   } catch {
     /* ignore */
   }

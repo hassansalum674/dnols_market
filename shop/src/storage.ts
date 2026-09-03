@@ -9,6 +9,7 @@ import type {
   SellerSession,
   ShopHours,
 } from "./types";
+import { requestSellerPush } from "./lib/syncBus";
 
 const DRAFT = "dnols.seller.draft";
 const PROFILE = "dnols.seller.profile";
@@ -36,6 +37,7 @@ function write(key: string, value: unknown): void {
   } catch {
     /* ignore quota */
   }
+  if (key !== SESSION) requestSellerPush();
 }
 
 export function splashSeen(): boolean {
@@ -198,4 +200,14 @@ export function addPayout(row: PayoutMock): PayoutMock[] {
   const next = [row, ...loadPayouts()];
   write(PAYOUTS, next);
   return next;
+}
+
+export function replaceSavedOrders(rows: SavedOrder[]): SavedOrder[] {
+  write(ORDERS, rows);
+  return rows;
+}
+
+export function savePayoutsReplace(rows: PayoutMock[]): PayoutMock[] {
+  write(PAYOUTS, rows);
+  return rows;
 }

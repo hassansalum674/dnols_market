@@ -6,6 +6,7 @@ import {
   writeSharedPrefs,
   type SharedPrefs,
 } from "../lib/sharedPrefs";
+import { requestSellerPush } from "../lib/syncBus";
 
 export type ThemeMode = "dark" | "light" | "system";
 
@@ -58,6 +59,7 @@ export function saveSettings(patch: Partial<AppSettings>): AppSettings {
   persist(next);
   applySettings(next);
   window.dispatchEvent(new Event("dnols-settings"));
+  requestSellerPush();
   return next;
 }
 

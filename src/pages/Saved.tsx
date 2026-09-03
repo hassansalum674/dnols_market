@@ -3,24 +3,35 @@ import { Link } from "react-router-dom";
 import { fetchListingDetail } from "../api/client";
 import { ProductGrid, SkeletonGrid } from "../components/ProductCard";
 import { getSavedIds } from "../store/persist";
+import { ACCOUNT_SYNC_EVENT } from "../lib/syncBus";
 import type { PublicListing } from "../types";
 
 export function SavedPage() {
   const [saved, setSaved] = useState<PublicListing[] | null>(null);
 
   useEffect(() => {
-    const ids = getSavedIds();
-    if (!ids.length) {
-      setSaved([]);
-      return;
+    let cancelled = false;
+    function load() {
+      const ids = getSavedIds();
+      if (!ids.length) {
+        setSaved([]);
+        return;
+      }
+      void Promise.all(ids.map((id) => fetchListingDetail(id))).then((rows) => {
+        if (cancelled) return;
+        setSaved(
+          rows
+            .map((r) => r.detail)
+            .filter((d): d is NonNullable<typeof d> => Boolean(d)),
+        );
+      });
     }
-    void Promise.all(ids.map((id) => fetchListingDetail(id))).then((rows) => {
-      setSaved(
-        rows
-          .map((r) => r.detail)
-          .filter((d): d is NonNullable<typeof d> => Boolean(d)),
-      );
-    });
+    load();
+    window.addEventListener(ACCOUNT_SYNC_EVENT, load);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(ACCOUNT_SYNC_EVENT, load);
+    };
   }, []);
 
   return (

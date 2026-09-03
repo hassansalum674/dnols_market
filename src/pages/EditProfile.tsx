@@ -14,6 +14,7 @@ import { loadProfile, saveProfile } from "../lib/profile";
 import { userDisplayName, userInitial } from "../lib/userDisplay";
 import { useAuth } from "../store/auth";
 import { useI18n } from "../store/i18n";
+import { ACCOUNT_SYNC_EVENT } from "../lib/syncBus";
 
 const TOTAL_STEPS = 3;
 
@@ -31,24 +32,32 @@ export function EditProfilePage() {
   const [photo, setPhoto] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) {
-      setStep(1);
-      setName("");
-      setPhone("");
-      setPhoto(null);
+    function hydrate() {
+      if (!user) {
+        setStep(1);
+        setName("");
+        setPhone("");
+        setPhoto(null);
+        setErr(null);
+        return;
+      }
+      const p = loadProfile(user.uid);
+      setName(p.displayName?.trim() || user.displayName?.trim() || "");
+      setPhone(p.phone ? formatTzPhoneDisplay(p.phone) : "");
+      setPhoto(
+        p.avatarDataUrl ?? (p.preferLetterAvatar ? null : user.photoURL) ?? null,
+      );
+      if (p.language) setLang(p.language);
       setErr(null);
-      return;
     }
-    const p = loadProfile(user.uid);
-    setName(p.displayName?.trim() || user.displayName?.trim() || "");
-    setPhone(p.phone ? formatTzPhoneDisplay(p.phone) : "");
-    setPhoto(
-      p.avatarDataUrl ?? (p.preferLetterAvatar ? null : user.photoURL) ?? null,
-    );
-    if (p.language) setLang(p.language);
-    setStep(1);
-    setErr(null);
+    hydrate();
+    window.addEventListener(ACCOUNT_SYNC_EVENT, hydrate);
+    return () => window.removeEventListener(ACCOUNT_SYNC_EVENT, hydrate);
   }, [user?.uid, setLang]);
+
+  useEffect(() => {
+    setStep(1);
+  }, [user?.uid]);
 
   useEffect(() => {
     if (!user?.displayName) return;

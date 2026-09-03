@@ -47,12 +47,17 @@ export function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    const local = getLocalOrders<Order>();
-    setOrders(mergeOrders(local, []));
-    void fetchOrders().then((remote) => {
-      setOrders(mergeOrders(getLocalOrders<Order>(), remote));
-    });
-  }, []);
+    function reload() {
+      const local = getLocalOrders<Order>();
+      setOrders(mergeOrders(local, []));
+      void fetchOrders().then((remote) => {
+        setOrders(mergeOrders(getLocalOrders<Order>(), remote));
+      });
+    }
+    reload();
+    window.addEventListener("dnols-account-sync", reload);
+    return () => window.removeEventListener("dnols-account-sync", reload);
+  }, [user?.uid]);
 
   function deleteOne(id: string) {
     if (!window.confirm(t("confirmDeleteOrder"))) return;
