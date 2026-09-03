@@ -112,3 +112,14 @@ export async function processPhoto(
   }
   return body;
 }
+
+export async function inviteRiderSms(
+  phone: string,
+  idToken: string,
+): Promise<{ ok: boolean; sms: string }> {
+  return json("/riders/invite", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${idToken}` },
+    body: JSON.stringify({ phone }),
+  });
+}

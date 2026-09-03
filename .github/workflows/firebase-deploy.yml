@@ -39,6 +39,13 @@ jobs:
           VITE_FIREBASE_PROJECT_ID: dnols-2a394
         run: cd shop && npm ci && VITE_API_URL=https://dnols-83jj.onrender.com npm run build
 
+      - name: Build rider
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: dnols-2a394.firebaseapp.com
+          VITE_FIREBASE_PROJECT_ID: dnols-2a394
+        run: cd rider && npm ci && VITE_API_URL=https://dnols-83jj.onrender.com npm run build
+
       - name: Upload buyer dist (backup if deploy fails)
         uses: actions/upload-artifact@v4
         with:
@@ -67,5 +74,13 @@ jobs:
         uses: w9jds/firebase-action@master
         with:
           args: deploy --only hosting:buyer,hosting:shop --project dnols-2a394
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy rider hosting
+        continue-on-error: true
+        uses: w9jds/firebase-action@master
+        with:
+          args: deploy --only hosting:rider --project dnols-2a394
         env:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}

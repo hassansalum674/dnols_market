@@ -6,6 +6,7 @@ Firebase project: **`dnols-2a394`**
 |------|-----------------|------------------|
 | Buyer marketplace | `dnols-2a394` | **https://dnols.com** |
 | Seller PWA | `shop-buyer` | **https://shop.dnols.com** |
+| Rider PWA | `rider-seller` | **https://rider.dnols.com** (`https://rider-seller.web.app`) |
 
 API stays on Render: **https://dnols-83jj.onrender.com**
 
@@ -21,11 +22,14 @@ firebase use dnols-2a394
 
 Create the **shop** hosting site (once) in Firebase Console — yours is already **`shop-buyer`** with `shop.dnols.com` connected.
 
+The **rider** hosting site is **`rider-seller`** (`https://rider-seller.web.app`). Attach `rider.dnols.com` on that site.
+
 Link deploy targets (once per machine):
 
 ```bash
 firebase target:apply hosting buyer dnols-2a394 --project dnols-2a394
 firebase target:apply hosting shop shop-buyer --project dnols-2a394
+firebase target:apply hosting rider rider-seller --project dnols-2a394
 ```
 
 ---
@@ -43,6 +47,14 @@ npm run firebase:deploy:buyer
 ```bash
 npm run firebase:deploy:shop
 ```
+
+### Rider only → rider.dnols.com
+
+```bash
+npm run firebase:deploy:rider
+```
+
+The rider site is already **`rider-seller`**. Add custom domain `rider.dnols.com` on it, then `A` record `rider` → `199.36.158.100` (same as shop).
 
 ### Both
 

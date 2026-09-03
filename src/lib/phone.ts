@@ -1,4 +1,4 @@
-/** Tanzania mobile money numbers (+255 7XX XXX XXX). */
+/** Tanzania mobile money numbers (+255 6XX or 7XX XXX XXX). */
 
 export function normalizeTzPhone(raw: string): string {
   const digits = raw.replace(/\D/g, "");
@@ -10,7 +10,7 @@ export function normalizeTzPhone(raw: string): string {
 
 export function isValidTzPhone(raw: string): boolean {
   const d = normalizeTzPhone(raw).replace(/\D/g, "");
-  return /^2557\d{8}$/.test(d);
+  return /^255[67]\d{8}$/.test(d);
 }
 
 export function formatTzPhoneDisplay(raw: string): string {

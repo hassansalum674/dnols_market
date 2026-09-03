@@ -1,6 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { PLACE_ID, type Category, type Sort } from "./types.js";
 import { store } from "./store.js";
+import { registerCallRoutes } from "./call.js";
+import { sendRiderInviteSms, verifyFirebaseBearer } from "./riders.js";
 import {
   distanceToShop,
   toDirections,
@@ -35,7 +37,7 @@ function normalizeTzPhone(raw: string): string | null {
           ? `+255${phoneDigits}`
           : raw.trim();
   const phoneCheck = normalized.replace(/\D/g, "");
-  if (!/^2557\d{8}$/.test(phoneCheck)) return null;
+  if (!/^255[67]\d{8}$/.test(phoneCheck)) return null;
   return normalized;
 }
 
@@ -252,7 +254,7 @@ export function registerRoutes(
     if (!normalized) {
       return reply.code(400).send({
         error: "bad_phone",
-        message: "Enter a valid Tanzania mobile money number (+255 7XX XXX XXX).",
+        message: "Enter a valid Tanzania mobile money number (+255 6XX or 7XX).",
       });
     }
     const fulfillment =
@@ -264,8 +266,8 @@ export function registerRoutes(
         error: "bad_delivery_phone",
         message:
           fulfillment === "pickup"
-            ? "Enter a valid contact number (+255 7XX XXX XXX)."
-            : "Enter a valid delivery contact number (+255 7XX XXX XXX).",
+            ? "Enter a valid contact number (+255 6XX or 7XX)."
+            : "Enter a valid delivery contact number (+255 6XX or 7XX).",
       });
     }
     const deliveryAddress = String(body.deliveryAddress ?? "").trim();
@@ -306,6 +308,7 @@ export function registerRoutes(
         accessToken: order.accessToken,
         totalTzs: order.totalTzs,
         listingIds: order.listingIds,
+        shopIds: order.shopIds,
         deliveryPhone: order.deliveryPhone,
         fulfillment: order.fulfillment,
         deliveryAddress: order.deliveryAddress,
@@ -467,4 +470,29 @@ export function registerRoutes(
       }));
     return { placeId: PLACE_ID, items };
   });
+
+  app.post("/riders/invite", async (req, reply) => {
+    const caller = await verifyFirebaseBearer(req.headers.authorization);
+    if (!caller) {
+      return reply.code(401).send({
+        error: "auth_required",
+        message: "Sign in to invite a rider.",
+      });
+    }
+    const body = (req.body ?? {}) as { phone?: string; name?: string };
+    try {
+      const sms = await sendRiderInviteSms(String(body.phone ?? ""));
+      return {
+        ok: true,
+        sellerId: caller.uid,
+        sms: sms.sent ? "sent" : sms.skipped ?? "skipped",
+        downloadUrl: "https://rider.dnols.com",
+      };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "invite_failed";
+      return reply.code(422).send({ error: "invite_failed", message });
+    }
+  });
+
+  registerCallRoutes(app);
 }

@@ -122,3 +122,24 @@ paths:
   /trending:
     get:
       summary: Popular SKUs for 404 / empty states
+  /riders/invite:
+    post:
+      summary: SMS invite for a seller-owned rider
+  /call/token:
+    post:
+      summary: Agora RTC voice token for an active rider–buyer delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId, userId]
+              properties:
+                orderId: { type: string }
+                userId: { type: string }
+      responses:
+        "200":
+          description: token, channel, appId, uid
+        "403":
+          description: Not a party on the order, or delivery already complete
